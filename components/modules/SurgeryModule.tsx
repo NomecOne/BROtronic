@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ROMFile } from '../../types';
 import ManualHexEditor from '../ManualHexEditor';
 
@@ -14,13 +14,27 @@ const PageID = ({ id }: { id: string }) => (
 interface SurgeryModuleProps {
   rom: ROMFile | null;
   onUpdateByte: (offset: number, value: number) => void;
+  lastNavRequest?: { offset?: number };
 }
 
-const SurgeryModule: React.FC<SurgeryModuleProps> = ({ rom, onUpdateByte }) => {
+const SurgeryModule: React.FC<SurgeryModuleProps> = ({ rom, onUpdateByte, lastNavRequest }) => {
+  // Use a local override for initial offset if teleporting
+  const [initialOffset, setInitialOffset] = React.useState<number | undefined>(undefined);
+
+  useEffect(() => {
+    if (lastNavRequest?.offset !== undefined) {
+      setInitialOffset(lastNavRequest.offset);
+    }
+  }, [lastNavRequest]);
+
   return (
     <div className="flex-1 p-6 flex flex-col overflow-hidden relative z-10">
       <PageID id="04" />
-      <ManualHexEditor data={rom?.data} onUpdateByte={onUpdateByte} />
+      <ManualHexEditor 
+        data={rom?.data} 
+        onUpdateByte={onUpdateByte} 
+        initialOffset={initialOffset}
+      />
     </div>
   );
 };

@@ -1,16 +1,25 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface ManualHexEditorProps {
   data?: Uint8Array;
   onUpdateByte: (offset: number, value: number) => void;
   onFileUpload?: (file: File) => void;
+  initialOffset?: number;
 }
 
-const ManualHexEditor: React.FC<ManualHexEditorProps> = ({ data, onUpdateByte, onFileUpload }) => {
+const ManualHexEditor: React.FC<ManualHexEditorProps> = ({ data, onUpdateByte, onFileUpload, initialOffset }) => {
   const [offset, setOffset] = useState(0);
   const rowsPerPage = 32;
   const bytesPerRow = 16;
+
+  useEffect(() => {
+    if (initialOffset !== undefined) {
+      // Align to row start
+      const aligned = Math.floor(initialOffset / bytesPerRow) * bytesPerRow;
+      setOffset(Math.max(0, aligned));
+    }
+  }, [initialOffset]);
 
   const handleScroll = (e: React.WheelEvent) => {
     if (!data) return;
@@ -78,7 +87,8 @@ const ManualHexEditor: React.FC<ManualHexEditorProps> = ({ data, onUpdateByte, o
                     return (
                       <input 
                         key={colIdx}
-                        className="w-7 text-center bg-transparent border-none text-slate-300 focus:bg-red-600 focus:text-white outline-none rounded transition-all cursor-text selection:bg-red-500 hover:text-white"
+                        className={`w-7 text-center bg-transparent border-none focus:bg-red-600 focus:text-white outline-none rounded transition-all cursor-text selection:bg-red-500 hover:text-white
+                          ${initialOffset === addr ? 'bg-red-900/40 text-white ring-1 ring-red-500 shadow-xl scale-110 z-10' : 'text-slate-300'}`}
                         value={toHex(byte)}
                         onChange={(e) => {
                           const val = parseInt(e.target.value.slice(-2), 16);
@@ -92,7 +102,7 @@ const ManualHexEditor: React.FC<ManualHexEditorProps> = ({ data, onUpdateByte, o
                 <div className="text-red-950 font-mono tracking-tighter flex justify-between">
                   {Array.from({ length: 16 }).map((_, i) => {
                     const byte = rowData[i];
-                    return <span key={i}>{byte >= 32 && byte <= 126 ? String.fromCharCode(byte) : '.'}</span>;
+                    return <span key={i} className={initialOffset === (rowOffset + i) ? 'text-red-500 font-bold scale-125' : ''}>{byte >= 32 && byte <= 126 ? String.fromCharCode(byte) : '.'}</span>;
                   })}
                 </div>
               </div>

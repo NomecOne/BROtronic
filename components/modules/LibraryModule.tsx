@@ -24,6 +24,7 @@ interface LibraryModuleProps {
   onAddVersion: (v: VersionInfo) => void;
   onUpdateFullVersion: (v: VersionInfo) => void;
   onApplyLibrary: (maps: DMEMap[]) => void;
+  onSaveActiveToLibrary: (maps: DMEMap[]) => void;
 }
 
 const LibraryModule: React.FC<LibraryModuleProps> = ({ 
@@ -38,7 +39,8 @@ const LibraryModule: React.FC<LibraryModuleProps> = ({
   onAddLibraryMap,
   onAddVersion,
   onUpdateFullVersion,
-  onApplyLibrary
+  onApplyLibrary,
+  onSaveActiveToLibrary
 }) => {
   return (
     <div className="flex-1 p-6 flex flex-col overflow-hidden relative z-10">
@@ -57,6 +59,7 @@ const LibraryModule: React.FC<LibraryModuleProps> = ({
         onAddVersion={onAddVersion} 
         onUpdateFullVersion={onUpdateFullVersion} 
         onApplyLibrary={onApplyLibrary}
+        onSaveActiveToLibrary={onSaveActiveToLibrary}
       />
     </div>
   );

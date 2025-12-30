@@ -34,8 +34,10 @@ const ROMLoader: React.FC<ROMLoaderProps> = ({ onLoad, onCancel, themeColor = '#
       
       // Auto-select best match if available
       const suggestions = ROMLoaderService.getSuggestedDefinitions(parsed, DEFINITION_LIBRARY);
-      if (suggestions.length > 0) {
+      if (suggestions.length > 0 && suggestions[0].score >= 80) {
         setSelectedDefId(suggestions[0].match.id);
+      } else {
+        setSelectedDefId('heuristic');
       }
       
       setStep('review');
@@ -75,17 +77,48 @@ const ROMLoader: React.FC<ROMLoaderProps> = ({ onLoad, onCancel, themeColor = '#
     return ROMLoaderService.getSuggestedDefinitions(tempRom, DEFINITION_LIBRARY);
   }, [tempRom]);
 
+  const selectedDef = useMemo(() => {
+    if (!selectedDefId || selectedDefId === 'heuristic') return null;
+    if (customDef && selectedDefId === 'custom') return customDef;
+    return DEFINITION_LIBRARY.find(d => d.id === selectedDefId) || null;
+  }, [selectedDefId, customDef]);
+
   const validation = useMemo(() => {
     if (!tempRom) return null;
     return ROMLoaderService.getFileValidation(tempRom.size);
   }, [tempRom]);
 
+  // Review status calculations
+  const reviewStats = useMemo(() => {
+    if (!tempRom) return null;
+    
+    const hw = tempRom.version?.hw || 'Unknown';
+    const sw = tempRom.version?.sw || 'Unknown';
+    const id = tempRom.version?.id || 'Unknown';
+    const size = tempRom.size;
+    const cs16 = tempRom.checksum16;
+
+    // Match checking logic
+    const hwMatch = selectedDef ? hw === selectedDef.hw : true;
+    const swMatch = selectedDef ? sw === selectedDef.sw : true;
+    const idMatch = selectedDef ? id === selectedDef.id : true;
+    const sizeMatch = selectedDef?.expectedSize ? size === selectedDef.expectedSize : true;
+    const cs16Match = selectedDef?.expectedChecksum16 ? cs16 === selectedDef.expectedChecksum16 : true;
+
+    const getCol = (match: boolean) => match ? 'text-cyan-400' : 'text-red-500';
+
+    return {
+      hw: { val: hw, color: getCol(hwMatch) },
+      sw: { val: sw, color: getCol(swMatch) },
+      id: { val: id, color: getCol(idMatch) },
+      size: { val: size, color: getCol(sizeMatch) },
+      cs16: { val: `0x${cs16.toString(16).toUpperCase()}`, color: getCol(cs16Match) }
+    };
+  }, [tempRom, selectedDef]);
+
   const handleFinalConfirm = () => {
     if (!tempRom) return;
-    let finalDef = customDef;
-    if (!finalDef && selectedDefId) {
-      finalDef = DEFINITION_LIBRARY.find(d => d.id === selectedDefId);
-    }
+    let finalDef = selectedDef;
     
     // If a definition is selected, inject it into the ROM object before returning
     const finalRom = { ...tempRom };
@@ -202,7 +235,7 @@ const ROMLoader: React.FC<ROMLoaderProps> = ({ onLoad, onCancel, themeColor = '#
             </div>
           )}
 
-          {step === 'review' && tempRom && (
+          {step === 'review' && tempRom && reviewStats && (
             <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
               
               {/* ROM Metadata Review */}
@@ -212,11 +245,15 @@ const ROMLoader: React.FC<ROMLoaderProps> = ({ onLoad, onCancel, themeColor = '#
                   <div className="mt-2 space-y-1">
                     <div className="flex justify-between items-center">
                        <span className="text-[10px] text-slate-400 font-bold uppercase">HW:</span>
-                       <span className="text-sm text-cyan-400 font-mono font-bold">{tempRom.version?.hw || 'Unknown'}</span>
+                       <span className={`text-sm font-mono font-bold ${reviewStats.hw.color}`}>{reviewStats.hw.val}</span>
                     </div>
                     <div className="flex justify-between items-center">
                        <span className="text-[10px] text-slate-400 font-bold uppercase">SW:</span>
-                       <span className="text-sm text-cyan-400 font-mono font-bold">{tempRom.version?.sw || 'Unknown'}</span>
+                       <span className={`text-sm font-mono font-bold ${reviewStats.sw.color}`}>{reviewStats.sw.val}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                       <span className="text-[10px] text-slate-400 font-bold uppercase">ID:</span>
+                       <span className={`text-sm font-mono font-bold ${reviewStats.id.color}`}>{reviewStats.id.val}</span>
                     </div>
                   </div>
                 </div>
@@ -225,11 +262,13 @@ const ROMLoader: React.FC<ROMLoaderProps> = ({ onLoad, onCancel, themeColor = '#
                   <div className="mt-2 space-y-1">
                     <div className="flex justify-between items-center">
                        <span className="text-[10px] text-slate-400 font-bold uppercase">Size:</span>
-                       <span className={`text-[10px] font-bold uppercase ${validation?.valid ? 'text-emerald-400' : 'text-amber-400'}`}>{validation?.message}</span>
+                       <span className={`text-[10px] font-bold uppercase ${reviewStats.size.color}`}>{validation?.message}</span>
                     </div>
-                    <div className="flex justify-between items-center">
-                       <span className="text-[10px] text-slate-400 font-bold uppercase">ECC:</span>
-                       <span className="text-[10px] font-bold uppercase text-slate-500 italic">BYPASS (3.3.1)</span>
+                    <div className="flex justify-between items-center space-x-2">
+                       <span className="text-[10px] text-slate-400 font-bold uppercase shrink-0">CS16:</span>
+                       <span className={`text-[10px] font-mono font-black italic truncate text-right ${reviewStats.cs16.color}`}>
+                        {reviewStats.cs16.val}
+                       </span>
                     </div>
                   </div>
                 </div>
@@ -240,31 +279,59 @@ const ROMLoader: React.FC<ROMLoaderProps> = ({ onLoad, onCancel, themeColor = '#
                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] italic">Protocol Definition Matching</h4>
                 
                 <div className="space-y-2 max-h-48 overflow-y-auto pr-2 scrollbar-hide">
+                  {/* Option: Heuristic Parser Results */}
+                  <button 
+                    onClick={() => { setSelectedDefId('heuristic'); setCustomDef(null); }}
+                    className={`w-full flex items-center p-4 rounded-2xl border transition-all text-left group
+                      ${selectedDefId === 'heuristic' ? 'bg-lime-600/20 border-lime-500 shadow-lg shadow-lime-900/20' : 'bg-slate-950 border-slate-800 hover:border-slate-700'}`}
+                  >
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 mr-4 border transition-colors
+                      ${selectedDefId === 'heuristic' ? 'bg-lime-500 border-lime-400 text-white' : 'bg-slate-900 border-slate-800 text-slate-600'}`}>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-black text-white uppercase truncate italic">Heuristic Discovery Protocol</div>
+                      <div className="flex items-center space-x-2 mt-1">
+                        <span className="text-[9px] text-slate-500 font-mono">Dynamic Analysis</span>
+                        <span className="text-[9px] text-lime-600 font-black uppercase tracking-tighter">[{tempRom.detectedMaps.length} MAPS FOUND]</span>
+                      </div>
+                    </div>
+                  </button>
+
                   {suggestions.length > 0 ? (
-                    suggestions.map(({ match, score, reason }) => (
-                      <button 
-                        key={match.id}
-                        onClick={() => { setSelectedDefId(match.id); setCustomDef(null); }}
-                        className={`w-full flex items-center p-4 rounded-2xl border transition-all text-left group
-                          ${selectedDefId === match.id ? 'bg-cyan-600/20 border-cyan-500 shadow-lg shadow-cyan-900/20' : 'bg-slate-950 border-slate-800 hover:border-slate-700'}`}
-                      >
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 mr-4 border transition-colors
-                          ${selectedDefId === match.id ? 'bg-cyan-500 border-cyan-400 text-white' : 'bg-slate-900 border-slate-800 text-slate-600'}`}>
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-xs font-black text-white uppercase truncate italic">{match.description}</div>
-                          <div className="flex items-center space-x-2 mt-1">
-                            <span className="text-[9px] text-slate-500 font-mono">HW: {match.hw}</span>
-                            <span className="text-[9px] text-cyan-600 font-black uppercase tracking-tighter">[{reason}]</span>
+                    suggestions.map(({ match, score, reason }) => {
+                      const isSelected = selectedDefId === match.id;
+                      const isPerfect = score === 100;
+                      
+                      return (
+                        <button 
+                          key={match.id}
+                          onClick={() => { setSelectedDefId(match.id); setCustomDef(null); }}
+                          className={`w-full flex items-center p-4 rounded-2xl border transition-all text-left group
+                            ${isSelected 
+                              ? (isPerfect ? 'bg-cyan-600/20 border-cyan-500 shadow-lg shadow-cyan-900/20' : 'bg-amber-600/20 border-amber-500 shadow-lg shadow-amber-900/20') 
+                              : 'bg-slate-950 border-slate-800 hover:border-slate-700'}`}
+                        >
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 mr-4 border transition-colors
+                            ${isSelected 
+                              ? (isPerfect ? 'bg-cyan-500 border-cyan-400 text-white' : 'bg-amber-500 border-amber-400 text-white') 
+                              : 'bg-slate-900 border-slate-800 text-slate-600'}`}>
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                           </div>
-                        </div>
-                        <div className="text-right ml-4 shrink-0">
-                          <div className="text-xs font-black text-cyan-400 italic">{score}%</div>
-                          <div className="text-[8px] text-slate-600 font-bold uppercase">Match</div>
-                        </div>
-                      </button>
-                    ))
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xs font-black text-white uppercase truncate italic">{match.description}</div>
+                            <div className="flex items-center space-x-2 mt-1">
+                              <span className="text-[9px] text-slate-500 font-mono">HW: {match.hw}</span>
+                              <span className={`text-[9px] font-black uppercase tracking-tighter ${isPerfect ? 'text-cyan-600' : 'text-amber-600'}`}>[{reason}]</span>
+                            </div>
+                          </div>
+                          <div className="text-right ml-4 shrink-0">
+                            <div className={`text-xs font-black italic ${isPerfect ? 'text-cyan-400' : 'text-amber-400'}`}>{score}%</div>
+                            <div className="text-[8px] text-slate-600 font-bold uppercase">Match</div>
+                          </div>
+                        </button>
+                      );
+                    })
                   ) : (
                     <div className="p-6 bg-slate-950 border border-dashed border-slate-800 rounded-3xl text-center">
                        <p className="text-[10px] text-slate-600 font-black uppercase tracking-widest italic">No matching definitions found in local library</p>

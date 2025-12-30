@@ -27,13 +27,13 @@
 
         @keyframes neon-line-pulse {
             0%, 100% { 
-                /* Distance matched to button protrusion (~16px max) */
-                box-shadow: 0 0 4px var(--neon-color), 0 0 8px var(--neon-mid), 0 0 12px var(--neon-outer); 
+                /* Intensified 5x: massive spread and blur for nuclear bloom */
+                box-shadow: 0 0 50px var(--neon-color), 0 0 120px var(--neon-mid), 0 0 200px var(--neon-outer); 
                 opacity: 0.95;
             }
             50% { 
-                /* Peak distance exactly at button tip limit */
-                box-shadow: 0 0 6px var(--neon-color), 0 0 12px var(--neon-mid), 0 0 16px var(--neon-outer); 
+                /* Peak bloom */
+                box-shadow: 0 0 90px var(--neon-color), 0 0 180px var(--neon-mid), 0 0 300px var(--neon-outer); 
                 opacity: 1;
             }
         }

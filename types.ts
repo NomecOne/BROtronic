@@ -63,6 +63,19 @@ export interface VersionInfo {
   maps: DMEMap[];
   isBuiltIn?: boolean; // Protects factory definitions from raw code editing
   version?: number; // Auto-incrementing version number for user edits
+  expectedSize?: number; // File size in bytes for validation
+  expectedChecksum16?: number; // 16-bit summation checksum for verification
+}
+
+export type DiagnosticType = 'identity' | 'integrity' | 'structure' | 'heuristic';
+
+export interface DiagnosticEntry {
+  id: string;
+  label: string;
+  value: string;
+  offset?: number;
+  type: DiagnosticType;
+  actions: ('hexEdit' | 'tuner' | 'discovery')[];
 }
 
 export interface ROMFile {
@@ -70,7 +83,9 @@ export interface ROMFile {
   name: string;
   size: number;
   detectedMaps: DMEMap[];
+  checksum16: number;
   checksumValid: boolean;
+  diagnostics: DiagnosticEntry[];
   version?: { 
     hw: string; 
     sw: string;

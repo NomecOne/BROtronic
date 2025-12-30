@@ -1,4 +1,3 @@
-
 import { DMEMap, MapDimension, MapType, AxisSource, VersionInfo } from '../types';
 
 export const M413_623_MAPS: DMEMap[] = [
@@ -62,10 +61,10 @@ export const M413_623_MAPS: DMEMap[] = [
 ];
 
 export const M413_623_DEF: VersionInfo = {
-  id: 'm331_413_623',
+  id: '466.29',
   hw: '0261200413',
   sw: '1267357623',
-  description: 'BMW E36 325i M50B25TU (Red Label)',
+  description: 'BMW E36 325i M50B25TU (Red Label) - Release 466.29',
   maps: M413_623_MAPS,
   isBuiltIn: true,
   expectedSize: 65536,

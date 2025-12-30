@@ -13,7 +13,7 @@ import LibraryModule from './components/modules/LibraryModule';
 import CompareModule from './components/modules/CompareModule';
 import ParserViewer from './components/modules/ParserViewer';
 
-// --- Icons ---
+// Icons
 const IconTuner = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -46,19 +46,19 @@ const IconParser = () => (
 );
 
 const IconCollapseArrow = ({ color }: { color?: string }) => (
-  <svg className="w-4 h-4" style={{ filter: `drop-shadow(0 0 5px ${color || 'currentColor'})` }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+  <svg className="w-4 h-4" style={{ filter: `drop-shadow(0 0 8px ${color || 'currentColor'})` }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
   </svg>
 );
 
 const IconExpandArrow = ({ color }: { color?: string }) => (
-  <svg className="w-4 h-4" style={{ filter: `drop-shadow(0 0 5px ${color || 'currentColor'})` }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+  <svg className="w-4 h-4" style={{ filter: `drop-shadow(0 0 8px ${color || 'currentColor'})` }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
   </svg>
 );
 
 type ViewMode = 'tuner' | 'discovery' | 'hexEdit' | 'library' | 'compare' | 'parview';
-type NavLevel = 0 | 1 | 2; // 0: Full, 1: Mini, 2: Hidden (Visible Sliver)
+type NavLevel = 0 | 1 | 2;
 
 const VIEW_CONFIG: Record<ViewMode, { label: string; icon: React.FC; color: string; hex: string; glow: string; shadow: string }> = {
   tuner: { label: 'TuneDex', icon: IconTuner, color: 'text-cyan-400', hex: 'rgba(34, 211, 238, 1)', glow: 'shadow-cyan-500/10', shadow: '0 0 40px rgba(34, 211, 238, 0.05)' },
@@ -78,6 +78,9 @@ const App: React.FC = () => {
   const [navLevel, setNavLevel] = useState<NavLevel>(0);
   const [showLoader, setShowLoader] = useState(false);
   const [showUnloadConfirm, setShowUnloadConfirm] = useState(false);
+  
+  // Cross-module teleportation state
+  const [lastNavRequest, setLastNavRequest] = useState<{ module: ViewMode; offset?: number; mapId?: string } | null>(null);
 
   useEffect(() => {
     const selectedMap = rom?.detectedMaps.find(m => m.id === selectedMapId);
@@ -96,31 +99,25 @@ const App: React.FC = () => {
     setEditingData(newData);
   };
 
-  const updateMapDefinition = (updates: Partial<DMEMap>, mapId: string) => {
-    setRom(prev => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        detectedMaps: prev.detectedMaps.map(m => m.id === mapId ? { ...m, ...updates } : m)
-      };
-    });
-  };
-
-  const addMapDefinition = (newMap: DMEMap) => {
-    setRom(prev => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        detectedMaps: [newMap, ...prev.detectedMaps]
-      };
-    });
-  };
-
   const handleUnloadRom = () => {
     setRom(null);
     setSelectedMapId(null);
     setEditingData(null);
     setShowUnloadConfirm(false);
+  };
+
+  const handleSaveActiveToLibrary = (mapsToSave: DMEMap[]) => {
+    if (!rom) return;
+    const newDef: VersionInfo = {
+      id: `user_${Date.now()}`,
+      hw: rom.version?.hw || 'Unknown',
+      sw: rom.version?.sw || 'Unknown',
+      description: `Saved Workspace: ${rom.name}`,
+      maps: JSON.parse(JSON.stringify(mapsToSave)),
+      version: 1,
+      isBuiltIn: false
+    };
+    setLibrary(prev => [newDef, ...prev]);
   };
 
   const handleSaveRom = () => {
@@ -150,7 +147,6 @@ const App: React.FC = () => {
         }
     }
 
-    // 1. Export ROM (.bin)
     const romBlob = new Blob([newData], { type: 'application/octet-stream' });
     const romUrl = URL.createObjectURL(romBlob);
     const romLink = document.createElement('a');
@@ -161,7 +157,6 @@ const App: React.FC = () => {
     document.body.removeChild(romLink);
     URL.revokeObjectURL(romUrl);
 
-    // 2. Export Definition (.json)
     const definition: VersionInfo = {
       id: `export_${Date.now()}`,
       hw: rom.version?.hw || 'Unknown',
@@ -187,7 +182,13 @@ const App: React.FC = () => {
   };
 
   const expandNav = () => {
-    if (navLevel === 1) setNavLevel(0);
+    if (navLevel === 2) setNavLevel(0);
+  };
+
+  const handleTeleport = (module: ViewMode, offset?: number, mapId?: string) => {
+    setActiveView(module);
+    setLastNavRequest({ module, offset, mapId });
+    if (mapId) setSelectedMapId(mapId);
   };
 
   const NavItem = ({ mode, disabled }: { mode: ViewMode, disabled?: boolean }) => {
@@ -202,7 +203,6 @@ const App: React.FC = () => {
           if (!disabled) setActiveView(mode);
         }} 
         disabled={disabled}
-        title={navLevel === 1 ? config.label : ''}
         className={`w-full flex items-center p-3 rounded-xl transition-all duration-300 group relative
           ${disabled ? 'opacity-20 cursor-not-allowed grayscale' : ''}
           ${isActive 
@@ -227,25 +227,31 @@ const App: React.FC = () => {
     );
   };
 
-  const getSidebarWidthClass = () => {
-    if (navLevel === 0) return 'w-72';
-    if (navLevel === 1) return 'w-20';
-    return 'w-[1px] border-r-0'; 
-  };
+  const handleRomLoaded = (loadedRom: ROMFile, definition?: VersionInfo) => {
+    // If definition is undefined, user chose Heuristic Discovery
+    if (!definition) {
+      const heuristicDef: VersionInfo = {
+        id: `heuristic_${Date.now()}`,
+        hw: loadedRom.version?.hw || 'Unknown',
+        sw: loadedRom.version?.sw || 'Unknown',
+        description: `Heuristic Discovery: ${loadedRom.name}`,
+        maps: JSON.parse(JSON.stringify(loadedRom.detectedMaps)),
+        version: 1,
+        isBuiltIn: false
+      };
+      setLibrary(prev => [heuristicDef, ...prev]);
+    } else {
+      // Use the chosen definition
+      loadedRom.detectedMaps = JSON.parse(JSON.stringify(definition.maps));
+    }
 
-  const mainStyle: React.CSSProperties = {
-    boxShadow: `inset 0 0 100px ${VIEW_CONFIG[activeView].shadow.split('rgba')[1].replace(')', ', 0.02)')}`,
-    transition: 'all 0.5s ease-in-out'
-  };
-
-  const activeColorHex = VIEW_CONFIG[activeView].hex;
-  const activeColorTailwind = VIEW_CONFIG[activeView].color;
-
-  const handleRomLoaded = (loadedRom: ROMFile) => {
     setRom(loadedRom);
     setShowLoader(false);
     setSelectedMapId(null);
+    setActiveView('parview'); // Show Diagnostics first
   };
+
+  const currentTheme = VIEW_CONFIG[activeView];
 
   return (
     <div className="flex h-screen w-screen overflow-hidden text-slate-100 bg-slate-950 font-sans">
@@ -254,141 +260,89 @@ const App: React.FC = () => {
         <ROMLoader 
           onLoad={handleRomLoaded} 
           onCancel={() => setShowLoader(false)} 
-          themeColor={activeColorHex} 
+          themeColor={VIEW_CONFIG[activeView].hex} 
         />
       )}
 
-      {/* Unload Confirmation Modal */}
       {showUnloadConfirm && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-xl animate-in fade-in duration-300" onClick={() => setShowUnloadConfirm(false)} />
-          <div className="relative w-full max-sm bg-slate-900 border border-red-900/40 rounded-3xl p-8 shadow-[0_0_50px_rgba(239,68,68,0.2)] animate-in zoom-in duration-200">
+          <div className="relative w-full max-sm bg-slate-900 border border-red-900/40 rounded-3xl p-8 shadow-[0_0_50px_rgba(239,68,68,0.2)]">
             <div className="flex flex-col items-center text-center space-y-4">
               <div className="w-16 h-16 bg-red-600/10 border border-red-500/20 rounded-2xl flex items-center justify-center text-red-500 mb-2">
                 <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
               </div>
-              <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">Binary Purge</h3>
-              <p className="text-slate-400 text-xs font-bold uppercase tracking-wider leading-relaxed">
-                Unloading will synchronize all active hardware registers. <br/>
-                <span className="text-red-500">All unsaved workspace data will be lost.</span>
-              </p>
+              <h3 className="text-xl font-black text-white uppercase italic">Binary Purge</h3>
+              <p className="text-slate-400 text-xs font-bold uppercase tracking-wider">Unloading will lose all unsaved session data.</p>
               <div className="grid grid-cols-2 gap-3 w-full mt-4">
-                <button 
-                  onClick={() => setShowUnloadConfirm(false)}
-                  className="py-3 rounded-xl bg-slate-800 text-slate-300 text-[10px] font-black uppercase italic tracking-widest hover:bg-slate-750 transition-all"
-                >
-                  Dismiss
-                </button>
-                <button 
-                  onClick={handleUnloadRom}
-                  className="py-3 rounded-xl bg-red-600 text-white text-[10px] font-black uppercase italic tracking-widest hover:bg-red-500 shadow-lg shadow-red-900/20 transition-all"
-                >
-                  Confirm Purge
-                </button>
+                <button onClick={() => setShowUnloadConfirm(false)} className="py-3 rounded-xl bg-slate-800 text-slate-300 text-[10px] font-black uppercase italic">Dismiss</button>
+                <button onClick={handleUnloadRom} className="py-3 rounded-xl bg-red-600 text-white text-[10px] font-black uppercase italic">Confirm Purge</button>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Global Navigation Panel */}
       <aside 
-        onClick={expandNav}
-        className={`bg-slate-950 border-r border-slate-900 flex flex-col shadow-2xl z-30 transition-all duration-300 ease-in-out relative group/aside
-          ${getSidebarWidthClass()} ${navLevel === 1 ? 'cursor-pointer hover:bg-slate-900/20' : ''}`}
+        onClick={expandNav} 
+        className={`bg-slate-950 border-r border-slate-900 flex flex-col shadow-2xl z-30 transition-all duration-500 relative group/aside ${navLevel === 0 ? 'w-72' : navLevel === 1 ? 'w-20' : 'w-[1px]'}`}
+        style={{
+          '--neon-color': currentTheme.hex,
+          '--neon-mid': currentTheme.hex.replace('1)', '0.4)'),
+          '--neon-outer': currentTheme.hex.replace('1)', '0.1)'),
+        } as React.CSSProperties}
       >
-        <div 
-          className={`absolute top-0 right-0 w-[3px] h-full transition-all duration-500 z-50 pointer-events-none ${navLevel === 2 ? 'neon-line-pulse' : ''}`}
-          style={{ 
-            backgroundColor: activeColorHex,
-            // @ts-ignore: Custom CSS properties
-            '--neon-color': activeColorHex,
-            '--neon-mid': activeColorHex.replace('1)', '0.85)'),
-            '--neon-outer': activeColorHex.replace('1)', '0.55)'),
-            boxShadow: navLevel !== 2 ? `0 0 10px ${activeColorHex.replace('1)', '0.8)')}` : undefined
-          } as React.CSSProperties}
-        >
-          {navLevel === 2 && (
-            <div 
-              className="absolute top-0 left-[-16px] w-[32px] h-full pointer-events-none flare-pulse overflow-hidden"
-              style={{
-                background: `linear-gradient(to right, transparent 0%, transparent 16.6%, ${activeColorHex.replace('1)', '0.12)')} 50%, ${activeColorHex.replace('1)', '0.12)')} 83.3%, transparent 100%)`,
-                backdropFilter: 'blur(3px)',
-              }}
-            >
-                <div className="absolute inset-0 translate-y-[-100%] animate-[scan_5s_linear_infinite]" style={{
-                    background: `linear-gradient(to bottom, transparent, ${activeColorHex.replace('1)', '0.25)')}, transparent)`,
-                    height: '15%'
-                }} />
-            </div>
-          )}
-        </div>
+        {/* Neon Line Pulse on Right Edge */}
+        <div className="absolute right-[-1px] top-0 bottom-0 w-[2px] z-50 neon-line-pulse" style={{ backgroundColor: currentTheme.hex }} />
 
+        {/* Circular Navigation Toggle Button shifted UP per drawing */}
         <button 
           onClick={toggleNav}
-          className="absolute top-20 -right-4 translate-y-[-50%] z-50 w-8 h-8 bg-slate-900 border-2 rounded-full flex items-center justify-center transition-all shadow-xl active:scale-90"
-          style={{ 
-            borderColor: activeColorHex.replace('1)', '0.8)'),
-            color: activeColorHex,
-            boxShadow: `0 0 15px ${activeColorHex.replace('1)', '0.4)')}`
-          }}
-          title={navLevel === 0 ? 'Minimize Sidebar' : navLevel === 1 ? 'Hide Sidebar' : 'Show Sidebar'}
+          className="absolute -right-6 top-16 w-12 h-12 bg-slate-950 border-2 border-slate-800 rounded-full flex items-center justify-center z-[100] transition-all hover:bg-slate-900 group/navbtn shadow-[0_0_40px_rgba(0,0,0,0.9)]"
+          style={{ borderColor: currentTheme.hex }}
         >
-          {navLevel === 2 ? <IconExpandArrow color={activeColorHex} /> : <IconCollapseArrow color={activeColorHex} />}
+          {/* Internal Circle Wrapper */}
+          <div 
+            className="w-9 h-9 rounded-full border border-slate-700/50 flex items-center justify-center transition-all group-hover/navbtn:border-slate-300"
+            style={{ borderColor: currentTheme.hex.replace('1)', '0.2)') }}
+          >
+            <div className="transition-all duration-500 transform">
+              {/* Corrected Arrow Direction Logic: Point RIGHT only when MICRO/HIDDEN (navLevel 2) */}
+              {navLevel === 2 ? <IconExpandArrow color={currentTheme.hex} /> : <IconCollapseArrow color={currentTheme.hex} />}
+            </div>
+          </div>
         </button>
 
-        <div className={`flex flex-col h-full w-full overflow-hidden transition-opacity duration-300 ${navLevel === 2 ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+        <div className="flex flex-col h-full w-full overflow-hidden">
           <div className="border-b border-slate-900 p-6 h-24 flex items-center shrink-0">
             {navLevel === 0 ? (
-              <h1 className="flex items-baseline font-black italic uppercase tracking-tighter select-none transition-all duration-500">
-                <span className={`text-5xl ${activeColorTailwind} transition-all duration-500`} style={{ filter: `drop-shadow(0 0 12px ${activeColorHex.replace('1)', '0.9)')})` }}>BRO</span>
-                <span className={`text-2xl opacity-80 ml-1 ${activeColorTailwind} transition-all duration-500`} style={{ filter: `drop-shadow(0 0 5px ${activeColorHex.replace('1)', '0.4)')})` }}>TRONIC</span>
+              <h1 className="flex items-baseline font-black italic uppercase tracking-tighter">
+                <span className={`text-5xl ${currentTheme.color}`}>BRO</span>
+                <span className={`text-2xl opacity-80 ml-1 ${currentTheme.color}`}>TRONIC</span>
               </h1>
             ) : (
               <div className="w-full flex justify-center">
-                <div className={`w-10 h-10 rounded-lg border-2 flex items-center justify-center transition-all duration-500`} style={{ borderColor: activeColorHex.replace('1)', '0.5)'), boxShadow: `0 0 15px ${activeColorHex.replace('1)', '0.5)')}` }}>
-                  <span className={`font-black italic text-xl ${activeColorTailwind} transition-all duration-500`} style={{ filter: `drop-shadow(0 0 8px ${activeColorHex.replace('1)', '0.8)')})` }}>B</span>
+                <div className="w-10 h-10 rounded-lg border-2 flex items-center justify-center" style={{ borderColor: currentTheme.hex }}>
+                  <span className={`font-black italic text-xl ${currentTheme.color}`}>B</span>
                 </div>
               </div>
             )}
           </div>
-          
-          <div className="flex-1 p-4 space-y-2 overflow-y-auto overflow-x-hidden scrollbar-hide">
+          <div className={`flex-1 p-4 space-y-2 overflow-y-auto transition-opacity duration-300 ${navLevel === 2 ? 'opacity-0' : 'opacity-100'}`}>
              <NavItem mode="tuner" />
              <NavItem mode="discovery" />
              <NavItem mode="hexEdit" />
              <NavItem mode="parview" />
              <NavItem mode="library" />
-             <NavItem mode="compare" disabled={true} />
           </div>
-
-          <div className="p-4 border-t border-slate-900 shrink-0 space-y-2">
-             <button 
-               onClick={(e) => { e.stopPropagation(); setShowUnloadConfirm(true); }} 
-               disabled={!rom} 
-               className="w-full py-2.5 rounded-xl text-[10px] font-black uppercase bg-slate-800/50 text-slate-500 border border-slate-800 disabled:opacity-20 transition-all hover:bg-red-950/40 hover:text-red-400 hover:border-red-900/50 shadow-xl active:scale-95 flex items-center justify-center"
-             >
-               {navLevel === 1 ? (
-                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-               ) : 'UNLOAD ROM'}
-             </button>
-             <button 
-               onClick={(e) => { e.stopPropagation(); handleSaveRom(); }} 
-               disabled={!rom} 
-               className="w-full py-3 rounded-xl text-[10px] font-black uppercase bg-slate-800 text-slate-400 border border-slate-700 disabled:opacity-50 transition-all hover:bg-cyan-600 hover:text-white hover:border-cyan-500 shadow-xl active:scale-95 flex items-center justify-center"
-             >
-               {navLevel === 1 ? (
-                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M16 12l-4 4m0 0l-4-4m4-4v12" /></svg>
-               ) : 'EXPORT ROM&DEF'}
-             </button>
+          <div className={`p-4 border-t border-slate-900 shrink-0 space-y-2 transition-opacity duration-300 ${navLevel === 2 ? 'opacity-0' : 'opacity-100'}`}>
+             <button onClick={() => setShowUnloadConfirm(true)} disabled={!rom} className="w-full py-2.5 rounded-xl text-[10px] font-black uppercase bg-slate-800/50 text-slate-500 border border-slate-800 disabled:opacity-20 transition-all hover:text-red-400">UNLOAD ROM</button>
+             <button onClick={handleSaveRom} disabled={!rom} className="w-full py-3 rounded-xl text-[10px] font-black uppercase bg-slate-800 text-slate-400 border border-slate-700">EXPORT ROM&DEF</button>
           </div>
         </div>
       </aside>
 
-      <main className="flex-1 flex flex-col min-w-0 bg-slate-950 relative backdrop-blur-3xl overflow-hidden" style={mainStyle}>
-        <div className={`absolute inset-0 pointer-events-none opacity-20 transition-all duration-700 ${VIEW_CONFIG[activeView].glow.replace('shadow', 'bg')}`} />
-
-        {/* Modular View Rendering */}
+      <main className="flex-1 flex flex-col min-w-0 bg-slate-950 relative overflow-hidden">
         {rom ? (
           <>
             {activeView === 'tuner' && (
@@ -400,17 +354,11 @@ const App: React.FC = () => {
                 onUpdateValue={handleUpdateValue} 
               />
             )}
-            
-            {activeView === 'discovery' && (
-              <DiscoveryModule 
-                rom={rom} 
-                onAddMapDefinition={addMapDefinition} 
-              />
-            )}
-
+            {activeView === 'discovery' && <DiscoveryModule rom={rom} onAddMapDefinition={m => setRom(p => p ? {...p, detectedMaps: [m, ...p.detectedMaps]} : null)} />}
             {activeView === 'hexEdit' && (
               <SurgeryModule 
                 rom={rom} 
+                lastNavRequest={lastNavRequest?.module === 'hexEdit' ? lastNavRequest : undefined}
                 onUpdateByte={(o, v) => {
                   const newData = new Uint8Array(rom.data);
                   newData[o] = v;
@@ -418,51 +366,31 @@ const App: React.FC = () => {
                 }} 
               />
             )}
-
-            {activeView === 'parview' && (
-              <ParserViewer rom={rom} onJumpToMap={(id) => { setSelectedMapId(id); setActiveView('tuner'); }} />
-            )}
-
+            {activeView === 'parview' && <ParserViewer rom={rom} onNavigate={handleTeleport} />}
             {activeView === 'library' && (
               <LibraryModule 
                 library={library} 
                 rom={rom} 
                 onSelectMap={setSelectedMapId}
-                onAddActiveMap={addMapDefinition}
-                onUpdateActiveMap={updateMapDefinition}
-                onDeleteActiveMap={(id) => setRom(prev => prev ? {...prev, detectedMaps: prev.detectedMaps.filter(m => m.id !== id)} : null)}
-                onUpdateLibraryMap={(vid, mid, up) => setLibrary(prev => prev.map(v => v.id === vid ? {...v, maps: v.maps.map(m => m.id === mid ? {...m, ...up} : m)} : v))}
-                onDeleteLibraryMap={(vid, mid) => setLibrary(prev => prev.map(v => v.id === vid ? {...v, maps: v.maps.filter(m => m.id !== mid)} : v))}
-                onAddLibraryMap={(vid, nm) => setLibrary(prev => prev.map(v => v.id === vid ? {...v, maps: [nm, ...v.maps]} : v))}
-                onAddVersion={(v) => setLibrary(prev => [v, ...prev])}
-                onUpdateFullVersion={(v) => setLibrary(prev => prev.map(old => old.id === v.id ? v : old))}
-                onApplyLibrary={(maps) => {
-                  setRom({...rom, detectedMaps: JSON.parse(JSON.stringify(maps))});
-                  setActiveView('tuner');
-                }}
+                onAddActiveMap={m => setRom(p => p ? {...p, detectedMaps: [m, ...p.detectedMaps]} : null)}
+                onUpdateActiveMap={(up, id) => setRom(p => p ? {...p, detectedMaps: p.detectedMaps.map(m => m.id === id ? {...m, ...up} : m)} : null)}
+                onDeleteActiveMap={id => setRom(p => p ? {...p, detectedMaps: p.detectedMaps.filter(m => m.id !== id)} : null)}
+                onUpdateLibraryMap={(vid, mid, up) => setLibrary(prev => prev.map(v => v.id === vid ? { ...v, maps: v.maps.map(m => m.id === mid ? { ...m, ...up } : m) } : v))}
+                onDeleteLibraryMap={(vid, mid) => setLibrary(prev => prev.map(v => v.id === vid ? { ...v, maps: v.maps.filter(m => m.id !== mid) } : v))}
+                onAddLibraryMap={(vid, nm) => setLibrary(prev => prev.map(v => v.id === vid ? { ...v, maps: [nm, ...v.maps] } : v))}
+                onAddVersion={v => setLibrary(prev => [v, ...prev])}
+                onUpdateFullVersion={v => setLibrary(prev => prev.map(o => o.id === v.id ? v : o))}
+                onApplyLibrary={maps => { setRom({...rom, detectedMaps: JSON.parse(JSON.stringify(maps))}); setActiveView('tuner'); }}
+                onSaveActiveToLibrary={handleSaveActiveToLibrary}
               />
             )}
-
-            {activeView === 'compare' && <CompareModule />}
           </>
         ) : (
-          /* "Initialize Hardware" Placeholder - Only if no ROM loaded */
-          <div className="flex-1 flex items-center justify-center p-12 text-center relative z-10">
+          <div className="flex-1 flex items-center justify-center p-12 text-center">
             <div className="max-w-md space-y-6">
-               <div className={`w-24 h-24 rounded-3xl flex items-center justify-center mx-auto border shadow-[0_0_30px_rgba(255,255,255,0.05)] transition-all duration-500`} style={{ borderColor: `${activeColorHex.replace('1)', '0.2)')}`, backgroundColor: `${activeColorHex.replace('1)', '0.05)')}`, color: activeColorHex }}>
-                 {React.createElement(VIEW_CONFIG[activeView].icon)}
-               </div>
-               <div>
-                 <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter">Initialize {VIEW_CONFIG[activeView].label}</h2>
-                 <p className="text-slate-500 mt-2 text-sm leading-relaxed italic">The module requires an active binary stream to synchronize with DME hardware.</p>
-               </div>
-               <button 
-                onClick={() => setShowLoader(true)}
-                className="px-12 py-4 rounded-2xl font-black uppercase italic tracking-widest text-xs shadow-2xl transition-all hover:scale-105 active:scale-95"
-                style={{ backgroundColor: activeColorHex, color: 'white' }}
-               >
-                 Initialize Hardware
-               </button>
+               <div className="w-24 h-24 rounded-3xl flex items-center justify-center mx-auto border" style={{ color: currentTheme.hex }}>{React.createElement(currentTheme.icon)}</div>
+               <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter">Initialize {currentTheme.label}</h2>
+               <button onClick={() => setShowLoader(true)} className="px-12 py-4 rounded-2xl font-black uppercase italic tracking-widest text-xs" style={{ backgroundColor: currentTheme.hex, color: 'white' }}>Initialize Hardware</button>
             </div>
           </div>
         )}

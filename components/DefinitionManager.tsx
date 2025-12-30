@@ -15,6 +15,7 @@ interface DefinitionManagerProps {
   onApplyLibrary?: (maps: DMEMap[]) => void;
   onAddVersion?: (newVersion: VersionInfo) => void;
   onUpdateFullVersion?: (version: VersionInfo) => void;
+  onSaveActiveToLibrary?: (maps: DMEMap[]) => void;
   romLoaded: boolean;
 }
 
@@ -404,18 +405,26 @@ const DefinitionManager: React.FC<DefinitionManagerProps> = (props) => {
                <span className="text-[9px] font-bold text-slate-500 uppercase italic">Binary Context Session</span>
                <h3 className="text-sm font-bold text-white mt-1 uppercase italic tracking-tighter">Live Tuning Registers <span className="text-[9px] text-slate-700 font-mono ml-2">(Session Changes)</span></h3>
              </div>
-             {!effectiveLock && (
+             <div className="flex items-center space-x-3">
                <button 
-                 onClick={() => {
-                   const newId = `active_map_${Date.now()}`;
-                   props.onAddActive({ id: newId, name: 'New Discovery Register', description: '', type: MapType.TABLE, offset: 0, dimension: MapDimension.Table2D, dataSize: 8, rows: 1, cols: 1, unit: '', category: 'Custom' });
-                   setEditingMapId(newId);
-                 }} 
-                 className="px-4 py-2 bg-green-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest italic shadow-xl"
+                onClick={() => props.onSaveActiveToLibrary?.(maps)}
+                className="px-4 py-2 bg-blue-600/20 hover:bg-blue-600 text-blue-400 hover:text-white border border-blue-500/30 rounded-xl text-[10px] font-black uppercase tracking-widest italic shadow-xl transition-all"
                >
-                 + Map Discovery
+                 Save Workspace to Library
                </button>
-             )}
+               {!effectiveLock && (
+                 <button 
+                   onClick={() => {
+                     const newId = `active_map_${Date.now()}`;
+                     props.onAddActive({ id: newId, name: 'New Discovery Register', description: '', type: MapType.TABLE, offset: 0, dimension: MapDimension.Table2D, dataSize: 8, rows: 1, cols: 1, unit: '', category: 'Custom' });
+                     setEditingMapId(newId);
+                   }} 
+                   className="px-4 py-2 bg-green-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest italic shadow-xl"
+                 >
+                   + Map Discovery
+                 </button>
+               )}
+             </div>
            </div>
         )}
       </header>
@@ -455,7 +464,7 @@ const DefinitionManager: React.FC<DefinitionManagerProps> = (props) => {
           </tbody>
         </table>
         {filteredMaps.length === 0 && (
-          <div className="p-20 text-center text-slate-700 font-black uppercase tracking-widest italic opacity-30">
+          <div className="p-20 text-center text-slate-700 font-black uppercase italic tracking-widest italic opacity-30">
             No Entry Registered in this Context
           </div>
         )}
