@@ -21,13 +21,21 @@ export class ROMParser {
     const id = this.findPattern(data, /\d{3}\.\d{2}/);
     const label = this.findPattern(data, /\d{5}[A-Z]{2}\d{4}/);
 
+    // Create version object if ANY identifying data is found to ensure diagnostics are visible
+    const hasMetadata = hw || sw || id || label;
+
     return {
       data,
       name: fileName,
       size: data.length,
       detectedMaps: [...DEFAULT_MAPS],
       checksumValid: this.verifyChecksum(data),
-      version: hw && sw ? { hw, sw, id, label } : undefined
+      version: hasMetadata ? { 
+        hw: hw || 'Unknown', 
+        sw: sw || 'Unknown', 
+        id, 
+        label 
+      } : undefined
     };
   }
 
@@ -63,18 +71,11 @@ export class ROMParser {
         if (reversed) {
           // In reversed mode, the number string looks like "3140021620"
           // We found the "1620" part at index i.
-          // Because we scan backwards from the detected end of the block,
-          // tempString is reconstructed in the correct forward order.
           let foundCount = 0;
           let tempString = "";
           
-          // Determine where the 10-digit block likely ends. 
-          // If the prefix "1620" is at index i, the whole 10-digit block "3140021620" 
-          // ends at i + 3.
           let p = i + prefixBytes.length - 1;
           
-          // Scan backwards from the end of the digit block to find all 10 digits.
-          // In Motronic 3.3.1, reversed strings are usually stored as fixed blocks.
           while (foundCount < 10 && p >= 0) {
             const charCode = data[p];
             if (charCode >= 48 && charCode <= 57) {
@@ -87,7 +88,6 @@ export class ROMParser {
           }
           
           if (foundCount === 10) {
-            // tempString is now "0261200413" (already forward-oriented by the p-- scan)
             return tempString;
           }
         } else {

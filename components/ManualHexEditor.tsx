@@ -103,7 +103,7 @@ const ManualHexEditor: React.FC<ManualHexEditorProps> = ({ data, onUpdateByte, o
 
       <footer className="p-4 bg-red-950/10 border-t border-red-900/20 text-[9px] text-red-700 font-black uppercase italic tracking-widest flex justify-between">
          <span>Surgery Live @ 0x{toAddr(offset)}</span>
-         <span>Checksum Correction: AUTOMATIC ON EXPORT</span>
+         <span>Checksum Correction: MANUAL / EXTERNAL</span>
       </footer>
     </div>
   );

@@ -45,7 +45,6 @@ const ROMLoader: React.FC<ROMLoaderProps> = ({ onLoad, onCancel, themeColor = '#
     }
   }, []);
 
-  // Fixed: handleFileUpload now correctly uses async/await to get arrayBuffer from File
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -208,7 +207,7 @@ const ROMLoader: React.FC<ROMLoaderProps> = ({ onLoad, onCancel, themeColor = '#
               
               {/* ROM Metadata Review */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-slate-950 p-5 rounded-3xl border border-slate-800 shadow-inner">
+                <div className="bg-slate-950 p-5 rounded-3xl border border-slate-800 shadow-inner w-full">
                   <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Detected Version</span>
                   <div className="mt-2 space-y-1">
                     <div className="flex justify-between items-center">
@@ -221,7 +220,7 @@ const ROMLoader: React.FC<ROMLoaderProps> = ({ onLoad, onCancel, themeColor = '#
                     </div>
                   </div>
                 </div>
-                <div className="bg-slate-950 p-5 rounded-3xl border border-slate-800 shadow-inner">
+                <div className="bg-slate-950 p-5 rounded-3xl border border-slate-800 shadow-inner w-full">
                   <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Integrity Check</span>
                   <div className="mt-2 space-y-1">
                     <div className="flex justify-between items-center">
@@ -229,8 +228,8 @@ const ROMLoader: React.FC<ROMLoaderProps> = ({ onLoad, onCancel, themeColor = '#
                        <span className={`text-[10px] font-bold uppercase ${validation?.valid ? 'text-emerald-400' : 'text-amber-400'}`}>{validation?.message}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                       <span className="text-[10px] text-slate-400 font-bold uppercase">Checksum:</span>
-                       <span className={`text-[10px] font-bold uppercase ${tempRom.checksumValid ? 'text-emerald-400' : 'text-red-400'}`}>{tempRom.checksumValid ? 'Valid Factory' : 'Correction Needed'}</span>
+                       <span className="text-[10px] text-slate-400 font-bold uppercase">ECC:</span>
+                       <span className="text-[10px] font-bold uppercase text-slate-500 italic">BYPASS (3.3.1)</span>
                     </div>
                   </div>
                 </div>

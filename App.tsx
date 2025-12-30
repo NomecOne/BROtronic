@@ -11,6 +11,7 @@ import DiscoveryModule from './components/modules/DiscoveryModule';
 import SurgeryModule from './components/modules/SurgeryModule';
 import LibraryModule from './components/modules/LibraryModule';
 import CompareModule from './components/modules/CompareModule';
+import ParserViewer from './components/modules/ParserViewer';
 
 // --- Icons ---
 const IconTuner = () => (
@@ -38,6 +39,11 @@ const IconCompare = () => (
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
   </svg>
 );
+const IconParser = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+  </svg>
+);
 
 const IconCollapseArrow = ({ color }: { color?: string }) => (
   <svg className="w-4 h-4" style={{ filter: `drop-shadow(0 0 5px ${color || 'currentColor'})` }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -51,7 +57,7 @@ const IconExpandArrow = ({ color }: { color?: string }) => (
   </svg>
 );
 
-type ViewMode = 'tuner' | 'discovery' | 'hexEdit' | 'library' | 'compare';
+type ViewMode = 'tuner' | 'discovery' | 'hexEdit' | 'library' | 'compare' | 'parview';
 type NavLevel = 0 | 1 | 2; // 0: Full, 1: Mini, 2: Hidden (Visible Sliver)
 
 const VIEW_CONFIG: Record<ViewMode, { label: string; icon: React.FC; color: string; hex: string; glow: string; shadow: string }> = {
@@ -60,6 +66,7 @@ const VIEW_CONFIG: Record<ViewMode, { label: string; icon: React.FC; color: stri
   hexEdit: { label: 'HexED', icon: IconSurgery, color: 'text-red-500', hex: 'rgba(239, 68, 68, 1)', glow: 'shadow-red-500/10', shadow: '0 0 40px rgba(239, 68, 68, 1)' },
   library: { label: 'DEFman', icon: IconLibrary, color: 'text-purple-400', hex: 'rgba(192, 132, 252, 1)', glow: 'shadow-purple-500/10', shadow: '0 0 40px rgba(192, 132, 252, 0.05)' },
   compare: { label: 'CompaRU', icon: IconCompare, color: 'text-yellow-400', hex: 'rgba(250, 204, 21, 1)', glow: 'shadow-yellow-500/10', shadow: '0 0 40px rgba(250, 204, 21, 0.05)' },
+  parview: { label: 'PARview', icon: IconParser, color: 'text-emerald-400', hex: 'rgba(52, 211, 153, 1)', glow: 'shadow-emerald-500/10', shadow: '0 0 40px rgba(52, 211, 153, 0.05)' },
 };
 
 const App: React.FC = () => {
@@ -142,9 +149,6 @@ const App: React.FC = () => {
             }
         }
     }
-    const newSum = ROMParser.calculateCorrectChecksum(newData);
-    newData[newData.length - 2] = (newSum >> 8) & 0xFF;
-    newData[newData.length - 1] = newSum & 0xFF;
 
     // 1. Export ROM (.bin)
     const romBlob = new Blob([newData], { type: 'application/octet-stream' });
@@ -258,7 +262,7 @@ const App: React.FC = () => {
       {showUnloadConfirm && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-xl animate-in fade-in duration-300" onClick={() => setShowUnloadConfirm(false)} />
-          <div className="relative w-full max-w-sm bg-slate-900 border border-red-900/40 rounded-3xl p-8 shadow-[0_0_50px_rgba(239,68,68,0.2)] animate-in zoom-in duration-200">
+          <div className="relative w-full max-sm bg-slate-900 border border-red-900/40 rounded-3xl p-8 shadow-[0_0_50px_rgba(239,68,68,0.2)] animate-in zoom-in duration-200">
             <div className="flex flex-col items-center text-center space-y-4">
               <div className="w-16 h-16 bg-red-600/10 border border-red-500/20 rounded-2xl flex items-center justify-center text-red-500 mb-2">
                 <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
@@ -353,6 +357,7 @@ const App: React.FC = () => {
              <NavItem mode="tuner" />
              <NavItem mode="discovery" />
              <NavItem mode="hexEdit" />
+             <NavItem mode="parview" />
              <NavItem mode="library" />
              <NavItem mode="compare" disabled={true} />
           </div>
@@ -412,6 +417,10 @@ const App: React.FC = () => {
                   setRom({...rom, data: newData});
                 }} 
               />
+            )}
+
+            {activeView === 'parview' && (
+              <ParserViewer rom={rom} onJumpToMap={(id) => { setSelectedMapId(id); setActiveView('tuner'); }} />
             )}
 
             {activeView === 'library' && (
