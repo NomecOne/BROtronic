@@ -1,3 +1,4 @@
+
 import { ROMFile, DMEMap, MapDimension, Axis, Endian, MapType, AxisSource } from '../types';
 import { DEFAULT_MAPS } from '../constants';
 
@@ -9,11 +10,16 @@ export class ROMParser {
   static async parse(buffer: ArrayBuffer, fileName: string): Promise<ROMFile> {
     const data = new Uint8Array(buffer);
     
-    // Bosch Motronic IDs are stored as ASCII strings
+    // Bosch Motronic IDs are often stored as ASCII strings
     // HW typically starts with 0261 (e.g., 0261200413)
     // SW typically starts with 1267 (e.g., 1267357623)
-    const hw = this.findBoschID(data, "0261");
-    const sw = this.findBoschID(data, "1267");
+    // Note: In many M3.3.1 ROMs, these are stored backwards in ASCII.
+    const hw = this.findBoschID(data, "0261") || this.findBoschID(data, "0261", true);
+    const sw = this.findBoschID(data, "1267") || this.findBoschID(data, "1267", true);
+    
+    // Specific M3.3.1 patterns: ID# like 466.29 and Label# like 07826RT4361
+    const id = this.findPattern(data, /\d{3}\.\d{2}/);
+    const label = this.findPattern(data, /\d{5}[A-Z]{2}\d{4}/);
 
     return {
       data,
@@ -21,31 +27,29 @@ export class ROMParser {
       size: data.length,
       detectedMaps: [...DEFAULT_MAPS],
       checksumValid: this.verifyChecksum(data),
-      version: hw && sw ? { hw, sw } : undefined
+      version: hw && sw ? { hw, sw, id, label } : undefined
     };
   }
 
   /**
-   * Robust scanner for Bosch IDs. 
-   * Handles tight sequences (0261200413) and common delimited formats 
-   * like "0 261 200 413" or "0.261.200.413" found in M3.x ROMs.
+   * Generic pattern matcher for ASCII strings in binary
    */
-  private static findBoschID(data: Uint8Array, prefix: string): string | undefined {
-    // Decode binary as ASCII for scanning
+  private static findPattern(data: Uint8Array, regex: RegExp): string | undefined {
     const textDecoder = new TextDecoder('ascii');
+    // Motronic ROMs are small enough (32-64KB) to decode fully for string scanning
     const content = textDecoder.decode(data);
-    
-    // Strategy: Remove common delimiters (spaces, dots, dashes) and search for 10-digit code
-    const normalized = content.replace(/[\s\.\-]/g, '');
-    const regex = new RegExp(`${prefix}\\d{6}`, 'g');
-    const matches = normalized.match(regex);
-    
-    if (matches && matches.length > 0) {
-      return matches[0];
-    }
+    const matches = content.match(regex);
+    return matches && matches.length > 0 ? matches[0] : undefined;
+  }
 
-    // Fallback: Raw byte scan for prefix if ASCII normalization fails due to encoding noise
-    const prefixBytes = Array.from(prefix).map(c => c.charCodeAt(0));
+  /**
+   * Robust scanner for Bosch IDs. 
+   * Now supports reversed storage common in Motronic 3.3.1 (e.g., "3140021620").
+   */
+  private static findBoschID(data: Uint8Array, prefix: string, reversed: boolean = false): string | undefined {
+    const searchPrefix = reversed ? prefix.split('').reverse().join('') : prefix;
+    const prefixBytes = Array.from(searchPrefix).map(c => c.charCodeAt(0));
+
     for (let i = 0; i < data.length - 15; i++) {
       let match = true;
       for (let j = 0; j < prefixBytes.length; j++) {
@@ -54,24 +58,55 @@ export class ROMParser {
           break;
         }
       }
+      
       if (match) {
-        // Gather next 6 digits, skipping spaces/noise
-        let result = prefix;
-        let count = 0;
-        let k = i + prefixBytes.length;
-        while (count < 6 && k < data.length) {
-          const charCode = data[k];
-          if (charCode >= 48 && charCode <= 57) { // ASCII 0-9
-            result += String.fromCharCode(charCode);
-            count++;
-          } else if (charCode === 32 || charCode === 46 || charCode === 45 || charCode === 0) {
-            // Skip space, dot, dash, or null
-          } else {
-            if (count > 0) break;
+        if (reversed) {
+          // In reversed mode, the number string looks like "3140021620"
+          // We found the "1620" part at index i.
+          // Because we scan backwards from the detected end of the block,
+          // tempString is reconstructed in the correct forward order.
+          let foundCount = 0;
+          let tempString = "";
+          
+          // Determine where the 10-digit block likely ends. 
+          // If the prefix "1620" is at index i, the whole 10-digit block "3140021620" 
+          // ends at i + 3.
+          let p = i + prefixBytes.length - 1;
+          
+          // Scan backwards from the end of the digit block to find all 10 digits.
+          // In Motronic 3.3.1, reversed strings are usually stored as fixed blocks.
+          while (foundCount < 10 && p >= 0) {
+            const charCode = data[p];
+            if (charCode >= 48 && charCode <= 57) {
+              tempString += String.fromCharCode(charCode);
+              foundCount++;
+            } else if (foundCount > 0) {
+              break;
+            }
+            p--;
           }
-          k++;
+          
+          if (foundCount === 10) {
+            // tempString is now "0261200413" (already forward-oriented by the p-- scan)
+            return tempString;
+          }
+        } else {
+          // Standard Forward scan
+          let result = prefix;
+          let foundCount = prefix.length;
+          let p = i + prefixBytes.length;
+          while (foundCount < 10 && p < data.length) {
+            const charCode = data[p];
+            if (charCode >= 48 && charCode <= 57) {
+              result += String.fromCharCode(charCode);
+              foundCount++;
+            } else if (charCode !== 32 && charCode !== 46 && charCode !== 45 && charCode !== 0) {
+               break;
+            }
+            p++;
+          }
+          if (foundCount === 10) return result;
         }
-        if (result.length === 10) return result;
       }
     }
 

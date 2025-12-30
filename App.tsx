@@ -1,21 +1,16 @@
 
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { ROMFile, DMEMap, VersionInfo } from './types';
 import { ROMParser } from './services/romParser';
-import HexViewer from './components/HexViewer';
-import ManualHexEditor from './components/ManualHexEditor';
-import MapTableEditor from './components/MapTableEditor';
-import Visualizer from './components/Visualizer';
-import DefinitionManager from './components/DefinitionManager';
+import ROMLoader from './components/ROMLoader';
 import { DEFINITION_LIBRARY } from './constants';
 
-const PageID = ({ id }: { id: string }) => (
-  <div className="absolute top-2 right-2 z-[100] pointer-events-none select-none">
-    <span className="text-[9px] font-mono font-black text-lime-400 bg-black px-2 py-0.5 rounded border border-lime-500/50 tracking-wider">
-      NODE_ID::{id}
-    </span>
-  </div>
-);
+// Modules
+import TunerModule from './components/modules/TunerModule';
+import DiscoveryModule from './components/modules/DiscoveryModule';
+import SurgeryModule from './components/modules/SurgeryModule';
+import LibraryModule from './components/modules/LibraryModule';
+import CompareModule from './components/modules/CompareModule';
 
 // --- Icons ---
 const IconTuner = () => (
@@ -44,14 +39,14 @@ const IconCompare = () => (
   </svg>
 );
 
-const IconCollapseArrow = () => (
-  <svg className="w-4 h-4 text-cyan-400 drop-shadow-[0_0_5px_rgba(34,211,238,0.8)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+const IconCollapseArrow = ({ color }: { color?: string }) => (
+  <svg className="w-4 h-4" style={{ filter: `drop-shadow(0 0 5px ${color || 'currentColor'})` }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
   </svg>
 );
 
-const IconExpandArrow = () => (
-  <svg className="w-4 h-4 text-cyan-400 drop-shadow-[0_0_5px_rgba(34,211,238,0.8)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+const IconExpandArrow = ({ color }: { color?: string }) => (
+  <svg className="w-4 h-4" style={{ filter: `drop-shadow(0 0 5px ${color || 'currentColor'})` }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
   </svg>
 );
@@ -62,7 +57,7 @@ type NavLevel = 0 | 1 | 2; // 0: Full, 1: Mini, 2: Hidden (Visible Sliver)
 const VIEW_CONFIG: Record<ViewMode, { label: string; icon: React.FC; color: string; hex: string; glow: string; shadow: string }> = {
   tuner: { label: 'TuneDex', icon: IconTuner, color: 'text-cyan-400', hex: 'rgba(34, 211, 238, 1)', glow: 'shadow-cyan-500/10', shadow: '0 0 40px rgba(34, 211, 238, 0.05)' },
   discovery: { label: 'HexBRO', icon: IconDiscovery, color: 'text-lime-400', hex: 'rgba(163, 230, 53, 1)', glow: 'shadow-lime-500/10', shadow: '0 0 40px rgba(163, 230, 53, 0.05)' },
-  hexEdit: { label: 'HexED', icon: IconSurgery, color: 'text-red-500', hex: 'rgba(239, 68, 68, 1)', glow: 'shadow-red-500/10', shadow: '0 0 40px rgba(239, 68, 68, 0.05)' },
+  hexEdit: { label: 'HexED', icon: IconSurgery, color: 'text-red-500', hex: 'rgba(239, 68, 68, 1)', glow: 'shadow-red-500/10', shadow: '0 0 40px rgba(239, 68, 68, 1)' },
   library: { label: 'DEFman', icon: IconLibrary, color: 'text-purple-400', hex: 'rgba(192, 132, 252, 1)', glow: 'shadow-purple-500/10', shadow: '0 0 40px rgba(192, 132, 252, 0.05)' },
   compare: { label: 'CompaRU', icon: IconCompare, color: 'text-yellow-400', hex: 'rgba(250, 204, 21, 1)', glow: 'shadow-yellow-500/10', shadow: '0 0 40px rgba(250, 204, 21, 0.05)' },
 };
@@ -74,27 +69,17 @@ const App: React.FC = () => {
   const [library, setLibrary] = useState<VersionInfo[]>(DEFINITION_LIBRARY);
   const [editingData, setEditingData] = useState<number[][] | null>(null);
   const [navLevel, setNavLevel] = useState<NavLevel>(0);
-
-  const selectedMap = useMemo(() => rom?.detectedMaps.find(m => m.id === selectedMapId), [rom, selectedMapId]);
+  const [showLoader, setShowLoader] = useState(false);
+  const [showUnloadConfirm, setShowUnloadConfirm] = useState(false);
 
   useEffect(() => {
+    const selectedMap = rom?.detectedMaps.find(m => m.id === selectedMapId);
     if (rom && selectedMap) {
       setEditingData(ROMParser.extractMapData(rom.data, selectedMap));
+    } else {
+      setEditingData(null);
     }
-  }, [rom, selectedMap]);
-
-  const handleFileUpload = useCallback(async (file: File) => {
-    const buffer = await file.arrayBuffer();
-    const parsed = await ROMParser.parse(buffer, file.name);
-    if (parsed.version) {
-      const match = library.find(v => v.hw === parsed.version?.hw && v.sw === parsed.version?.sw);
-      if (match) {
-        parsed.detectedMaps = JSON.parse(JSON.stringify(match.maps));
-      }
-    }
-    setRom(parsed);
-    setSelectedMapId(null);
-  }, [library]);
+  }, [rom, selectedMapId]);
 
   const handleUpdateValue = (r: number, c: number, val: number) => {
     if (!editingData) return;
@@ -124,9 +109,18 @@ const App: React.FC = () => {
     });
   };
 
+  const handleUnloadRom = () => {
+    setRom(null);
+    setSelectedMapId(null);
+    setEditingData(null);
+    setShowUnloadConfirm(false);
+  };
+
   const handleSaveRom = () => {
     if (!rom) return;
     const newData = new Uint8Array(rom.data);
+    const selectedMap = rom.detectedMaps.find(m => m.id === selectedMapId);
+
     if (selectedMap && editingData) {
         let currentOffset = selectedMap.offset;
         const step = selectedMap.dataSize / 8;
@@ -152,13 +146,35 @@ const App: React.FC = () => {
     newData[newData.length - 2] = (newSum >> 8) & 0xFF;
     newData[newData.length - 1] = newSum & 0xFF;
 
-    const blob = new Blob([newData], { type: 'application/octet-stream' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `tuned_${rom.name}`;
-    a.click();
-    URL.revokeObjectURL(url);
+    // 1. Export ROM (.bin)
+    const romBlob = new Blob([newData], { type: 'application/octet-stream' });
+    const romUrl = URL.createObjectURL(romBlob);
+    const romLink = document.createElement('a');
+    romLink.href = romUrl;
+    romLink.download = `tuned_${rom.name}`;
+    document.body.appendChild(romLink);
+    romLink.click();
+    document.body.removeChild(romLink);
+    URL.revokeObjectURL(romUrl);
+
+    // 2. Export Definition (.json)
+    const definition: VersionInfo = {
+      id: `export_${Date.now()}`,
+      hw: rom.version?.hw || 'Unknown',
+      sw: rom.version?.sw || 'Unknown',
+      description: `Project Definition exported for ${rom.name}`,
+      maps: rom.detectedMaps,
+      version: 1
+    };
+    const defBlob = new Blob([JSON.stringify(definition, null, 2)], { type: 'application/json' });
+    const defUrl = URL.createObjectURL(defBlob);
+    const defLink = document.createElement('a');
+    defLink.href = defUrl;
+    defLink.download = `def_${rom.version?.hw || 'HW'}_${rom.version?.sw || 'SW'}.json`;
+    document.body.appendChild(defLink);
+    defLink.click();
+    document.body.removeChild(defLink);
+    URL.revokeObjectURL(defUrl);
   };
 
   const toggleNav = (e?: React.MouseEvent) => {
@@ -210,80 +226,124 @@ const App: React.FC = () => {
   const getSidebarWidthClass = () => {
     if (navLevel === 0) return 'w-72';
     if (navLevel === 1) return 'w-20';
-    return 'w-[1px] border-r-0'; // Fully collapsed but keeping the edge sliver visible
+    return 'w-[1px] border-r-0'; 
   };
 
-  // Neon Glass Effect Styling for Main Content
   const mainStyle: React.CSSProperties = {
     boxShadow: `inset 0 0 100px ${VIEW_CONFIG[activeView].shadow.split('rgba')[1].replace(')', ', 0.02)')}`,
     transition: 'all 0.5s ease-in-out'
   };
 
-  // Dynamic Logo Color based on active module
   const activeColorHex = VIEW_CONFIG[activeView].hex;
   const activeColorTailwind = VIEW_CONFIG[activeView].color;
 
+  const handleRomLoaded = (loadedRom: ROMFile) => {
+    setRom(loadedRom);
+    setShowLoader(false);
+    setSelectedMapId(null);
+  };
+
   return (
     <div className="flex h-screen w-screen overflow-hidden text-slate-100 bg-slate-950 font-sans">
+      
+      {showLoader && (
+        <ROMLoader 
+          onLoad={handleRomLoaded} 
+          onCancel={() => setShowLoader(false)} 
+          themeColor={activeColorHex} 
+        />
+      )}
+
+      {/* Unload Confirmation Modal */}
+      {showUnloadConfirm && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-xl animate-in fade-in duration-300" onClick={() => setShowUnloadConfirm(false)} />
+          <div className="relative w-full max-w-sm bg-slate-900 border border-red-900/40 rounded-3xl p-8 shadow-[0_0_50px_rgba(239,68,68,0.2)] animate-in zoom-in duration-200">
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="w-16 h-16 bg-red-600/10 border border-red-500/20 rounded-2xl flex items-center justify-center text-red-500 mb-2">
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+              </div>
+              <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">Binary Purge</h3>
+              <p className="text-slate-400 text-xs font-bold uppercase tracking-wider leading-relaxed">
+                Unloading will synchronize all active hardware registers. <br/>
+                <span className="text-red-500">All unsaved workspace data will be lost.</span>
+              </p>
+              <div className="grid grid-cols-2 gap-3 w-full mt-4">
+                <button 
+                  onClick={() => setShowUnloadConfirm(false)}
+                  className="py-3 rounded-xl bg-slate-800 text-slate-300 text-[10px] font-black uppercase italic tracking-widest hover:bg-slate-750 transition-all"
+                >
+                  Dismiss
+                </button>
+                <button 
+                  onClick={handleUnloadRom}
+                  className="py-3 rounded-xl bg-red-600 text-white text-[10px] font-black uppercase italic tracking-widest hover:bg-red-500 shadow-lg shadow-red-900/20 transition-all"
+                >
+                  Confirm Purge
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Global Navigation Panel */}
       <aside 
         onClick={expandNav}
         className={`bg-slate-950 border-r border-slate-900 flex flex-col shadow-2xl z-30 transition-all duration-300 ease-in-out relative group/aside
           ${getSidebarWidthClass()} ${navLevel === 1 ? 'cursor-pointer hover:bg-slate-900/20' : ''}`}
       >
-        {/* Dynamic Neon Edge Line - Increased glow (30px) and intensity (0.9 opacity) when level 2 (fully collapsed) */}
         <div 
-          className="absolute top-0 right-0 w-[1px] h-full transition-all duration-500 z-50 pointer-events-none"
+          className={`absolute top-0 right-0 w-[3px] h-full transition-all duration-500 z-50 pointer-events-none ${navLevel === 2 ? 'neon-line-pulse' : ''}`}
           style={{ 
             backgroundColor: activeColorHex,
-            boxShadow: navLevel === 2 
-              ? `0 0 30px ${activeColorHex.replace('1)', '0.9)')}` 
-              : `0 0 15px ${activeColorHex.replace('1)', '0.8)')}` 
-          }}
-        />
+            // @ts-ignore: Custom CSS properties
+            '--neon-color': activeColorHex,
+            '--neon-mid': activeColorHex.replace('1)', '0.85)'),
+            '--neon-outer': activeColorHex.replace('1)', '0.55)'),
+            boxShadow: navLevel !== 2 ? `0 0 10px ${activeColorHex.replace('1)', '0.8)')}` : undefined
+          } as React.CSSProperties}
+        >
+          {navLevel === 2 && (
+            <div 
+              className="absolute top-0 left-[-16px] w-[32px] h-full pointer-events-none flare-pulse overflow-hidden"
+              style={{
+                background: `linear-gradient(to right, transparent 0%, transparent 16.6%, ${activeColorHex.replace('1)', '0.12)')} 50%, ${activeColorHex.replace('1)', '0.12)')} 83.3%, transparent 100%)`,
+                backdropFilter: 'blur(3px)',
+              }}
+            >
+                <div className="absolute inset-0 translate-y-[-100%] animate-[scan_5s_linear_infinite]" style={{
+                    background: `linear-gradient(to bottom, transparent, ${activeColorHex.replace('1)', '0.25)')}, transparent)`,
+                    height: '15%'
+                }} />
+            </div>
+          )}
+        </div>
 
-        {/* Protruding Tab Toggle Button - Neon Outline Style */}
         <button 
           onClick={toggleNav}
-          className="absolute top-20 -right-4 translate-y-[-50%] z-50 w-8 h-8 bg-slate-900 border-2 border-cyan-500/60 rounded-full flex items-center justify-center text-cyan-400 hover:text-cyan-300 hover:border-cyan-400 transition-all shadow-[0_0_10px_rgba(34,211,238,0.3)] active:scale-90"
+          className="absolute top-20 -right-4 translate-y-[-50%] z-50 w-8 h-8 bg-slate-900 border-2 rounded-full flex items-center justify-center transition-all shadow-xl active:scale-90"
+          style={{ 
+            borderColor: activeColorHex.replace('1)', '0.8)'),
+            color: activeColorHex,
+            boxShadow: `0 0 15px ${activeColorHex.replace('1)', '0.4)')}`
+          }}
           title={navLevel === 0 ? 'Minimize Sidebar' : navLevel === 1 ? 'Hide Sidebar' : 'Show Sidebar'}
         >
-          {navLevel === 2 ? <IconExpandArrow /> : <IconCollapseArrow />}
+          {navLevel === 2 ? <IconExpandArrow color={activeColorHex} /> : <IconCollapseArrow color={activeColorHex} />}
         </button>
 
-        {/* Sidebar Content Wrapper */}
         <div className={`flex flex-col h-full w-full overflow-hidden transition-opacity duration-300 ${navLevel === 2 ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
           <div className="border-b border-slate-900 p-6 h-24 flex items-center shrink-0">
             {navLevel === 0 ? (
               <h1 className="flex items-baseline font-black italic uppercase tracking-tighter select-none transition-all duration-500">
-                <span 
-                  className={`text-5xl ${activeColorTailwind} transition-all duration-500`}
-                  style={{ filter: `drop-shadow(0 0 12px ${activeColorHex.replace('1)', '0.9)')})` }}
-                >
-                  BRO
-                </span>
-                <span 
-                  className={`text-2xl opacity-80 ml-1 ${activeColorTailwind} transition-all duration-500`}
-                  style={{ filter: `drop-shadow(0 0 5px ${activeColorHex.replace('1)', '0.4)')})` }}
-                >
-                  TRONIC
-                </span>
+                <span className={`text-5xl ${activeColorTailwind} transition-all duration-500`} style={{ filter: `drop-shadow(0 0 12px ${activeColorHex.replace('1)', '0.9)')})` }}>BRO</span>
+                <span className={`text-2xl opacity-80 ml-1 ${activeColorTailwind} transition-all duration-500`} style={{ filter: `drop-shadow(0 0 5px ${activeColorHex.replace('1)', '0.4)')})` }}>TRONIC</span>
               </h1>
             ) : (
               <div className="w-full flex justify-center">
-                <div 
-                  className={`w-10 h-10 rounded-lg border-2 flex items-center justify-center transition-all duration-500`}
-                  style={{ 
-                    borderColor: activeColorHex.replace('1)', '0.5)'),
-                    boxShadow: `0 0 15px ${activeColorHex.replace('1)', '0.5)')}`
-                  }}
-                >
-                  <span 
-                    className={`font-black italic text-xl ${activeColorTailwind} transition-all duration-500`}
-                    style={{ filter: `drop-shadow(0 0 8px ${activeColorHex.replace('1)', '0.8)')})` }}
-                  >
-                    B
-                  </span>
+                <div className={`w-10 h-10 rounded-lg border-2 flex items-center justify-center transition-all duration-500`} style={{ borderColor: activeColorHex.replace('1)', '0.5)'), boxShadow: `0 0 15px ${activeColorHex.replace('1)', '0.5)')}` }}>
+                  <span className={`font-black italic text-xl ${activeColorTailwind} transition-all duration-500`} style={{ filter: `drop-shadow(0 0 8px ${activeColorHex.replace('1)', '0.8)')})` }}>B</span>
                 </div>
               </div>
             )}
@@ -297,153 +357,103 @@ const App: React.FC = () => {
              <NavItem mode="compare" disabled={true} />
           </div>
 
-          <div className="p-4 border-t border-slate-900 space-y-3 shrink-0">
-             <label 
-               onClick={(e) => e.stopPropagation()}
-               className={`block w-full cursor-pointer bg-slate-900/50 border border-slate-800 hover:border-slate-700 p-3 rounded-xl text-center text-[10px] font-black uppercase text-slate-500 hover:text-cyan-400 transition-all shadow-inner
-               ${navLevel === 1 ? 'px-0' : ''}`}>
+          <div className="p-4 border-t border-slate-900 shrink-0 space-y-2">
+             <button 
+               onClick={(e) => { e.stopPropagation(); setShowUnloadConfirm(true); }} 
+               disabled={!rom} 
+               className="w-full py-2.5 rounded-xl text-[10px] font-black uppercase bg-slate-800/50 text-slate-500 border border-slate-800 disabled:opacity-20 transition-all hover:bg-red-950/40 hover:text-red-400 hover:border-red-900/50 shadow-xl active:scale-95 flex items-center justify-center"
+             >
                {navLevel === 1 ? (
-                 <svg className="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M16 8l-4-4m0 0L8 8m4-4v12" /></svg>
-               ) : 'Load Binary'}
-               <input type="file" className="hidden" accept=".bin,.rom" onChange={e => e.target.files?.[0] && handleFileUpload(e.target.files[0])} />
-             </label>
-             
+                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+               ) : 'UNLOAD ROM'}
+             </button>
              <button 
                onClick={(e) => { e.stopPropagation(); handleSaveRom(); }} 
                disabled={!rom} 
-               className="w-full py-3 rounded-xl text-[10px] font-black uppercase bg-slate-800 text-slate-500 border border-slate-700 disabled:opacity-20 transition-all hover:bg-cyan-600 hover:text-white hover:border-cyan-500 shadow-xl active:scale-95 flex items-center justify-center"
+               className="w-full py-3 rounded-xl text-[10px] font-black uppercase bg-slate-800 text-slate-400 border border-slate-700 disabled:opacity-50 transition-all hover:bg-cyan-600 hover:text-white hover:border-cyan-500 shadow-xl active:scale-95 flex items-center justify-center"
              >
                {navLevel === 1 ? (
                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M16 12l-4 4m0 0l-4-4m4-4v12" /></svg>
-               ) : 'Export ROM'}
+               ) : 'EXPORT ROM&DEF'}
              </button>
           </div>
         </div>
       </aside>
 
-      {/* Main Content Area - Neon Glass Container */}
-      <main 
-        className="flex-1 flex flex-col min-w-0 bg-slate-950 relative backdrop-blur-3xl overflow-hidden"
-        style={mainStyle}
-      >
-        {/* Dynamic Glow Background Overlay */}
+      <main className="flex-1 flex flex-col min-w-0 bg-slate-950 relative backdrop-blur-3xl overflow-hidden" style={mainStyle}>
         <div className={`absolute inset-0 pointer-events-none opacity-20 transition-all duration-700 ${VIEW_CONFIG[activeView].glow.replace('shadow', 'bg')}`} />
 
-        {activeView === 'tuner' && rom && (
-          <div className="flex-1 flex min-w-0 overflow-hidden relative z-10">
-            {/* Live Registers Panel */}
-            <aside className="w-64 bg-black/40 border-r border-slate-900/50 flex flex-col shrink-0 backdrop-blur-xl">
-               <div className="p-4 border-b border-slate-900/50 bg-black/20 flex flex-col">
-                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest italic mb-1">Live Registers</span>
-                  <div className="flex items-center space-x-2 text-[10px] text-cyan-400/80 font-bold font-mono">
-                    <span className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
-                    <span>{rom.detectedMaps.length} Active Profiles</span>
-                  </div>
-               </div>
-               <div className="flex-1 overflow-y-auto p-3 space-y-1">
-                 {rom.detectedMaps.map(m => (
-                   <button 
-                    key={m.id} 
-                    onClick={() => setSelectedMapId(m.id)} 
-                    className={`w-full text-left px-3 py-2.5 text-[11px] font-bold rounded-lg truncate transition-all flex items-center justify-between group
-                      ${selectedMapId === m.id 
-                        ? 'bg-cyan-500/20 text-cyan-100 shadow-lg ring-1 ring-cyan-500/30' 
-                        : 'text-slate-500 hover:bg-slate-900/50 hover:text-slate-300'}`}
-                   >
-                     <span className="truncate">{m.name}</span>
-                     <span className={`text-[8px] font-mono px-1.5 py-0.5 rounded shrink-0 ml-2 ${selectedMapId === m.id ? 'bg-cyan-400 text-cyan-950' : 'bg-slate-950 text-slate-600 group-hover:text-slate-400'}`}>0x{m.offset.toString(16).toUpperCase()}</span>
-                   </button>
-                 ))}
-               </div>
-            </aside>
+        {/* Modular View Rendering */}
+        {rom ? (
+          <>
+            {activeView === 'tuner' && (
+              <TunerModule 
+                rom={rom} 
+                selectedMapId={selectedMapId} 
+                setSelectedMapId={setSelectedMapId} 
+                editingData={editingData} 
+                onUpdateValue={handleUpdateValue} 
+              />
+            )}
+            
+            {activeView === 'discovery' && (
+              <DiscoveryModule 
+                rom={rom} 
+                onAddMapDefinition={addMapDefinition} 
+              />
+            )}
 
-            {/* Tuner Editor Area */}
-            <div className="flex-1 flex flex-col p-6 space-y-4 overflow-hidden relative">
-              <PageID id="02" />
-              {selectedMap && editingData ? (
-                <>
-                  <div className="h-64 flex flex-col shrink-0 bg-black/40 rounded-2xl border border-slate-800/50 overflow-hidden shadow-2xl backdrop-blur-md">
-                    <Visualizer data={editingData} xAxis={ROMParser.getAxisValues(rom.data, selectedMap.xAxis)} yAxis={ROMParser.getAxisValues(rom.data, selectedMap.yAxis)} />
-                  </div>
-                  <div className="flex-1 min-h-0">
-                    <MapTableEditor 
-                        map={selectedMap} 
-                        data={editingData} 
-                        xAxis={ROMParser.getAxisValues(rom.data, selectedMap.xAxis)} 
-                        yAxis={ROMParser.getAxisValues(rom.data, selectedMap.yAxis)} 
-                        onUpdate={handleUpdateValue} 
-                    />
-                  </div>
-                </>
-              ) : (
-                <div className="flex-1 flex items-center justify-center p-12 text-center">
-                  <div className="max-w-md space-y-4">
-                    <div className="w-20 h-20 bg-cyan-500/5 rounded-full flex items-center justify-center mx-auto border border-cyan-500/10 mb-6 drop-shadow-[0_0_20px_rgba(6,182,212,0.1)]">
-                       <svg className="w-10 h-10 text-cyan-900/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                    </div>
-                    <h3 className="text-xl font-black text-slate-400 uppercase tracking-widest italic">Register Standby</h3>
-                    <p className="text-slate-600 text-sm leading-relaxed">Select a map from the register explorer on the left to initialize the master tuning deck.</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-        
-        {activeView === 'discovery' && (
-          <div className="flex-1 p-6 flex flex-col overflow-hidden relative z-10">
-            <PageID id="03" />
-            <HexViewer data={rom?.data} onAddDefinition={addMapDefinition} />
-          </div>
-        )}
+            {activeView === 'hexEdit' && (
+              <SurgeryModule 
+                rom={rom} 
+                onUpdateByte={(o, v) => {
+                  const newData = new Uint8Array(rom.data);
+                  newData[o] = v;
+                  setRom({...rom, data: newData});
+                }} 
+              />
+            )}
 
-        {activeView === 'hexEdit' && (
-          <div className="flex-1 p-6 flex flex-col overflow-hidden relative z-10">
-            <PageID id="04" />
-            <ManualHexEditor data={rom?.data} onUpdateByte={(o, v) => {
-              if (rom) {
-                const newData = new Uint8Array(rom.data);
-                newData[o] = v;
-                setRom({...rom, data: newData});
-              }
-            }} />
-          </div>
-        )}
-
-        {activeView === 'library' && (
-           <div className="flex-1 p-6 flex flex-col overflow-hidden relative z-10">
-              <PageID id="05" />
-              <DefinitionManager 
+            {activeView === 'library' && (
+              <LibraryModule 
                 library={library} 
-                maps={rom?.detectedMaps || []} 
-                romLoaded={!!rom}
-                onSelect={setSelectedMapId}
-                onAddActive={addMapDefinition}
-                onUpdateActive={updateMapDefinition}
-                onDeleteActive={(id) => setRom(prev => prev ? {...prev, detectedMaps: prev.detectedMaps.filter(m => m.id !== id)} : null)}
-                onUpdateLibrary={(vid, mid, up) => setLibrary(prev => prev.map(v => v.id === vid ? {...v, maps: v.maps.map(m => m.id === mid ? {...m, ...up} : m)} : v))}
-                onDeleteLibrary={(vid, mid) => setLibrary(prev => prev.map(v => v.id === vid ? {...v, maps: v.maps.filter(m => m.id !== mid)} : v))}
-                onAddLibrary={(vid, nm) => setLibrary(prev => prev.map(v => v.id === vid ? {...v, maps: [nm, ...v.maps]} : v))}
+                rom={rom} 
+                onSelectMap={setSelectedMapId}
+                onAddActiveMap={addMapDefinition}
+                onUpdateActiveMap={updateMapDefinition}
+                onDeleteActiveMap={(id) => setRom(prev => prev ? {...prev, detectedMaps: prev.detectedMaps.filter(m => m.id !== id)} : null)}
+                onUpdateLibraryMap={(vid, mid, up) => setLibrary(prev => prev.map(v => v.id === vid ? {...v, maps: v.maps.map(m => m.id === mid ? {...m, ...up} : m)} : v))}
+                onDeleteLibraryMap={(vid, mid) => setLibrary(prev => prev.map(v => v.id === vid ? {...v, maps: v.maps.filter(m => m.id !== mid)} : v))}
+                onAddLibraryMap={(vid, nm) => setLibrary(prev => prev.map(v => v.id === vid ? {...v, maps: [nm, ...v.maps]} : v))}
                 onAddVersion={(v) => setLibrary(prev => [v, ...prev])}
                 onUpdateFullVersion={(v) => setLibrary(prev => prev.map(old => old.id === v.id ? v : old))}
                 onApplyLibrary={(maps) => {
-                  if(rom) setRom({...rom, detectedMaps: JSON.parse(JSON.stringify(maps))});
+                  setRom({...rom, detectedMaps: JSON.parse(JSON.stringify(maps))});
                   setActiveView('tuner');
                 }}
               />
-           </div>
-        )}
+            )}
 
-        {activeView === 'tuner' && !rom && (
+            {activeView === 'compare' && <CompareModule />}
+          </>
+        ) : (
+          /* "Initialize Hardware" Placeholder - Only if no ROM loaded */
           <div className="flex-1 flex items-center justify-center p-12 text-center relative z-10">
             <div className="max-w-md space-y-6">
-               <div className="w-24 h-24 bg-cyan-600/10 rounded-3xl flex items-center justify-center mx-auto border border-cyan-500/20 shadow-[0_0_30px_rgba(6,182,212,0.2)] text-cyan-500">
-                 <IconTuner />
+               <div className={`w-24 h-24 rounded-3xl flex items-center justify-center mx-auto border shadow-[0_0_30px_rgba(255,255,255,0.05)] transition-all duration-500`} style={{ borderColor: `${activeColorHex.replace('1)', '0.2)')}`, backgroundColor: `${activeColorHex.replace('1)', '0.05)')}`, color: activeColorHex }}>
+                 {React.createElement(VIEW_CONFIG[activeView].icon)}
                </div>
                <div>
-                 <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">BROTRONIC Master Deck</h2>
-                 <p className="text-slate-500 mt-2 text-sm leading-relaxed">Waiting for hardware interface. Please load a Bosch Motronic 3.1, 3.3, or 3.3.1 binary file to initialize calibration systems.</p>
+                 <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter">Initialize {VIEW_CONFIG[activeView].label}</h2>
+                 <p className="text-slate-500 mt-2 text-sm leading-relaxed italic">The module requires an active binary stream to synchronize with DME hardware.</p>
                </div>
+               <button 
+                onClick={() => setShowLoader(true)}
+                className="px-12 py-4 rounded-2xl font-black uppercase italic tracking-widest text-xs shadow-2xl transition-all hover:scale-105 active:scale-95"
+                style={{ backgroundColor: activeColorHex, color: 'white' }}
+               >
+                 Initialize Hardware
+               </button>
             </div>
           </div>
         )}

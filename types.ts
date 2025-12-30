@@ -71,5 +71,10 @@ export interface ROMFile {
   size: number;
   detectedMaps: DMEMap[];
   checksumValid: boolean;
-  version?: { hw: string; sw: string };
+  version?: { 
+    hw: string; 
+    sw: string;
+    id?: string;
+    label?: string;
+  };
 }

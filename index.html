@@ -24,6 +24,35 @@
         ::-webkit-scrollbar-track { background: #1f2937; }
         ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+
+        @keyframes neon-line-pulse {
+            0%, 100% { 
+                /* Distance matched to button protrusion (~16px max) */
+                box-shadow: 0 0 4px var(--neon-color), 0 0 8px var(--neon-mid), 0 0 12px var(--neon-outer); 
+                opacity: 0.95;
+            }
+            50% { 
+                /* Peak distance exactly at button tip limit */
+                box-shadow: 0 0 6px var(--neon-color), 0 0 12px var(--neon-mid), 0 0 16px var(--neon-outer); 
+                opacity: 1;
+            }
+        }
+        .neon-line-pulse {
+            animation: neon-line-pulse 2.5s ease-in-out infinite;
+        }
+
+        @keyframes flare-pulse {
+            0%, 100% { transform: scaleX(1); opacity: 0.5; }
+            50% { transform: scaleX(1.2); opacity: 0.8; }
+        }
+        .flare-pulse {
+            animation: flare-pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes scan {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(500%); }
+        }
     </style>
 <script type="importmap">
 {
