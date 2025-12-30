@@ -57,6 +57,18 @@ const IconExpandArrow = ({ color }: { color?: string }) => (
   </svg>
 );
 
+const IconUnload = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l-5-5-5 5m5-5v12m-9-4h18" />
+  </svg>
+);
+
+const IconExport = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M16 8l-4-4m0 0L8 8m4-4v12" />
+  </svg>
+);
+
 type ViewMode = 'tuner' | 'discovery' | 'hexEdit' | 'library' | 'compare' | 'parview';
 type NavLevel = 0 | 1 | 2;
 
@@ -182,7 +194,8 @@ const App: React.FC = () => {
   };
 
   const expandNav = () => {
-    if (navLevel === 2) setNavLevel(0);
+    // Corrected to expand to full state if in micro OR icon-collapsed state
+    if (navLevel === 1 || navLevel === 2) setNavLevel(0);
   };
 
   const handleTeleport = (module: ViewMode, offset?: number, mapId?: string) => {
@@ -285,7 +298,7 @@ const App: React.FC = () => {
 
       <aside 
         onClick={expandNav} 
-        className={`bg-slate-950 border-r border-slate-900 flex flex-col shadow-2xl z-30 transition-all duration-500 relative group/aside ${navLevel === 0 ? 'w-72' : navLevel === 1 ? 'w-20' : 'w-[1px]'}`}
+        className={`bg-slate-950 border-r border-slate-900 flex flex-col shadow-2xl z-30 transition-all duration-500 relative group/aside ${navLevel === 0 ? 'w-72' : navLevel === 1 ? 'w-20 cursor-pointer hover:bg-slate-900/40' : 'w-[1px] cursor-pointer'}`}
         style={{
           '--neon-color': currentTheme.hex,
           '--neon-mid': currentTheme.hex.replace('1)', '0.4)'),
@@ -336,8 +349,24 @@ const App: React.FC = () => {
              <NavItem mode="library" />
           </div>
           <div className={`p-4 border-t border-slate-900 shrink-0 space-y-2 transition-opacity duration-300 ${navLevel === 2 ? 'opacity-0' : 'opacity-100'}`}>
-             <button onClick={() => setShowUnloadConfirm(true)} disabled={!rom} className="w-full py-2.5 rounded-xl text-[10px] font-black uppercase bg-slate-800/50 text-slate-500 border border-slate-800 disabled:opacity-20 transition-all hover:text-red-400">UNLOAD ROM</button>
-             <button onClick={handleSaveRom} disabled={!rom} className="w-full py-3 rounded-xl text-[10px] font-black uppercase bg-slate-800 text-slate-400 border border-slate-700">EXPORT ROM&DEF</button>
+             <button 
+               onClick={(e) => { e.stopPropagation(); setShowUnloadConfirm(true); }} 
+               disabled={!rom} 
+               title="Unload ROM"
+               className={`w-full py-2.5 rounded-xl text-[10px] font-black uppercase bg-slate-800/50 text-slate-500 border border-slate-800 disabled:opacity-20 transition-all hover:text-red-400 flex items-center justify-center ${navLevel === 0 ? 'space-x-2' : ''}`}
+             >
+               <IconUnload />
+               {navLevel === 0 && <span>UNLOAD ROM</span>}
+             </button>
+             <button 
+               onClick={(e) => { e.stopPropagation(); handleSaveRom(); }} 
+               disabled={!rom} 
+               title="Export ROM & DEF"
+               className={`w-full py-3 rounded-xl text-[10px] font-black uppercase bg-slate-800 text-slate-400 border border-slate-700 disabled:opacity-20 transition-all flex items-center justify-center ${navLevel === 0 ? 'space-x-2' : ''}`}
+             >
+               <IconExport />
+               {navLevel === 0 && <span>EXPORT ROM&DEF</span>}
+             </button>
           </div>
         </div>
       </aside>
