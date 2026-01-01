@@ -84,6 +84,7 @@ const VIEW_CONFIG: Record<ViewMode, { label: string; icon: React.FC; color: stri
 const App: React.FC = () => {
   const [activeView, setActiveView] = useState<ViewMode>('tuner'); 
   const [rom, setRom] = useState<ROMFile | null>(null);
+  const [activeDefinition, setActiveDefinition] = useState<VersionInfo | null>(null);
   const [selectedMapId, setSelectedMapId] = useState<string | null>(null);
   const [library, setLibrary] = useState<VersionInfo[]>(DEFINITION_LIBRARY);
   const [editingData, setEditingData] = useState<number[][] | null>(null);
@@ -113,6 +114,7 @@ const App: React.FC = () => {
 
   const handleUnloadRom = () => {
     setRom(null);
+    setActiveDefinition(null);
     setSelectedMapId(null);
     setEditingData(null);
     setShowUnloadConfirm(false);
@@ -253,9 +255,11 @@ const App: React.FC = () => {
         isBuiltIn: false
       };
       setLibrary(prev => [heuristicDef, ...prev]);
+      setActiveDefinition(heuristicDef);
     } else {
       // Use the chosen definition
       loadedRom.detectedMaps = JSON.parse(JSON.stringify(definition.maps));
+      setActiveDefinition(definition);
     }
 
     setRom(loadedRom);
@@ -377,16 +381,18 @@ const App: React.FC = () => {
             {activeView === 'tuner' && (
               <TunerModule 
                 rom={rom} 
+                activeDefinition={activeDefinition}
                 selectedMapId={selectedMapId} 
                 setSelectedMapId={setSelectedMapId} 
                 editingData={editingData} 
                 onUpdateValue={handleUpdateValue} 
               />
             )}
-            {activeView === 'discovery' && <DiscoveryModule rom={rom} onAddMapDefinition={m => setRom(p => p ? {...p, detectedMaps: [m, ...p.detectedMaps]} : null)} />}
+            {activeView === 'discovery' && <DiscoveryModule rom={rom} activeDefinition={activeDefinition} onAddMapDefinition={m => setRom(p => p ? {...p, detectedMaps: [m, ...p.detectedMaps]} : null)} />}
             {activeView === 'hexEdit' && (
               <SurgeryModule 
                 rom={rom} 
+                activeDefinition={activeDefinition}
                 lastNavRequest={lastNavRequest?.module === 'hexEdit' ? lastNavRequest : undefined}
                 onUpdateByte={(o, v) => {
                   const newData = new Uint8Array(rom.data);
@@ -395,11 +401,12 @@ const App: React.FC = () => {
                 }} 
               />
             )}
-            {activeView === 'parview' && <ParserViewer rom={rom} onNavigate={handleTeleport} />}
+            {activeView === 'parview' && <ParserViewer rom={rom} activeDefinition={activeDefinition} onNavigate={handleTeleport} />}
             {activeView === 'library' && (
               <LibraryModule 
                 library={library} 
                 rom={rom} 
+                activeDefinition={activeDefinition}
                 onSelectMap={setSelectedMapId}
                 onAddActiveMap={m => setRom(p => p ? {...p, detectedMaps: [m, ...p.detectedMaps]} : null)}
                 onUpdateActiveMap={(up, id) => setRom(p => p ? {...p, detectedMaps: p.detectedMaps.map(m => m.id === id ? {...m, ...up} : m)} : null)}
@@ -409,10 +416,16 @@ const App: React.FC = () => {
                 onAddLibraryMap={(vid, nm) => setLibrary(prev => prev.map(v => v.id === vid ? { ...v, maps: [nm, ...v.maps] } : v))}
                 onAddVersion={v => setLibrary(prev => [v, ...prev])}
                 onUpdateFullVersion={v => setLibrary(prev => prev.map(o => o.id === v.id ? v : o))}
-                onApplyLibrary={maps => { setRom({...rom, detectedMaps: JSON.parse(JSON.stringify(maps))}); setActiveView('tuner'); }}
+                onApplyLibrary={maps => { 
+                   setRom({...rom, detectedMaps: JSON.parse(JSON.stringify(maps))}); 
+                   const match = library.find(v => v.maps === maps); // Rough match if possible
+                   if (match) setActiveDefinition(match);
+                   setActiveView('tuner'); 
+                }}
                 onSaveActiveToLibrary={handleSaveActiveToLibrary}
               />
             )}
+            {activeView === 'compare' && <CompareModule rom={rom} activeDefinition={activeDefinition} />}
           </>
         ) : (
           <div className="flex-1 flex items-center justify-center p-12 text-center">

@@ -11,9 +11,25 @@ const PageID = ({ id }: { id: string }) => (
   </div>
 );
 
+const ActiveContextBar = ({ rom, def }: { rom: ROMFile, def?: VersionInfo | null }) => (
+  <div className="flex items-center space-x-4 px-4 py-1 bg-slate-900 border-b border-slate-800 text-[9px] font-black uppercase tracking-widest italic shrink-0">
+    <div className="flex items-center space-x-2">
+      <span className="text-slate-600">ROM:</span>
+      <span className="text-emerald-400">{rom.name}</span>
+    </div>
+    {def && (
+      <div className="flex items-center space-x-2 border-l border-slate-800 pl-4">
+        <span className="text-slate-600">Protocol:</span>
+        <span className="text-indigo-400">{def.hw} / {def.sw}</span>
+      </div>
+    )}
+  </div>
+);
+
 interface LibraryModuleProps {
   library: VersionInfo[];
   rom: ROMFile | null;
+  activeDefinition?: VersionInfo | null;
   onSelectMap: (id: string) => void;
   onAddActiveMap: (map: DMEMap) => void;
   onUpdateActiveMap: (updates: Partial<DMEMap>, id: string) => void;
@@ -30,6 +46,7 @@ interface LibraryModuleProps {
 const LibraryModule: React.FC<LibraryModuleProps> = ({ 
   library, 
   rom, 
+  activeDefinition,
   onSelectMap,
   onAddActiveMap,
   onUpdateActiveMap,
@@ -43,24 +60,27 @@ const LibraryModule: React.FC<LibraryModuleProps> = ({
   onSaveActiveToLibrary
 }) => {
   return (
-    <div className="flex-1 p-6 flex flex-col overflow-hidden relative z-10">
-      <PageID id="05" />
-      <DefinitionManager 
-        library={library} 
-        maps={rom?.detectedMaps || []} 
-        romLoaded={!!rom} 
-        onSelect={onSelectMap} 
-        onAddActive={onAddActiveMap} 
-        onUpdateActive={onUpdateActiveMap} 
-        onDeleteActive={onDeleteActiveMap} 
-        onUpdateLibrary={onUpdateLibraryMap} 
-        onDeleteLibrary={onDeleteLibraryMap} 
-        onAddLibrary={onAddLibraryMap} 
-        onAddVersion={onAddVersion} 
-        onUpdateFullVersion={onUpdateFullVersion} 
-        onApplyLibrary={onApplyLibrary}
-        onSaveActiveToLibrary={onSaveActiveToLibrary}
-      />
+    <div className="flex-1 flex flex-col overflow-hidden relative z-10">
+      {rom && <ActiveContextBar rom={rom} def={activeDefinition} />}
+      <div className="flex-1 p-6 flex flex-col overflow-hidden">
+        <PageID id="05" />
+        <DefinitionManager 
+          library={library} 
+          maps={rom?.detectedMaps || []} 
+          romLoaded={!!rom} 
+          onSelect={onSelectMap} 
+          onAddActive={onAddActiveMap} 
+          onUpdateActive={onUpdateActiveMap} 
+          onDeleteActive={onDeleteActiveMap} 
+          onUpdateLibrary={onUpdateLibraryMap} 
+          onDeleteLibrary={onDeleteLibraryMap} 
+          onAddLibrary={onAddLibraryMap} 
+          onAddVersion={onAddVersion} 
+          onUpdateFullVersion={onUpdateFullVersion} 
+          onApplyLibrary={onApplyLibrary}
+          onSaveActiveToLibrary={onSaveActiveToLibrary}
+        />
+      </div>
     </div>
   );
 };
