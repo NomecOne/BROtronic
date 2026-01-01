@@ -25,20 +25,42 @@
         ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
 
-        @keyframes neon-line-pulse {
-            0%, 100% { 
-                /* Intensified 5x: massive spread and blur for nuclear bloom */
-                box-shadow: 0 0 50px var(--neon-color), 0 0 120px var(--neon-mid), 0 0 200px var(--neon-outer); 
-                opacity: 0.95;
-            }
-            50% { 
-                /* Peak bloom */
-                box-shadow: 0 0 90px var(--neon-color), 0 0 180px var(--neon-mid), 0 0 300px var(--neon-outer); 
-                opacity: 1;
-            }
+        @keyframes scan-wave {
+            0% { top: -200px; opacity: 0; }
+            5% { opacity: 1; }
+            95% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
         }
+
         .neon-line-pulse {
-            animation: neon-line-pulse 2.5s ease-in-out infinite;
+            width: 2px !important;
+            opacity: 0.6;
+            box-shadow: 0 0 8px var(--neon-outer);
+            position: relative;
+        }
+
+        /* The "Wave" effect: Only active when the nav panel is hidden (w-[1px]) */
+        aside[class*="w-[1px]"] .neon-line-pulse::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            /* Horizontal distance doubled from 8px to 16px */
+            width: 16px;
+            height: 200px;
+            background: linear-gradient(to bottom, 
+                transparent, 
+                var(--neon-color) 45%, 
+                var(--neon-color) 55%, 
+                transparent
+            );
+            /* Blur doubled from 4px to 8px for horizontal softness */
+            filter: blur(8px);
+            /* Shadow intensity/radius doubled for horizontal reach */
+            box-shadow: 0 0 50px var(--neon-color), 0 0 100px var(--neon-mid);
+            /* Speed reduced by 4x (2.8 * 4 = 11.2s) and set to linear for consistent wave velocity */
+            animation: scan-wave 11.2s linear infinite;
+            z-index: 60;
         }
 
         @keyframes flare-pulse {
