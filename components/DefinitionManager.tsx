@@ -211,6 +211,14 @@ const DefinitionManager: React.FC<DefinitionManagerProps> = (props) => {
     URL.revokeObjectURL(url);
   };
 
+  const formatDefLabel = (v: VersionInfo) => {
+    const hwPart = v.hw.slice(-3);
+    const swPart = v.sw.slice(-3);
+    const csPart = v.expectedChecksum16 ? `0x${v.expectedChecksum16.toString(16).toUpperCase()}` : '0x0000';
+    const status = v.isBuiltIn ? ' (Locked Template)' : ' (User Workspace)';
+    return `HW${hwPart}/SW${swPart}/ID${v.id}/${csPart}-${v.name || 'BRO'}${status}`;
+  };
+
   if (localMap) {
     return (
       <div className="flex-1 flex flex-col bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl animate-in fade-in slide-in-from-right-2 duration-200">
@@ -385,17 +393,17 @@ const DefinitionManager: React.FC<DefinitionManagerProps> = (props) => {
 
         {activeTab === 'library' && (
           <div className="flex items-center justify-between bg-slate-800/30 p-4 rounded-lg border border-slate-700/50">
-            <div className="flex flex-col">
+            <div className="flex flex-col flex-1">
               <span className="text-[9px] font-bold text-slate-500 uppercase italic">Active Library Source</span>
               <div className="flex items-center space-x-2 mt-1">
-                <select className="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-orange-400 font-mono focus:border-orange-500/50 outline-none" value={selectedVersionId} onChange={e => setSelectedVersionId(e.target.value)}>
-                  {library.map(v => <option key={v.id} value={v.id}>{v.hw} - {v.sw} {v.isBuiltIn ? '(FACTORY)' : '(USER)'}</option>)}
+                <select className="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-orange-400 font-mono focus:border-orange-500/50 outline-none w-full max-w-lg" value={selectedVersionId} onChange={e => setSelectedVersionId(e.target.value)}>
+                  {library.map(v => <option key={v.id} value={v.id}>{formatDefLabel(v)}</option>)}
                 </select>
-                <button onClick={handleCloneVersion} className="flex items-center space-x-2 px-3 py-1.5 bg-blue-600/20 hover:bg-blue-600 rounded-lg text-blue-400 hover:text-white transition-all text-[10px] font-black uppercase tracking-tighter italic shadow-xl">Clone For Edits</button>
-                <button onClick={handleExportJson} className="p-1.5 bg-slate-700 hover:bg-slate-600 rounded text-slate-300" title="Export JSON"><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg></button>
+                <button onClick={handleCloneVersion} className="flex items-center space-x-2 px-3 py-1.5 bg-blue-600/20 hover:bg-blue-600 rounded-lg text-blue-400 hover:text-white transition-all text-[10px] font-black uppercase tracking-tighter italic shadow-xl shrink-0">Clone For Edits</button>
+                <button onClick={handleExportJson} className="p-1.5 bg-slate-700 hover:bg-slate-600 rounded text-slate-300 shrink-0" title="Export JSON"><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg></button>
               </div>
             </div>
-            {romLoaded && <button onClick={() => selectedLibrary && props.onApplyLibrary?.(selectedLibrary.maps)} className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl transition-all italic hover:scale-105">Push Definitions To ROM</button>}
+            {romLoaded && <button onClick={() => selectedLibrary && props.onApplyLibrary?.(selectedLibrary.maps)} className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl transition-all italic hover:scale-105 shrink-0 ml-4">Push Definitions To ROM</button>}
           </div>
         )}
 

@@ -62,12 +62,17 @@ export const M413_623_MAPS: DMEMap[] = [
 ];
 
 export const M413_623_DEF: VersionInfo = {
-  id: 'm331_413_623',
+  id: 'NA',
   hw: '0261200413',
   sw: '1267357623',
+  motronicVersion: 'M3.3.1',
+  name: 'BRO',
   description: 'BMW E36 325i M50B25TU (Red Label)',
   maps: M413_623_MAPS,
   isBuiltIn: true,
   expectedSize: 65536,
-  expectedChecksum16: 0x900A
+  expectedChecksum16: 0x900A,
+  expectedMotronicchecksum: 'TBD',
+  expectedSwChecksum: 'TBD',
+  definitionRevision: 'TBD'
 };

@@ -59,12 +59,17 @@ export interface VersionInfo {
   id: string;
   hw: string;
   sw: string;
+  motronicVersion?: string;
+  name?: string;
   description: string;
   maps: DMEMap[];
   isBuiltIn?: boolean; // Protects factory definitions from raw code editing
   version?: number; // Auto-incrementing version number for user edits
   expectedSize?: number; // File size in bytes for validation
   expectedChecksum16?: number; // 16-bit summation checksum for verification
+  expectedMotronicchecksum?: string;
+  expectedSwChecksum?: string;
+  definitionRevision?: string;
 }
 
 export type DiagnosticType = 'identity' | 'integrity' | 'structure' | 'heuristic';

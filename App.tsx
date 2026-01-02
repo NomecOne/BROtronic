@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ROMFile, DMEMap, VersionInfo } from './types';
 import { ROMParser } from './services/romParser';
@@ -82,7 +81,7 @@ const VIEW_CONFIG: Record<ViewMode, { label: string; icon: React.FC; color: stri
 };
 
 const App: React.FC = () => {
-  const [activeView, setActiveView] = useState<ViewMode>('tuner'); 
+  const [activeView, setActiveView] = useState<ViewMode>('library'); 
   const [rom, setRom] = useState<ROMFile | null>(null);
   const [activeDefinition, setActiveDefinition] = useState<VersionInfo | null>(null);
   const [selectedMapId, setSelectedMapId] = useState<string | null>(null);
@@ -265,7 +264,7 @@ const App: React.FC = () => {
     setRom(loadedRom);
     setShowLoader(false);
     setSelectedMapId(null);
-    setActiveView('parview'); // Show Diagnostics first
+    // Removed forced navigation to parview to maintain current module context
   };
 
   const currentTheme = VIEW_CONFIG[activeView];
@@ -376,7 +375,29 @@ const App: React.FC = () => {
       </aside>
 
       <main className="flex-1 flex flex-col min-w-0 bg-slate-950 relative overflow-hidden">
-        {rom ? (
+        {activeView === 'library' ? (
+          <LibraryModule 
+            library={library} 
+            rom={rom} 
+            activeDefinition={activeDefinition}
+            onSelectMap={(id) => setSelectedMapId(id)}
+            onAddActiveMap={m => setRom(p => p ? {...p, detectedMaps: [m, ...p.detectedMaps]} : null)}
+            onUpdateActiveMap={(up, id) => setRom(p => p ? {...p, detectedMaps: p.detectedMaps.map(m => m.id === id ? {...m, ...up} : m)} : null)}
+            onDeleteActiveMap={id => setRom(p => p ? {...p, detectedMaps: p.detectedMaps.filter(m => m.id !== id)} : null)}
+            onUpdateLibraryMap={(vid, mid, up) => setLibrary(prev => prev.map(v => v.id === vid ? { ...v, maps: v.maps.map(m => m.id === mid ? { ...m, ...up } : m) } : v))}
+            onDeleteLibraryMap={(vid, mid) => setLibrary(prev => prev.map(v => v.id === vid ? { ...v, maps: v.maps.filter(m => m.id !== mid) } : v))}
+            onAddLibraryMap={(vid, nm) => setLibrary(prev => prev.map(v => v.id === vid ? { ...v, maps: [nm, ...v.maps] } : v))}
+            onAddVersion={v => setLibrary(prev => [v, ...prev])}
+            onUpdateFullVersion={v => setLibrary(prev => prev.map(o => o.id === v.id ? v : o))}
+            onApplyLibrary={maps => { 
+               setRom(prev => prev ? {...prev, detectedMaps: JSON.parse(JSON.stringify(maps))} : null); 
+               const match = library.find(v => v.maps === maps);
+               if (match) setActiveDefinition(match);
+               setActiveView('tuner'); 
+            }}
+            onSaveActiveToLibrary={handleSaveActiveToLibrary}
+          />
+        ) : rom ? (
           <>
             {activeView === 'tuner' && (
               <TunerModule 
@@ -402,38 +423,26 @@ const App: React.FC = () => {
               />
             )}
             {activeView === 'parview' && <ParserViewer rom={rom} activeDefinition={activeDefinition} onNavigate={handleTeleport} />}
-            {activeView === 'library' && (
-              <LibraryModule 
-                library={library} 
-                rom={rom} 
-                activeDefinition={activeDefinition}
-                // Fix: Add missing onSelectMap prop required by LibraryModuleProps
-                onSelectMap={(id) => setSelectedMapId(id)}
-                onAddActiveMap={m => setRom(p => p ? {...p, detectedMaps: [m, ...p.detectedMaps]} : null)}
-                onUpdateActiveMap={(up, id) => setRom(p => p ? {...p, detectedMaps: p.detectedMaps.map(m => m.id === id ? {...m, ...up} : m)} : null)}
-                onDeleteActiveMap={id => setRom(p => p ? {...p, detectedMaps: p.detectedMaps.filter(m => m.id !== id)} : null)}
-                onUpdateLibraryMap={(vid, mid, up) => setLibrary(prev => prev.map(v => v.id === vid ? { ...v, maps: v.maps.map(m => m.id === mid ? { ...m, ...up } : m) } : v))}
-                onDeleteLibraryMap={(vid, mid) => setLibrary(prev => prev.map(v => v.id === vid ? { ...v, maps: v.maps.filter(m => m.id !== mid) } : v))}
-                onAddLibraryMap={(vid, nm) => setLibrary(prev => prev.map(v => v.id === vid ? { ...v, maps: [nm, ...v.maps] } : v))}
-                onAddVersion={v => setLibrary(prev => [v, ...prev])}
-                onUpdateFullVersion={v => setLibrary(prev => prev.map(o => o.id === v.id ? v : o))}
-                onApplyLibrary={maps => { 
-                   setRom({...rom, detectedMaps: JSON.parse(JSON.stringify(maps))}); 
-                   const match = library.find(v => v.maps === maps); // Rough match if possible
-                   if (match) setActiveDefinition(match);
-                   setActiveView('tuner'); 
-                }}
-                onSaveActiveToLibrary={handleSaveActiveToLibrary}
-              />
-            )}
             {activeView === 'compare' && <CompareModule rom={rom} activeDefinition={activeDefinition} />}
           </>
         ) : (
           <div className="flex-1 flex items-center justify-center p-12 text-center">
             <div className="max-w-md space-y-6">
-               <div className="w-24 h-24 rounded-3xl flex items-center justify-center mx-auto border" style={{ color: currentTheme.hex }}>{React.createElement(currentTheme.icon)}</div>
-               <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter">Initialize {currentTheme.label}</h2>
-               <button onClick={() => setShowLoader(true)} className="px-12 py-4 rounded-2xl font-black uppercase italic tracking-widest text-xs" style={{ backgroundColor: currentTheme.hex, color: 'white' }}>Initialize Hardware</button>
+               <button 
+                 onClick={() => setShowLoader(true)}
+                 className="w-24 h-24 rounded-3xl flex items-center justify-center mx-auto border-2 transition-all hover:scale-110 active:scale-95 hover:bg-slate-900/50 cursor-pointer shadow-2xl group" 
+                 style={{ 
+                   color: currentTheme.hex, 
+                   borderColor: currentTheme.hex, 
+                   boxShadow: `0 0 80px ${currentTheme.hex}, 0 0 160px ${currentTheme.hex}80, inset 0 0 40px ${currentTheme.hex}` 
+                 }}
+               >
+                 <div className="scale-150 transition-transform group-hover:scale-[1.7]" style={{ filter: `drop-shadow(0 0 30px ${currentTheme.hex}) drop-shadow(0 0 60px ${currentTheme.hex}80)` }}>
+                   {React.createElement(currentTheme.icon)}
+                 </div>
+               </button>
+               <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter" style={{ textShadow: `0 0 40px ${currentTheme.hex}` }}>Initialize {currentTheme.label}</h2>
+               <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.3em] italic opacity-50">Click Icon To Load Binary Context</p>
             </div>
           </div>
         )}
