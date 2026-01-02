@@ -1,6 +1,5 @@
 
 import { ROMFile, VersionInfo } from '../types';
-import { ROMParser } from './romParser';
 
 export class ROMLoaderService {
   /**

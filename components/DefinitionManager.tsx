@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { DMEMap, VersionInfo, MapDimension, MapType, AxisSource, Axis } from '../types';
 
 interface DefinitionManagerProps {
@@ -110,7 +110,7 @@ const AxisEditor: React.FC<AxisEditorProps> = ({ axKey, axis, effectiveLock, onU
 };
 
 const DefinitionManager: React.FC<DefinitionManagerProps> = (props) => {
-  const { library, maps, romLoaded, onSelect } = props;
+  const { library, maps, romLoaded } = props;
   const [activeTab, setActiveTab] = useState<DefTab>(romLoaded ? 'active' : 'library');
   const [isLocked, setIsLocked] = useState(true);
   const [search, setSearch] = useState('');

@@ -1,6 +1,6 @@
 
-import React, { useMemo } from 'react';
-import { ROMFile, DiagnosticEntry, DiagnosticType, VersionInfo } from '../../types';
+import React from 'react';
+import { ROMFile, DiagnosticType, VersionInfo } from '../../types';
 
 interface ParserViewerProps {
   rom: ROMFile;

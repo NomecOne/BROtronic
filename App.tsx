@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ROMFile, DMEMap, VersionInfo } from './types';
 import { ROMParser } from './services/romParser';
 import ROMLoader from './components/ROMLoader';
@@ -407,7 +407,8 @@ const App: React.FC = () => {
                 library={library} 
                 rom={rom} 
                 activeDefinition={activeDefinition}
-                onSelectMap={setSelectedMapId}
+                // Fix: Add missing onSelectMap prop required by LibraryModuleProps
+                onSelectMap={(id) => setSelectedMapId(id)}
                 onAddActiveMap={m => setRom(p => p ? {...p, detectedMaps: [m, ...p.detectedMaps]} : null)}
                 onUpdateActiveMap={(up, id) => setRom(p => p ? {...p, detectedMaps: p.detectedMaps.map(m => m.id === id ? {...m, ...up} : m)} : null)}
                 onDeleteActiveMap={id => setRom(p => p ? {...p, detectedMaps: p.detectedMaps.filter(m => m.id !== id)} : null)}

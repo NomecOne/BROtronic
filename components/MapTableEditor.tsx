@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { DMEMap } from '../types';
 import { ROMParser } from '../services/romParser';
 
@@ -113,7 +113,7 @@ const MapTableEditor: React.FC<MapTableEditorProps> = ({ map, data, xAxis, yAxis
                   <th 
                     key={i} 
                     style={getColStyle(i)}
-                    className="relative p-2 bg-slate-900 border-b border-slate-700 text-blue-400 font-bold min-w-[100px]"
+                    className="relative p-2 bg-slate-900 border-b border-r border-slate-700 text-blue-400 font-bold min-w-[100px]"
                   >
                     {v.toFixed(0)} {map.xAxis?.unit}
                     <div 

@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import { ROMFile, DMEMap, VersionInfo } from '../types';
 import { ROMParser } from '../services/romParser';
 

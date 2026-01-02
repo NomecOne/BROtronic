@@ -1,6 +1,5 @@
 
 import { ROMFile, DMEMap, MapDimension, Axis, Endian, MapType, AxisSource, DiagnosticEntry } from '../types';
-import { DEFAULT_MAPS } from '../constants';
 
 export class ROMParser {
   /**
@@ -107,33 +106,6 @@ export class ROMParser {
         cols: 1,
         unit: 'Addr',
         category: 'Structural Pointers',
-        formula: 'X'
-      });
-    });
-
-    const pointerLists = this.findPointerLists(data);
-    pointerLists.forEach((list, idx) => {
-      diagnostics.push({
-        id: `ptr_list_${idx}`,
-        label: `Pointer sequence (${list.endian.toUpperCase()})`,
-        value: `${list.count} Pointers @ 0x${list.offset.toString(16).toUpperCase()}`,
-        offset: list.offset,
-        type: 'structure',
-        actions: ['hexEdit', 'discovery']
-      });
-      structuralMaps.push({
-        id: `plist_${list.offset.toString(16)}`,
-        name: `Pointer List @ 0x${list.offset.toString(16).toUpperCase()}`,
-        description: `Contiguous sequence of ${list.count} pointers found in ROM structural region.`,
-        type: MapType.TABLE,
-        offset: list.offset,
-        dimension: MapDimension.Curve1D,
-        dataSize: 16,
-        endian: list.endian,
-        rows: list.count,
-        cols: 1,
-        unit: 'Addr',
-        category: 'Pointer Registry',
         formula: 'X'
       });
     });

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ROMFile, DMEMap, VersionInfo } from '../../types';
+import { ROMFile, VersionInfo } from '../../types';
 import { ROMParser } from '../../services/romParser';
 import Visualizer from '../Visualizer';
 import MapTableEditor from '../MapTableEditor';

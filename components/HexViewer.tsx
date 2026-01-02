@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { DMEMap, MapDimension, MapType, Endian } from '../types';
 import { ROMParser } from '../services/romParser';
 import Visualizer from './Visualizer';
