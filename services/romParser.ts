@@ -1,4 +1,3 @@
-
 import { ROMFile, DMEMap, MapDimension, Axis, Endian, MapType, AxisSource, DiagnosticEntry } from '../types';
 
 export class ROMParser {
@@ -158,37 +157,6 @@ export class ROMParser {
       else if (valLE === i) results.push({ offset: i, endian: 'le' });
     }
     return results.slice(0, 10); 
-  }
-
-  private static findPointerLists(data: Uint8Array): { offset: number; count: number; endian: Endian }[] {
-    const lists: { offset: number; count: number; endian: Endian }[] = [];
-    const minSequence = 4;
-
-    ['be', 'le'].forEach(endian => {
-      let currentSequence: number[] = [];
-      let startOffset = 0;
-
-      for (let i = 0; i < data.length - 1; i += 2) {
-        const val = (endian === 'be') 
-          ? (data[i] << 8) | data[i + 1] 
-          : data[i] | (data[i + 1] << 8);
-
-        if (val > 0x1000 && val < data.length && val % 2 === 0) {
-          if (currentSequence.length === 0) startOffset = i;
-          currentSequence.push(val);
-        } else {
-          if (currentSequence.length >= minSequence) {
-            lists.push({ offset: startOffset, count: currentSequence.length, endian: endian as Endian });
-          }
-          currentSequence = [];
-        }
-      }
-      if (currentSequence.length >= minSequence) {
-        lists.push({ offset: startOffset, count: currentSequence.length, endian: endian as Endian });
-      }
-    });
-
-    return lists.sort((a, b) => b.count - a.count).slice(0, 8);
   }
 
   private static crawlForMaps(data: Uint8Array): DMEMap[] {
