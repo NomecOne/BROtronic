@@ -4,35 +4,50 @@ import { ROMFile, VersionInfo } from '../types';
 export class ROMLoaderService {
   /**
    * Fetches a binary from a web URL.
-   * Resolves the path relative to the application's base URL.
+   * Resolves the path relative to the application's current directory to support subpath deployments (GitHub Pages).
    */
   static async fetchFromUrl(url: string): Promise<ArrayBuffer> {
     try {
-      // Ensure the base URI has a trailing slash for correct relative resolution
-      // especially on GitHub Pages where /BROtronic and /BROtronic/ resolve differently.
-      let base = document.baseURI;
-      if (!base.endsWith('/')) {
-        base += '/';
-      }
+      // 1. Calculate the base directory of the current application
+      const origin = window.location.origin;
+      const pathname = window.location.pathname;
+      // Get the directory part: /folder/subfolder/index.html -> /folder/subfolder/
+      const directory = pathname.substring(0, pathname.lastIndexOf('/') + 1);
+      const baseUrl = origin + directory;
       
-      const resolvedUrl = new URL(url, base).href;
+      const resolvedUrl = new URL(url, baseUrl).href;
+      
       const response = await fetch(resolvedUrl);
       
       if (!response.ok) {
-        throw new Error(`404 File Not Found: The server could not locate the ROM at ${resolvedUrl}. Verify the file is in your 'public/${url}' directory.`);
+        throw new Error(`404: The ROM could not be found at ${resolvedUrl}. Ensure it exists in the 'public/rom' folder.`);
       }
 
-      // Safeguard: Ensure we didn't get an HTML 404 or SPA fallback page instead of binary
-      const contentType = response.headers.get('content-type');
-      if (contentType && contentType.includes('text/html')) {
-        throw new Error(`Invalid Data: The server returned an HTML page instead of a binary file. Check the path: ${resolvedUrl}`);
+      // 2. Validate Content-Type
+      const contentType = response.headers.get('content-type') || '';
+      if (contentType.includes('text/html') || contentType.includes('application/xhtml+xml')) {
+        throw new Error(`Integrity Error: Server returned a web page instead of a binary file. Check the repository path.`);
+      }
+
+      const buffer = await response.arrayBuffer();
+
+      // 3. Binary Signature Check (Prevent loading HTML source code as a ROM)
+      if (buffer.byteLength < 100) {
+         // Too small to be a Motronic ROM, likely a short error message
+         throw new Error('Data Transfer Error: File size is too small to be a valid ROM.');
+      }
+
+      const checkSlice = new Uint8Array(buffer.slice(0, 50));
+      const decoder = new TextDecoder();
+      const textCheck = decoder.decode(checkSlice).toLowerCase();
+      
+      if (textCheck.includes('<!doc') || textCheck.includes('<html') || textCheck.includes('<script')) {
+        throw new Error(`Data Corruption: The fetched file contains HTML/Script tags. The server likely redirected a 404 to the home page.`);
       }
       
-      return await response.arrayBuffer();
+      return buffer;
     } catch (err: any) {
-      if (err instanceof TypeError && err.message === 'Failed to fetch') {
-        throw new Error(`Network Error: Verification of "${url}" failed. Ensure the file is present in the public repository.`);
-      }
+      console.error('[ROMLoader] Failed to fetch:', err.message);
       throw err;
     }
   }
