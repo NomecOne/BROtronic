@@ -138,7 +138,6 @@ const ROMLoader: React.FC<ROMLoaderProps> = ({ onLoad, onCancel, themeColor = '#
             <h2 className="text-xl font-black text-white italic tracking-tight uppercase">
               Binary <span style={{ color: themeColor }}>Initialization</span>
             </h2>
-            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">DME Hardware Interface v3.3.1</p>
           </div>
           <button onClick={onCancel} className="p-2 hover:bg-slate-800 rounded-full text-slate-500 transition-colors">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
