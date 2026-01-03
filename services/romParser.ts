@@ -35,7 +35,7 @@ export class ROMParser {
       { id: 'hw_id', label: 'Hardware ID', prefix: '0261', regex: null },
       { id: 'sw_id', label: 'Software ID', prefix: '1267', regex: null },
       { id: 'id_num', label: 'ID / Release', prefix: null, regex: /\d{3}\.\d{2}/ },
-      { id: 'label_num', label: 'Production Label', prefix: null, regex: /\d{5}[A-Z]{2}\d{4}/ }
+      { id: 'label1_num', label: 'Production Label1', prefix: null, regex: /\d{5}[A-Z]{2}\d{4}/ }
     ];
 
     identityPatterns.forEach(pattern => {
@@ -53,7 +53,7 @@ export class ROMParser {
         if (pattern.id === 'hw_id') detectedHW = val;
         if (pattern.id === 'sw_id') detectedSW = val;
         if (pattern.id === 'id_num') detectedID = val;
-        if (pattern.id === 'label_num') detectedLabel = val;
+        if (pattern.id === 'label1_num') detectedLabel = val;
 
         diagnostics.push({ 
           id: pattern.id, 
