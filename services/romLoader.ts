@@ -8,14 +8,24 @@ export class ROMLoaderService {
    */
   static async fetchFromUrl(url: string): Promise<ArrayBuffer> {
     try {
-      // Use the native URL constructor to resolve relative to document.baseURI.
-      // This ensures that if the app is at /BROtronic/, the fetch goes to /BROtronic/rom/...
-      const resolvedUrl = new URL(url, document.baseURI).href;
+      // Ensure the base URI has a trailing slash for correct relative resolution
+      // especially on GitHub Pages where /BROtronic and /BROtronic/ resolve differently.
+      let base = document.baseURI;
+      if (!base.endsWith('/')) {
+        base += '/';
+      }
       
+      const resolvedUrl = new URL(url, base).href;
       const response = await fetch(resolvedUrl);
       
       if (!response.ok) {
-        throw new Error(`404 File Not Found: The server could not locate the ROM at ${resolvedUrl}. Verify the file is in your 'public/rom' directory.`);
+        throw new Error(`404 File Not Found: The server could not locate the ROM at ${resolvedUrl}. Verify the file is in your 'public/${url}' directory.`);
+      }
+
+      // Safeguard: Ensure we didn't get an HTML 404 or SPA fallback page instead of binary
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('text/html')) {
+        throw new Error(`Invalid Data: The server returned an HTML page instead of a binary file. Check the path: ${resolvedUrl}`);
       }
       
       return await response.arrayBuffer();
