@@ -8,6 +8,7 @@ interface HexViewerProps {
   data?: Uint8Array;
   onAddDefinition?: (map: DMEMap) => void;
   onFileUpload?: (file: File) => void;
+  initialOffset?: number;
 }
 
 interface DiscoveryCandidate extends Partial<DMEMap> {
@@ -15,7 +16,7 @@ interface DiscoveryCandidate extends Partial<DMEMap> {
   endian: Endian;
 }
 
-const HexViewer: React.FC<HexViewerProps> = ({ data, onAddDefinition }) => {
+const HexViewer: React.FC<HexViewerProps> = ({ data, onAddDefinition, initialOffset }) => {
   const [offset, setOffset] = useState(0);
   const [hoveredAddr, setHoveredAddr] = useState<number | null>(null);
   const [selection, setSelection] = useState<{ start: number, end: number } | null>(null);
@@ -45,6 +46,12 @@ const HexViewer: React.FC<HexViewerProps> = ({ data, onAddDefinition }) => {
     setOffset(Math.max(0, Math.min(maxOffset, aligned)));
     setHoveredAddr(addr);
   };
+
+  useEffect(() => {
+    if (initialOffset !== undefined) {
+      jumpToOffset(initialOffset);
+    }
+  }, [initialOffset]);
 
   const pinCandidate = () => {
     if (!selection) return;

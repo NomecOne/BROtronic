@@ -1,3 +1,4 @@
+
 import { ROMFile, DMEMap, MapDimension, Axis, Endian, MapType, AxisSource, DiagnosticEntry } from '../types';
 
 export class ROMParser {
@@ -24,7 +25,9 @@ export class ROMParser {
       label: 'Checksum (16-bit Sum)',
       value: `0x${checksum16.toString(16).toUpperCase()}`,
       type: 'integrity',
-      actions: []
+      actions: [],
+      size: 2,
+      offset: data.length - 2
     });
 
     // 2. Identity Discovery (Convert to Maps & Capture for version object)
@@ -36,34 +39,31 @@ export class ROMParser {
     ];
 
     identityPatterns.forEach(pattern => {
-      let val: string | undefined;
-      let offset = 0;
+      let result: { val: string, offset: number } | undefined;
       
       if (pattern.prefix) {
-        val = this.findBoschID(data, pattern.prefix) || this.findBoschID(data, pattern.prefix, true);
-        const searchPrefix = pattern.prefix;
-        for(let i=0; i<data.length-10; i++) {
-          if (data[i] === searchPrefix.charCodeAt(0) && data[i+1] === searchPrefix.charCodeAt(1)) {
-            offset = i;
-            break;
-          }
-        }
+        result = this.findBoschIDWithOffset(data, pattern.prefix) || this.findBoschIDWithOffset(data, pattern.prefix, true);
       } else if (pattern.regex) {
-        val = this.findPattern(data, pattern.regex);
-        const textDecoder = new TextDecoder('ascii');
-        const content = textDecoder.decode(data);
-        const match = content.match(pattern.regex);
-        if (match && match.index !== undefined) offset = match.index;
+        result = this.findPatternWithOffset(data, pattern.regex);
       }
 
-      if (val) {
+      if (result) {
+        const { val, offset } = result;
         // Update local state for the version object
         if (pattern.id === 'hw_id') detectedHW = val;
         if (pattern.id === 'sw_id') detectedSW = val;
         if (pattern.id === 'id_num') detectedID = val;
         if (pattern.id === 'label_num') detectedLabel = val;
 
-        diagnostics.push({ id: pattern.id, label: pattern.label, value: val, type: 'identity', actions: ['hexEdit'] });
+        diagnostics.push({ 
+          id: pattern.id, 
+          label: pattern.label, 
+          value: val, 
+          offset: offset,
+          size: val.length,
+          type: 'identity', 
+          actions: ['hexEdit'] 
+        });
         structuralMaps.push({
           id: `ident_${pattern.id}`,
           name: pattern.label,
@@ -81,27 +81,35 @@ export class ROMParser {
       }
     });
 
-    // 3. Pointer Discovery (Convert to Maps)
-    const selfPointers = this.findSelfPointers(data);
-    selfPointers.forEach(sp => {
+    // 3. Self-Pointer Discovery
+    const selfPointerBlocks = this.findSelfPointerBlocks(data);
+    const discoveredAnchors = new Set<number>();
+
+    selfPointerBlocks.forEach(block => {
+      // Record individual anchor addresses for index search
+      for (let i = 0; i < block.length; i++) {
+        discoveredAnchors.add(block.offset + (i * 2));
+      }
+
       diagnostics.push({
-        id: `self_ptr_${sp.offset}`,
-        label: `Self Pointer (${sp.endian.toUpperCase()})`,
-        value: `Ptr @ 0x${sp.offset.toString(16).toUpperCase()}`,
-        offset: sp.offset,
+        id: `self_ptr_${block.offset}`,
+        label: `Self-Pointer Anchor`,
+        value: `${block.length} Refs @ 0x${block.offset.toString(16).toUpperCase()}`,
+        offset: block.offset,
+        size: block.length * 2,
         type: 'structure',
-        actions: ['hexEdit']
+        actions: ['hexEdit', 'discovery']
       });
       structuralMaps.push({
-        id: `sp_${sp.offset.toString(16)}`,
-        name: `Self-Ref @ 0x${sp.offset.toString(16).toUpperCase()}`,
-        description: 'Common Bosch map-table initialization marker. Offset value equals stored value.',
-        type: MapType.SCALAR,
-        offset: sp.offset,
-        dimension: MapDimension.Value,
+        id: `sp_list_${block.offset.toString(16)}`,
+        name: `Self-Ref Anchor @ 0x${block.offset.toString(16).toUpperCase()}`,
+        description: `Detected sequence of ${block.length} self-referencing pointers. Often indicates map axis definition start.`,
+        type: MapType.TABLE,
+        offset: block.offset,
+        dimension: MapDimension.Table2D,
         dataSize: 16,
-        endian: sp.endian,
-        rows: 1,
+        endian: block.endian,
+        rows: block.length,
         cols: 1,
         unit: 'Addr',
         category: 'Structural Pointers',
@@ -109,16 +117,32 @@ export class ROMParser {
       });
     });
 
-    // 4. Heuristic Map Header Scan
-    const heuristicMaps = this.crawlForMaps(data);
-    heuristicMaps.forEach((m, idx) => {
+    // 4. Master Index List Discovery (Find lists referencing the anchors)
+    const masterLists = this.findMasterIndexLists(data, discoveredAnchors);
+    masterLists.forEach(list => {
       diagnostics.push({
-        id: `heuristic_${idx}`,
-        label: `Heuristic Candidate ${idx + 1}`,
-        value: `${m.rows}x${m.cols} Map`,
-        offset: m.offset,
-        type: 'heuristic',
-        actions: ['hexEdit', 'tuner', 'discovery']
+        id: `master_list_${list.offset}`,
+        label: `Location Index`,
+        value: `${list.length} Pointers @ 0x${list.offset.toString(16).toUpperCase()}`,
+        offset: list.offset,
+        size: list.length * 2,
+        type: 'structure',
+        actions: ['hexEdit', 'discovery']
+      });
+      structuralMaps.push({
+        id: `ml_list_${list.offset.toString(16)}`,
+        name: `Location Index @ 0x${list.offset.toString(16).toUpperCase()}`,
+        description: `Detected sequence of ${list.length} pointers referencing known structural anchors. Likely a map descriptor table.`,
+        type: MapType.TABLE,
+        offset: list.offset,
+        dimension: MapDimension.Table2D,
+        dataSize: 16,
+        endian: 'be',
+        rows: list.length,
+        cols: 1,
+        unit: 'Ref',
+        category: 'Structural Pointers',
+        formula: 'X'
       });
     });
 
@@ -126,7 +150,7 @@ export class ROMParser {
       data,
       name: fileName,
       size: data.length,
-      detectedMaps: [...structuralMaps, ...heuristicMaps], 
+      detectedMaps: structuralMaps, 
       checksum16,
       checksumValid,
       diagnostics,
@@ -147,50 +171,101 @@ export class ROMParser {
     return sum;
   }
 
-  private static findSelfPointers(data: Uint8Array): { offset: number; endian: Endian }[] {
-    const results: { offset: number; endian: Endian }[] = [];
+  /**
+   * Scans binary for self-pointing addresses (pointers where value == offset).
+   * Often indicates the start of map axis definitions or pointer tables.
+   */
+  private static findSelfPointerBlocks(data: Uint8Array): { offset: number; length: number; endian: Endian }[] {
+    const blocks: { offset: number; length: number; endian: Endian }[] = [];
+    
+    // Scan Big Endian (Standard for Bosch Motronic)
     for (let i = 0; i < data.length - 1; i += 2) {
       const valBE = (data[i] << 8) | data[i + 1];
-      const valLE = data[i] | (data[i + 1] << 8);
-
-      if (valBE === i) results.push({ offset: i, endian: 'be' });
-      else if (valLE === i) results.push({ offset: i, endian: 'le' });
-    }
-    return results.slice(0, 10); 
-  }
-
-  private static crawlForMaps(data: Uint8Array): DMEMap[] {
-    const candidates: DMEMap[] = [];
-    for (let i = 0; i < data.length - 64; i++) {
-      if (data[i] === 0x02 && [8, 10, 12, 16].includes(data[i+1])) {
-        candidates.push({
-          id: `h_map_${i}`,
-          name: `Discovered Map @ 0x${i.toString(16).toUpperCase()}`,
-          description: 'Automatically detected map structure via heuristic signature scan.',
-          type: MapType.TABLE,
-          offset: i + 2,
-          dimension: MapDimension.Table2D,
-          dataSize: 8,
-          rows: data[i+1],
-          cols: 1,
-          unit: 'Raw',
-          category: 'Heuristic Findings',
-          formula: 'X'
-        });
-        i += 16;
+      if (valBE === i) {
+        const start = i;
+        let count = 0;
+        while (i < data.length - 1 && ((data[i] << 8) | data[i + 1]) === i) {
+          count++;
+          i += 2;
+        }
+        blocks.push({ offset: start, length: count, endian: 'be' });
+        i -= 2;
       }
     }
-    return candidates.slice(0, 15);
+
+    // Scan Little Endian
+    for (let i = 0; i < data.length - 1; i += 2) {
+      const valLE = data[i] | (data[i + 1] << 8);
+      if (valLE === i) {
+        const start = i;
+        let count = 0;
+        while (i < data.length - 1 && (data[i] | (data[i + 1] << 8)) === i) {
+          count++;
+          i += 2;
+        }
+        if (!blocks.find(b => b.offset === start)) {
+          blocks.push({ offset: start, length: count, endian: 'le' });
+        }
+        i -= 2;
+      }
+    }
+
+    return blocks.sort((a, b) => b.length - a.length).slice(0, 15);
   }
 
-  private static findPattern(data: Uint8Array, regex: RegExp): string | undefined {
+  /**
+   * Searches for sequences of 16-bit pointers that reference identified anchors.
+   */
+  private static findMasterIndexLists(data: Uint8Array, anchors: Set<number>): { offset: number, length: number }[] {
+    const lists: { offset: number, length: number }[] = [];
+    if (anchors.size === 0) return [];
+
+    // Scan for Big Endian pointer blocks that contain many target references
+    for (let i = 0; i < data.length - 1; i += 2) {
+      const valBE = (data[i] << 8) | data[i + 1];
+      
+      if (anchors.has(valBE)) {
+        const start = i;
+        let count = 0;
+        let misses = 0;
+        
+        // Allow a few "misses" (non-anchor pointers) to keep the list contiguous
+        // since master lists often contain non-self-pointing map pointers too.
+        while (i < data.length - 1 && misses < 2) {
+          const currentVal = (data[i] << 8) | data[i + 1];
+          if (anchors.has(currentVal)) {
+            count++;
+            misses = 0;
+          } else if (currentVal > 0 && currentVal < data.length) {
+            count++;
+            misses++;
+          } else {
+            break;
+          }
+          i += 2;
+        }
+
+        if (count >= 4) {
+          lists.push({ offset: start, length: count - misses });
+        }
+        i -= 2;
+      }
+    }
+
+    return lists.sort((a, b) => b.length - a.length).slice(0, 10);
+  }
+
+  private static findPatternWithOffset(data: Uint8Array, regex: RegExp): { val: string, offset: number } | undefined {
     const textDecoder = new TextDecoder('ascii');
     const content = textDecoder.decode(data);
-    const matches = content.match(regex);
-    return matches && matches.length > 0 ? matches[0] : undefined;
+    const match = content.match(regex);
+    if (match && match.index !== undefined) {
+      return { val: match[0], offset: match.index };
+    }
+    return undefined;
   }
 
-  private static findBoschID(data: Uint8Array, prefix: string, reversed: boolean = false): string | undefined {
+  private static findBoschIDWithOffset(data: Uint8Array, prefix: string, reversed: boolean = false): { val: string, offset: number } | undefined {
     const searchPrefix = reversed ? prefix.split('').reverse().join('') : prefix;
     const prefixBytes = Array.from(searchPrefix).map(c => c.charCodeAt(0));
 
@@ -216,7 +291,10 @@ export class ROMParser {
             } else if (foundCount > 0) break;
             p--;
           }
-          if (foundCount === 10) return tempString;
+          if (foundCount === 10) {
+            // In reversed search, 'p+1' is the start of the 10-digit ID string
+            return { val: tempString, offset: p + 1 };
+          }
         } else {
           let result = prefix;
           let foundCount = prefix.length;
@@ -229,7 +307,9 @@ export class ROMParser {
             } else if (charCode !== 32 && charCode !== 46 && charCode !== 45 && charCode !== 0) break;
             p++;
           }
-          if (foundCount === 10) return result;
+          if (foundCount === 10) {
+            return { val: result, offset: i };
+          }
         }
       }
     }

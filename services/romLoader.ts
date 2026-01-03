@@ -3,12 +3,28 @@ import { ROMFile, VersionInfo } from '../types';
 
 export class ROMLoaderService {
   /**
-   * Fetches a binary from a web URL
+   * Fetches a binary from a web URL.
+   * Resolves the path relative to the application's base URL.
    */
   static async fetchFromUrl(url: string): Promise<ArrayBuffer> {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`Failed to fetch ROM: ${response.statusText}`);
-    return await response.arrayBuffer();
+    try {
+      // Use the native URL constructor to resolve relative to document.baseURI.
+      // This ensures that if the app is at /BROtronic/, the fetch goes to /BROtronic/rom/...
+      const resolvedUrl = new URL(url, document.baseURI).href;
+      
+      const response = await fetch(resolvedUrl);
+      
+      if (!response.ok) {
+        throw new Error(`404 File Not Found: The server could not locate the ROM at ${resolvedUrl}. Verify the file is in your 'public/rom' directory.`);
+      }
+      
+      return await response.arrayBuffer();
+    } catch (err: any) {
+      if (err instanceof TypeError && err.message === 'Failed to fetch') {
+        throw new Error(`Network Error: Verification of "${url}" failed. Ensure the file is present in the public repository.`);
+      }
+      throw err;
+    }
   }
 
   /**
@@ -30,36 +46,11 @@ export class ROMLoaderService {
         let score = 0;
         let reasons: string[] = [];
 
-        // 1. Hardware ID Match (20%)
-        if (def.hw === hw) {
-          score += 20;
-          reasons.push("HW");
-        }
-        
-        // 2. Software ID Match (20%)
-        if (def.sw === sw) {
-          score += 20;
-          reasons.push("SW");
-        }
-
-        // 3. Version ID# Match (20%)
-        // Check if extracted binary ID exists within definition ID or description
-        if (id && (def.id.includes(id) || def.description.includes(id))) {
-          score += 20;
-          reasons.push("ID#");
-        }
-
-        // 4. File Size Match (20%)
-        if (def.expectedSize && def.expectedSize === size) {
-          score += 20;
-          reasons.push("SIZE");
-        }
-
-        // 5. Checksum-16 Match (20%)
-        if (def.expectedChecksum16 && def.expectedChecksum16 === checksum16) {
-          score += 20;
-          reasons.push("CS16");
-        }
+        if (def.hw === hw) { score += 20; reasons.push("HW"); }
+        if (def.sw === sw) { score += 20; reasons.push("SW"); }
+        if (id && (def.id.includes(id) || def.description.includes(id))) { score += 20; reasons.push("ID#"); }
+        if (def.expectedSize && def.expectedSize === size) { score += 20; reasons.push("SIZE"); }
+        if (def.expectedChecksum16 && def.expectedChecksum16 === checksum16) { score += 20; reasons.push("CS16"); }
 
         return { match: def, score, reason: reasons.join(", ") };
       })
@@ -67,10 +58,6 @@ export class ROMLoaderService {
       .sort((a, b) => b.score - a.score);
   }
 
-  /**
-   * Validates if the file size is standard for Motronic 3.x
-   * 32KB (27C256) or 64KB (27C512) are common.
-   */
   static getFileValidation(size: number): { valid: boolean; message: string } {
     const sizes = [32768, 65536];
     if (sizes.includes(size)) {

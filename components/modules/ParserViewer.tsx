@@ -69,47 +69,57 @@ const ParserViewer: React.FC<ParserViewerProps> = ({ rom, activeDefinition, onNa
                   <th className="p-4 pl-6">Diagnostic Class</th>
                   <th className="p-4">Finding / Parameter</th>
                   <th className="p-4">Offset</th>
+                  <th className="p-4">Size</th>
                   <th className="p-4">Value / Descriptor</th>
                   <th className="p-4 text-right pr-6">Teleport Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/50">
-                {rom.diagnostics.map((diag) => (
-                  <tr key={diag.id} className="group hover:bg-white/5 transition-colors">
-                    <td className="p-4 pl-6">
-                      <span className={`px-2 py-0.5 rounded border text-[8px] font-black uppercase italic ${getTypeColor(diag.type)}`}>
-                        {diag.type}
-                      </span>
-                    </td>
-                    <td className="p-4">
-                      <span className="text-xs font-black text-white uppercase italic">{diag.label}</span>
-                    </td>
-                    <td className="p-4">
-                      <span className="text-[10px] font-mono text-slate-500 italic">
-                        {diag.offset !== undefined ? `0x${diag.offset.toString(16).toUpperCase()}` : '(Global)'}
-                      </span>
-                    </td>
-                    <td className="p-4">
-                      <span className="text-xs font-mono text-cyan-400 font-bold">{diag.value}</span>
-                    </td>
-                    <td className="p-4 text-right pr-6">
-                      <div className="flex justify-end space-x-2 opacity-60 group-hover:opacity-100 transition-opacity">
-                        {diag.actions.map(action => (
-                          <button 
-                            key={action}
-                            onClick={() => onNavigate(action === 'tuner' ? 'tuner' : action === 'hexEdit' ? 'hexEdit' : 'discovery', diag.offset, diag.type === 'heuristic' ? diag.id : undefined)}
-                            className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase italic transition-all active:scale-95
-                              ${action === 'hexEdit' ? 'bg-red-600/10 text-red-500 border border-red-500/20 hover:bg-red-600 hover:text-white' : 
-                                action === 'tuner' ? 'bg-cyan-600/10 text-cyan-500 border border-cyan-500/20 hover:bg-cyan-600 hover:text-white' : 
-                                'bg-lime-600/10 text-lime-500 border border-lime-500/20 hover:bg-lime-600 hover:text-white'}`}
-                          >
-                            {action === 'hexEdit' ? 'Surgery' : action === 'tuner' ? 'Tuner' : 'Browse'}
-                          </button>
-                        ))}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                {rom.diagnostics.map((diag) => {
+                  const dataSize = diag.size;
+
+                  return (
+                    <tr key={diag.id} className="group hover:bg-white/5 transition-colors">
+                      <td className="p-4 pl-6">
+                        <span className={`px-2 py-0.5 rounded border text-[8px] font-black uppercase italic ${getTypeColor(diag.type)}`}>
+                          {diag.type}
+                        </span>
+                      </td>
+                      <td className="p-4">
+                        <span className="text-xs font-black text-white uppercase italic">{diag.label}</span>
+                      </td>
+                      <td className="p-4">
+                        <span className="text-[10px] font-mono text-slate-500 italic">
+                          {diag.offset !== undefined ? `0x${diag.offset.toString(16).toUpperCase()}` : '(Global)'}
+                        </span>
+                      </td>
+                      <td className="p-4">
+                        <span className="text-[10px] font-mono text-amber-500/80 font-bold italic">
+                          {dataSize !== undefined ? `${dataSize} B` : '--'}
+                        </span>
+                      </td>
+                      <td className="p-4">
+                        <span className="text-xs font-mono text-cyan-400 font-bold">{diag.value}</span>
+                      </td>
+                      <td className="p-4 text-right pr-6">
+                        <div className="flex justify-end space-x-2 opacity-60 group-hover:opacity-100 transition-opacity">
+                          {diag.actions.map(action => (
+                            <button 
+                              key={action}
+                              onClick={() => onNavigate(action === 'tuner' ? 'tuner' : action === 'hexEdit' ? 'hexEdit' : 'discovery', diag.offset, diag.type === 'heuristic' ? diag.id : undefined)}
+                              className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase italic transition-all active:scale-95
+                                ${action === 'hexEdit' ? 'bg-red-600/10 text-red-500 border border-red-500/20 hover:bg-red-600 hover:text-white' : 
+                                  action === 'tuner' ? 'bg-cyan-600/10 text-cyan-500 border border-cyan-500/20 hover:bg-cyan-600 hover:text-white' : 
+                                  'bg-lime-600/10 text-lime-500 border border-lime-500/20 hover:bg-lime-600 hover:text-white'}`}
+                            >
+                              {action === 'hexEdit' ? 'Surgery' : action === 'tuner' ? 'Tuner' : 'Browse'}
+                            </button>
+                          ))}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
             

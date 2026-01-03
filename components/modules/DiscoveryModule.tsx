@@ -30,15 +30,20 @@ interface DiscoveryModuleProps {
   rom: ROMFile | null;
   activeDefinition?: VersionInfo | null;
   onAddMapDefinition: (map: DMEMap) => void;
+  lastNavRequest?: { offset?: number };
 }
 
-const DiscoveryModule: React.FC<DiscoveryModuleProps> = ({ rom, activeDefinition, onAddMapDefinition }) => {
+const DiscoveryModule: React.FC<DiscoveryModuleProps> = ({ rom, activeDefinition, onAddMapDefinition, lastNavRequest }) => {
   return (
     <div className="flex-1 flex flex-col overflow-hidden relative z-10">
       {rom && <ActiveContextBar rom={rom} def={activeDefinition} />}
       <div className="flex-1 p-6 flex flex-col overflow-hidden">
         <PageID id="03" />
-        <HexViewer data={rom?.data} onAddDefinition={onAddMapDefinition} />
+        <HexViewer 
+          data={rom?.data} 
+          onAddDefinition={onAddMapDefinition} 
+          initialOffset={lastNavRequest?.offset}
+        />
       </div>
     </div>
   );

@@ -79,6 +79,7 @@ export interface DiagnosticEntry {
   label: string;
   value: string;
   offset?: number;
+  size?: number;
   type: DiagnosticType;
   actions: ('hexEdit' | 'tuner' | 'discovery')[];
 }
