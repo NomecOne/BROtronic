@@ -70,6 +70,7 @@ const ROMLoader: React.FC<ROMLoaderProps> = ({ onLoad, onCancel, themeColor = '#
     setStep('scanning');
     setActiveReference(ref);
     try {
+      // Use relative path - ROMLoaderService will handle subpath resolution
       const buffer = await ROMLoaderService.fetchFromUrl(ref.path);
       handleProcessBuffer(buffer, ref.name);
     } catch (err: any) {
