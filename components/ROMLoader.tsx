@@ -26,7 +26,6 @@ const REFERENCE_ROMS = [
 const ROMLoader: React.FC<ROMLoaderProps> = ({ onLoad, onCancel, themeColor = '#06b6d4' }) => {
   const [step, setStep] = useState<LoadStep>('source');
   const [sourceType, setSourceType] = useState<SourceType>('reference');
-  const [url, setUrl] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [tempRom, setTempRom] = useState<ROMFile | null>(null);
   const [selectedDefId, setSelectedDefId] = useState<string | null>(null);
@@ -172,7 +171,7 @@ const ROMLoader: React.FC<ROMLoaderProps> = ({ onLoad, onCancel, themeColor = '#
                       className="group flex items-center p-5 bg-slate-950 border border-slate-800 hover:border-cyan-500/50 rounded-3xl transition-all text-left"
                     >
                       <div className="w-12 h-12 bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-center mr-4 group-hover:bg-cyan-950 transition-colors">
-                         <svg className="w-6 h-6 text-slate-500 group-hover:text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" /></svg>
+                         <svg className="w-6 h-6 text-slate-500 group-hover:text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" /></svg>
                       </div>
                       <div className="flex-1">
                         <div className="text-xs font-black text-white uppercase italic truncate">{ref.name}</div>
