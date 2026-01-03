@@ -1,9 +1,10 @@
+
 {
   "name": "brotronic",
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "homepage": "https://nomecone.github.io/BROtronic",
+  "homepage": "https://nomecone.github.io/tunedex",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",

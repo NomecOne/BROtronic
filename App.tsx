@@ -82,7 +82,7 @@ const VIEW_CONFIG: Record<ViewMode, { label: string; icon: React.FC; color: stri
 };
 
 const App: React.FC = () => {
-  const [activeView, setActiveView] = useState<ViewMode>('library'); 
+  const [activeView, setActiveView] = useState<ViewMode>('tuner'); 
   const [rom, setRom] = useState<ROMFile | null>(null);
   const [activeDefinition, setActiveDefinition] = useState<VersionInfo | null>(null);
   const [selectedMapId, setSelectedMapId] = useState<string | null>(null);
