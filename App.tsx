@@ -82,7 +82,7 @@ const VIEW_CONFIG: Record<ViewMode, { label: string; icon: React.FC; color: stri
 };
 
 const App: React.FC = () => {
-  const [activeView, setActiveView] = useState<ViewMode>('tuner'); 
+  const [activeView, setActiveView] = useState<ViewMode>('parview'); 
   const [rom, setRom] = useState<ROMFile | null>(null);
   const [activeDefinition, setActiveDefinition] = useState<VersionInfo | null>(null);
   const [selectedMapId, setSelectedMapId] = useState<string | null>(null);
@@ -265,7 +265,6 @@ const App: React.FC = () => {
     setRom(loadedRom);
     setShowLoader(false);
     setSelectedMapId(null);
-    // Removed forced navigation to parview to maintain current module context
   };
 
   const currentTheme = VIEW_CONFIG[activeView];
@@ -346,10 +345,10 @@ const App: React.FC = () => {
             )}
           </div>
           <div className={`flex-1 p-4 space-y-2 overflow-y-auto transition-opacity duration-300 ${navLevel === 2 ? 'opacity-0' : 'opacity-100'}`}>
+             <NavItem mode="parview" />
              <NavItem mode="tuner" />
              <NavItem mode="discovery" />
              <NavItem mode="hexEdit" />
-             <NavItem mode="parview" />
              <NavItem mode="library" />
           </div>
           <div className={`p-4 border-t border-slate-900 shrink-0 space-y-2 transition-opacity duration-300 ${navLevel === 2 ? 'opacity-0' : 'opacity-100'}`}>

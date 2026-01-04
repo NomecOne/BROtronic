@@ -50,6 +50,7 @@ const SurgeryModule: React.FC<SurgeryModuleProps> = ({ rom, activeDefinition, on
         <PageID id="04" />
         <ManualHexEditor 
           data={rom?.data} 
+          detectedMaps={rom?.detectedMaps}
           onUpdateByte={onUpdateByte} 
           initialOffset={initialOffset}
         />
