@@ -177,7 +177,8 @@ export class ROMParser {
    */
   private static findSelfPointerBlocks(data: Uint8Array): { offset: number; length: number; endian: Endian }[] {
     const blocks: { offset: number; length: number; endian: Endian }[] = [];
-    
+
+/*
     // Scan Big Endian (Standard for Bosch Motronic)
     for (let i = 0; i < data.length - 1; i += 2) {
       const valBE = (data[i] << 8) | data[i + 1];
@@ -192,6 +193,7 @@ export class ROMParser {
         i -= 2;
       }
     }
+*/
 
     // Scan Little Endian
     for (let i = 0; i < data.length - 1; i += 2) {
