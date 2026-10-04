@@ -6,7 +6,7 @@
   "size": 65536,
   "checksum16": 36874,
   "namingNote": "Filename C16x900A = checksum16 0x900A fingerprint only; not Siemens/Infineon C16x ISA evidence.",
-  "generatedAt": "2026-10-04T22:24:14.698Z",
+  "generatedAt": "2026-10-04T22:26:17.812Z",
   "isa": {
     "verificationStatus": "cross_checked",
     "userStatedIsa": "mcs96_80c196_family",
@@ -81757,11 +81757,11 @@
       "end": 53259,
       "length": 1,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD00B[8bit] Air, O2 Sensor Adaptation",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD00B[8bit] Air, O2 Sensor Adaptation",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 53260,
@@ -81779,11 +81779,11 @@
       "end": 53299,
       "length": 4,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD030[16bit] Inj. Constant(Ti) lb/h@3.5B|*DO NOT EDIT ALONE*",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD030[16bit] Inj. Constant(Ti) lb/h@3.5B|*DO NOT EDIT ALONE*",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 53300,
@@ -81801,11 +81801,11 @@
       "end": 53354,
       "length": 1,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD06A[8bit] Fuel, Target Lambda of Motronic system",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD06A[8bit] Fuel, Target Lambda of Motronic system",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 53355,
@@ -81823,11 +81823,11 @@
       "end": 53397,
       "length": 3,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD093[8bit] Ign, Timing delta while in Speed Limiter fuel cut",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD093[8bit] Ign, Timing delta while in Speed Limiter fuel cut",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 53398,
@@ -81845,11 +81845,11 @@
       "end": 53505,
       "length": 8,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD0FA[8bit] Fuel, Trim, Individual Cylinder",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD0FA[8bit] Fuel, Trim, Individual Cylinder",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 53506,
@@ -81867,11 +81867,11 @@
       "end": 53771,
       "length": 114,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD19A[16bit|R57|A] Diag, Stomp codes, Axis, Code Numbers",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD19A[16bit|R57|A] Diag, Stomp codes, Axis, Code Numbers",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 53772,
@@ -81889,11 +81889,11 @@
       "end": 53825,
       "length": 5,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD23D[8bit] Air, MAF, RPM min threshold for MAF signal check",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD23D[8bit] Air, MAF, RPM min threshold for MAF signal check",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 53826,
@@ -81911,11 +81911,11 @@
       "end": 53829,
       "length": 2,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD244[16bit] Air, MAF, MAF/RPM Ratio Limit",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD244[16bit] Air, MAF, MAF/RPM Ratio Limit",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 53830,
@@ -81933,11 +81933,11 @@
       "end": 53847,
       "length": 2,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD256[8bit] Coolant Temp Sensor max signal@min volts RAW",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD256[8bit] Coolant Temp Sensor max signal@min volts RAW",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 53848,
@@ -81955,11 +81955,11 @@
       "end": 53852,
       "length": 4,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD259[8bit] Coolant Temp Sensor fault fixed value RAW",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD259[8bit] Coolant Temp Sensor fault fixed value RAW",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 53853,
@@ -81977,11 +81977,11 @@
       "end": 53856,
       "length": 2,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD25F[8bit] Air, TPS max",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD25F[8bit] Air, TPS max",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 53857,
@@ -81999,11 +81999,11 @@
       "end": 53864,
       "length": 2,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD267[8bit] Supply Voltage High",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD267[8bit] Supply Voltage High",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 53865,
@@ -82021,11 +82021,11 @@
       "end": 53867,
       "length": 1,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD26B[8bit] Multiplexed output stages",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD26B[8bit] Multiplexed output stages",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 53868,
@@ -82043,11 +82043,11 @@
       "end": 53874,
       "length": 3,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD270[8bit] Air, 02 sensor DTC threshold",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD270[8bit] Air, 02 sensor DTC threshold",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 53875,
@@ -82065,11 +82065,11 @@
       "end": 53883,
       "length": 2,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD27A[8bit] Speed, min valid DTC42? scaling?",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD27A[8bit] Speed, min valid DTC42? scaling?",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 53884,
@@ -82087,11 +82087,11 @@
       "end": 53886,
       "length": 2,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD27D[8bit] Speed, Counter? Threshold for speed signal check DTC 42",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD27D[8bit] Speed, Counter? Threshold for speed signal check DTC 42",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 53887,
@@ -82109,11 +82109,11 @@
       "end": 53889,
       "length": 1,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD281[8bit] Ign., Spark Fault",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD281[8bit] Ign., Spark Fault",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 53890,
@@ -82131,11 +82131,11 @@
       "end": 53896,
       "length": 1,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD288 Knock Sensor DTC related",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD288 Knock Sensor DTC related",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 53897,
@@ -82153,11 +82153,11 @@
       "end": 54443,
       "length": 540,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD290[Func|5V|256]MAF Cal. RAW alt view [16x16]",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD290[Func|5V|256]MAF Cal. RAW alt view [16x16]",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 54444,
@@ -82175,11 +82175,11 @@
       "end": 54551,
       "length": 32,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD4F8[Func|5V|32] Delta LOAD transfer function? (known earlier as a TPS transfer function",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD4F8[Func|5V|32] Delta LOAD transfer function? (known earlier as a TPS transfer function",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 54552,
@@ -82197,11 +82197,11 @@
       "end": 54691,
       "length": 5,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD59F D7 5x1",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD59F D7 5x1",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 54692,
@@ -82219,11 +82219,11 @@
       "end": 54705,
       "length": 12,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD5AC[D0|6x1]Fuel, Cranking, Lambda Correction",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD5AC[D0|6x1]Fuel, Cranking, Lambda Correction",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 54706,
@@ -82241,11 +82241,11 @@
       "end": 54752,
       "length": 45,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD5C3[27|15x1] Sensor, TMOT Transfer Map",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD5C3[27|15x1] Sensor, TMOT Transfer Map",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 54753,
@@ -82263,11 +82263,11 @@
       "end": 54821,
       "length": 64,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD5E6[D0xD6|8x8] VANOS, PT, Dwell Retarded ?",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD5E6[D0xD6|8x8] VANOS, PT, Dwell Retarded ?",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 54822,
@@ -82285,11 +82285,11 @@
       "end": 54905,
       "length": 64,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD63A[D0xD6|8x8] VANOS, PT, Dwell Advanced ?",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD63A[D0xD6|8x8] VANOS, PT, Dwell Advanced ?",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 54906,
@@ -82307,11 +82307,11 @@
       "end": 54939,
       "length": 32,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD68C[D0|16x1] VANOS, WOT, Dwell Retarded",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD68C[D0|16x1] VANOS, WOT, Dwell Retarded",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 54940,
@@ -82329,11 +82329,11 @@
       "end": 54989,
       "length": 48,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD69E[D0|R16|A] VANOS, WOT, Dwell Advanced, Axis, RPM",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD69E[D0|R16|A] VANOS, WOT, Dwell Advanced, Axis, RPM",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 54990,
@@ -82351,11 +82351,11 @@
       "end": 55007,
       "length": 4,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD6DC[D7|4x1]",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD6DC[D7|4x1]",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 55008,
@@ -82373,11 +82373,11 @@
       "end": 55013,
       "length": 2,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD6E4[D7|2x1|",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD6E4[D7|2x1|",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 55014,
@@ -82395,11 +82395,11 @@
       "end": 55031,
       "length": 16,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD6F0[D0|8x1] VANOS, Load MIN For Advance",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD6F0[D0|8x1] VANOS, Load MIN For Advance",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 55032,
@@ -82417,11 +82417,11 @@
       "end": 55049,
       "length": 16,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD702[D0|8x1]VANOS, Load MAX For Retard",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD702[D0|8x1]VANOS, Load MAX For Retard",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 55050,
@@ -82439,11 +82439,11 @@
       "end": 55063,
       "length": 6,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD712[D7|6x1]",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD712[D7|6x1]",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 55064,
@@ -82461,11 +82461,11 @@
       "end": 55081,
       "length": 8,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD722[D0|8x1] VANOS, DK MIN For Override Retard ?",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD722[D0|8x1] VANOS, DK MIN For Override Retard ?",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 55082,
@@ -82483,11 +82483,11 @@
       "end": 55099,
       "length": 8,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD734[D0|8x1] VANOS, DK MAX For NO Override Retard ??",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD734[D0|8x1] VANOS, DK MAX For NO Override Retard ??",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 55100,
@@ -82505,11 +82505,11 @@
       "end": 55113,
       "length": 6,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD744[D7|6x1]",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD744[D7|6x1]",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 55114,
@@ -82527,11 +82527,11 @@
       "end": 55121,
       "length": 3,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD74F[CB|3x1]",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD74F[CB|3x1]",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 55122,
@@ -82549,11 +82549,11 @@
       "end": 55131,
       "length": 4,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD758[D0|4x1]",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD758[D0|4x1]",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 55132,
@@ -82571,11 +82571,11 @@
       "end": 55143,
       "length": 10,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD763[D8|5x1]Fuel, Voltage Correction (dwell/latency)",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD763[D8|5x1]Fuel, Voltage Correction (dwell/latency)",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 55144,
@@ -82593,11 +82593,11 @@
       "end": 55209,
       "length": 52,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD776[D0xD5|4x6] D5 damping factors ?",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD776[D0xD5|4x6] D5 damping factors ?",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 55210,
@@ -82615,11 +82615,11 @@
       "end": 55223,
       "length": 6,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD7B2 D0 6x1",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD7B2 D0 6x1",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 55224,
@@ -82637,11 +82637,11 @@
       "end": 55251,
       "length": 16,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD7C4 D3xD7 4x4",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD7C4 D3xD7 4x4",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 55252,
@@ -82659,11 +82659,11 @@
       "end": 55308,
       "length": 40,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD7E5 CExD3 8x5",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD7E5 CExD3 8x5",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 55309,
@@ -82681,11 +82681,11 @@
       "end": 55322,
       "length": 6,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD815[D7|6x1] (suspect for warm up enrich?)",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD815[D7|6x1] (suspect for warm up enrich?)",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 55323,
@@ -82703,11 +82703,11 @@
       "end": 55336,
       "length": 6,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD823 D7 6x1",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD823 D7 6x1",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 55337,
@@ -82725,11 +82725,11 @@
       "end": 55364,
       "length": 16,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD835 D0*D5 RPM VS LOAD 4x4",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD835 D0*D5 RPM VS LOAD 4x4",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 55365,
@@ -82747,11 +82747,11 @@
       "end": 55392,
       "length": 16,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD851 D0*D5 RPM VS LOAD 4x4",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD851 D0*D5 RPM VS LOAD 4x4",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 55393,
@@ -82769,11 +82769,11 @@
       "end": 55404,
       "length": 5,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD868 D7 5x1",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD868 D7 5x1",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 55405,
@@ -82791,11 +82791,11 @@
       "end": 55456,
       "length": 36,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD87D D0xD6 RPM VS TPS 6x6",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD87D D0xD6 RPM VS TPS 6x6",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 55457,
@@ -82813,11 +82813,11 @@
       "end": 55508,
       "length": 36,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD8B1 D7xD4 Knock sensor sensitivity by Temp?",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD8B1 D7xD4 Knock sensor sensitivity by Temp?",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 55509,
@@ -82835,11 +82835,11 @@
       "end": 55526,
       "length": 8,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD8DF D7 8x1",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD8DF D7 8x1",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 55527,
@@ -82857,11 +82857,11 @@
       "end": 55540,
       "length": 6,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD8EF[D7|6x1]Fuel, Cold Engine Enrich (Manual | A/T in P|N)",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD8EF[D7|6x1]Fuel, Cold Engine Enrich (Manual | A/T in P|N)",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 55541,
@@ -82879,11 +82879,11 @@
       "end": 55554,
       "length": 6,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD8FD[D7|6x1] Fuel, Cold Engine Enrich (A/T in D|R)",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD8FD[D7|6x1] Fuel, Cold Engine Enrich (A/T in D|R)",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 55555,
@@ -82901,11 +82901,11 @@
       "end": 55564,
       "length": 4,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD909 D1 4x1",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD909 D1 4x1",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 55565,
@@ -82923,11 +82923,11 @@
       "end": 55574,
       "length": 4,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD913 D1 4x1",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD913 D1 4x1",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 55575,
@@ -82945,11 +82945,11 @@
       "end": 55588,
       "length": 6,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD91F[D7|6x1] Fuel, Idle, Cold Lambda Correction",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD91F[D7|6x1] Fuel, Idle, Cold Lambda Correction",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 55589,
@@ -82967,11 +82967,11 @@
       "end": 55600,
       "length": 5,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD92C D7 5X1",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD92C D7 5X1",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 55601,
@@ -82989,11 +82989,11 @@
       "end": 55612,
       "length": 5,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD938 D7 5X1",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD938 D7 5X1",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 55613,
@@ -83011,11 +83011,11 @@
       "end": 55632,
       "length": 4,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD94D D7 4X1",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD94D D7 4X1",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 55633,
@@ -83033,11 +83033,11 @@
       "end": 55642,
       "length": 4,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD957 CE 4X1",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD957 CE 4X1",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 55643,
@@ -83055,11 +83055,11 @@
       "end": 55650,
       "length": 3,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD960 CF 3X1",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD960 CF 3X1",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 55651,
@@ -83077,11 +83077,11 @@
       "end": 55715,
       "length": 52,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD970[D0xD5|6x3] Fuel, Idle, Base",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD970[D0xD5|6x3] Fuel, Idle, Base",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 55716,
@@ -83099,11 +83099,11 @@
       "end": 55973,
       "length": 256,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xD9B6[D0|16x1] Fuel, WOT VANOS Advanced",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xD9B6[D0|16x1] Fuel, WOT VANOS Advanced",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 55974,
@@ -83121,11 +83121,11 @@
       "end": 55991,
       "length": 16,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xDAA8 RPM axis for Fuel, PT, Vanos advanced",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xDAA8 RPM axis for Fuel, PT, Vanos advanced",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 55992,
@@ -83143,11 +83143,11 @@
       "end": 56378,
       "length": 385,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xDAC6[D0xD5|16x12] Fuel, PT VANOS Advanced",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xDAC6[D0xD5|16x12] Fuel, PT VANOS Advanced",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 56379,
@@ -83165,11 +83165,11 @@
       "end": 56406,
       "length": 16,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xDC47[D0xD7|4x4] Fuel, Accel Enrich, Fade Out Rate",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xDC47[D0xD7|4x4] Fuel, Accel Enrich, Fade Out Rate",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 56407,
@@ -83187,11 +83187,11 @@
       "end": 56434,
       "length": 16,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xDC63[D0xD7|4x4] Fuel, Accel Enrich, Delta LOAD Attenuation",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xDC63[D0xD7|4x4] Fuel, Accel Enrich, Delta LOAD Attenuation",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 56435,
@@ -83209,11 +83209,11 @@
       "end": 56444,
       "length": 4,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xDC79[D7|4x1] Fuel, Some kind table for overrun fuel cut?",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xDC79[D7|4x1] Fuel, Some kind table for overrun fuel cut?",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 56445,
@@ -83231,11 +83231,11 @@
       "end": 56530,
       "length": 4,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xDCCF[|4x1] Ign., Idle, Cold Engine Timing Correction (Manual | A/T in P or N)",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xDCCF[|4x1] Ign., Idle, Cold Engine Timing Correction (Manual | A/T in P or N)",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 56531,
@@ -83253,11 +83253,11 @@
       "end": 56544,
       "length": 8,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xDCD9[|4x1] Ign., Idle, Cold Engine Timing Correction (A/T in D or R)",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xDCD9[|4x1] Ign., Idle, Cold Engine Timing Correction (A/T in D or R)",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 56545,
@@ -83275,11 +83275,11 @@
       "end": 56570,
       "length": 8,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0XDCF3[|8x1] Ign., Idle, Timing (Manual | A/T in P|N)",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0XDCF3[|8x1] Ign., Idle, Timing (Manual | A/T in P|N)",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 56571,
@@ -83297,11 +83297,11 @@
       "end": 56588,
       "length": 8,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xDD05[|8x1] Ign., Idle, Timing (A/T in D or R)",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xDD05[|8x1] Ign., Idle, Timing (A/T in D or R)",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 56589,
@@ -83319,11 +83319,11 @@
       "end": 56606,
       "length": 16,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xDD0F RPM axis for Ignition, WOT, Vanos retarded",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xDD0F RPM axis for Ignition, WOT, Vanos retarded",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 56607,
@@ -83341,11 +83341,11 @@
       "end": 56922,
       "length": 314,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xDD27[D0xD5|16x6] Ign., WOT, Timing VANOS Retarded",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xDD27[D0xD5|16x6] Ign., WOT, Timing VANOS Retarded",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 56923,
@@ -83363,11 +83363,11 @@
       "end": 56956,
       "length": 16,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xDE6D RPM axis for Ignition, PT, Vanos retarded",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xDE6D RPM axis for Ignition, PT, Vanos retarded",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 56957,
@@ -83385,11 +83385,11 @@
       "end": 57729,
       "length": 771,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xDE8B[D0xD5|16x12] Ign., PT, Timing VANOS Retarded",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xDE8B[D0xD5|16x12] Ign., PT, Timing VANOS Retarded",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 57730,
@@ -83407,11 +83407,11 @@
       "end": 57869,
       "length": 128,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xE18E[|8x8] Air, Evaporative Emission Valve duty% map",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xE18E[|8x8] Air, Evaporative Emission Valve duty% map",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 57870,
@@ -83429,11 +83429,11 @@
       "end": 58217,
       "length": 6,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xE364[|6x1] Air, Lambda OFF 1 RPM*",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xE364[|6x1] Air, Lambda OFF 1 RPM*",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 58218,
@@ -83451,11 +83451,11 @@
       "end": 58231,
       "length": 6,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xE372[|6x1] Air, Lambda OFF 2 RPM*",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xE372[|6x1] Air, Lambda OFF 2 RPM*",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 58232,
@@ -83473,11 +83473,11 @@
       "end": 58241,
       "length": 4,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xE37E[|4x1] Air, Lambda OFF 3 RPM*",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xE37E[|4x1] Air, Lambda OFF 3 RPM*",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 58242,
@@ -83495,11 +83495,11 @@
       "end": 58251,
       "length": 4,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xE388[|4x1] Air, Lambda OFF 4 RPM*",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xE388[|4x1] Air, Lambda OFF 4 RPM*",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 58252,
@@ -83517,11 +83517,11 @@
       "end": 58351,
       "length": 36,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xE3CC[|6x6] Air, Idle Control Valve air flow",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xE3CC[|6x6] Air, Idle Control Valve air flow",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 58352,
@@ -83539,11 +83539,11 @@
       "end": 58389,
       "length": 24,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xE3FE[|4x6] Air, Idle Control Valve Duty Overrun",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xE3FE[|4x6] Air, Idle Control Valve Duty Overrun",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 58390,
@@ -83561,11 +83561,11 @@
       "end": 58491,
       "length": 8,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xE478[D7|4x1] RPM, Idle related (mode?)",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xE478[D7|4x1] RPM, Idle related (mode?)",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 58492,
@@ -83583,11 +83583,11 @@
       "end": 58501,
       "length": 8,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xE482[D7|4x1] RPM, Idle (mode?)",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xE482[D7|4x1] RPM, Idle (mode?)",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 58502,
@@ -83605,11 +83605,11 @@
       "end": 58511,
       "length": 8,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xE48C[D7|4x1] RPM, Idle (mode?) A/T in D or R?",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xE48C[D7|4x1] RPM, Idle (mode?) A/T in D or R?",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 58512,
@@ -83627,11 +83627,11 @@
       "end": 58531,
       "length": 18,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xE496[D7|4x1] RPM, Idle (mode?)A/T in D or R with AC on?",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xE496[D7|4x1] RPM, Idle (mode?)A/T in D or R with AC on?",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 58532,
@@ -83649,11 +83649,11 @@
       "end": 58541,
       "length": 8,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xE4AA[D7|4x1] RPM, Idle (mode?)Manual idle speed and A/T in P|N",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xE4AA[D7|4x1] RPM, Idle (mode?)Manual idle speed and A/T in P|N",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 58542,
@@ -83671,11 +83671,11 @@
       "end": 58551,
       "length": 8,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xE4B4[D7|4x1] RPM, Idle related (mode?)",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xE4B4[D7|4x1] RPM, Idle related (mode?)",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 58552,
@@ -83693,11 +83693,11 @@
       "end": 58629,
       "length": 10,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xE4FC Knock control on load shown as hex",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xE4FC Knock control on load shown as hex",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 58630,
@@ -83715,11 +83715,11 @@
       "end": 65533,
       "length": 6528,
       "region": "DATA",
-      "confidence": 0.5,
-      "evidence": "XDF candidate span: 0xE67E[16bit|R155] Index of Tables AKA Table of Tables",
+      "confidence": 0.62,
+      "evidence": "XDF (primary definition evidence) span: 0xE67E[16bit|R155] Index of Tables AKA Table of Tables",
       "source": "xdf",
       "note": "xdf_claim",
-      "verificationStatus": "unverified"
+      "verificationStatus": "plausible"
     },
     {
       "start": 65534,

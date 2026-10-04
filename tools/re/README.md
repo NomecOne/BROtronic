@@ -10,6 +10,18 @@ Standalone (Node + **Ghidra**) tooling that **feeds** BROtronic definition packs
 4. **Classify every byte** `0x0000–0xFFFF` (region / confidence / evidence)
 5. **Disassemble CODE** with **Ghidra** (canonical) — headless when possible
 
+## Definition evidence (XDF-primary)
+
+| Source | Trust | Role |
+|--------|-------|------|
+| **TunerPro XDF** `…C16x900A_BRO.xdf` | **Primary** | Richard: most correct definition to date for 413/623 RedLabel. Names/equations often CODE+hw-derived. |
+| CAL sheet CSV | Secondary | Offline notes; demoted when conflicting with XDF |
+| Legacy BROtronic packs | Lowest | Historical 2-map claims; XDF wins on conflict |
+
+Shipping packs still require binary fit / cross-check — ingest does **not** blindly mark maps `verified` or overwrite `definitions/packs/*.shipping.json`.
+
+Fetch: see `tools/re/data/README.md`. Ingest provenance lands in `tools/re/out/verification_report.*` + `candidates.pack.json`.
+
 ## Naming note (important)
 
 The RedLabel filename token **`C16x900A` means checksum16 = `0x900A`**, not Siemens/Infineon **C16x** CPU family. Never pick a C166/C167 Ghidra language from the filename.

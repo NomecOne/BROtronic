@@ -202,13 +202,13 @@ export function classifyRom(buf, opts = {}) {
       const inCode = sp.start <= MEM.CODE_END;
       paint(bytes, sp.start, Math.min(sp.end, MEM.DATA_END), {
         region: 'DATA',
-        confidence: 0.5,
+        confidence: 0.62,
         evidence: inCode
-          ? `XDF candidate span inside CODE≤0xB930 (mid-CODE data island?): ${sp.title}`
-          : `XDF candidate span: ${sp.title}`,
+          ? `XDF (primary definition evidence) span inside CODE≤0xB930 (mid-CODE data island): ${sp.title}`
+          : `XDF (primary definition evidence) span: ${sp.title}`,
         source: 'xdf',
         note: inCode ? 'xdf_mid_code_island' : 'xdf_claim',
-        verificationStatus: 'unverified',
+        verificationStatus: 'plausible',
       });
     }
   }
