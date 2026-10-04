@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>IRQ stubs review — RedLabel MCS-96</title>
+<style>
+:root {
+  --bg: #141414;
+  --panel: #1c1c1c;
+  --text: #e8e8e8;
+  --muted: #9a9a9a;
+  --border: #333;
+  --accent: #6cb6ff;
+  --warn: #d4a017;
+  --ok: #3d9a6a;
+  --stub: #2a4a6a;
+  --landing: #4a3a1a;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: "Segoe UI", system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 24px; font-family: var(--sans);
+  background: var(--bg); color: var(--text); line-height: 1.45;
+}
+h1 { font-size: 22px; font-weight: 600; margin: 0 0 8px; }
+h2 { font-size: 16px; font-weight: 600; margin: 28px 0 10px; }
+p, li { color: var(--muted); font-size: 14px; }
+code { font-family: var(--mono); font-size: 12px; color: var(--text); }
+.banner {
+  border: 1px solid var(--border); background: var(--panel);
+  padding: 12px 14px; margin: 16px 0 20px; border-left: 3px solid var(--warn);
+}
+.stats { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.stat {
+  border: 1px solid var(--border); background: var(--panel);
+  padding: 10px 14px; min-width: 110px;
+}
+.stat b { display: block; font-size: 20px; color: var(--text); }
+.stat span { font-size: 12px; color: var(--muted); }
+.toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0 18px; }
+button {
+  background: var(--panel); color: var(--text); border: 1px solid var(--border);
+  padding: 6px 10px; cursor: pointer; font-size: 13px;
+}
+button.active { border-color: var(--accent); color: var(--accent); }
+table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 8px; }
+th, td { border-bottom: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
+th { color: var(--muted); font-weight: 500; }
+tr:hover td { background: #222; cursor: pointer; }
+.tag {
+  display: inline-block; font-size: 11px; padding: 2px 6px;
+  border: 1px solid var(--border); color: var(--muted);
+}
+.tag.data { color: var(--warn); border-color: #6a5410; }
+.tag.code { color: var(--ok); border-color: #2a5a40; }
+.site {
+  border: 1px solid var(--border); background: var(--panel);
+  padding: 14px 16px; margin: 14px 0; scroll-margin-top: 16px;
+}
+.site h3 { margin: 0 0 8px; font-size: 15px; }
+.meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; margin: 10px 0; }
+.meta div { font-size: 12px; color: var(--muted); }
+.hex {
+  font-family: var(--mono); font-size: 12px; display: flex; flex-wrap: wrap; gap: 4px;
+  padding: 10px; background: #111; border: 1px solid var(--border); margin: 6px 0 12px;
+}
+.hex .b { padding: 2px 4px; color: var(--muted); }
+.hex .b.focus { background: var(--stub); color: #fff; }
+.hex .b.land { background: var(--landing); color: #fff; }
+.explain { font-size: 13px; color: var(--text); margin: 8px 0; }
+.decide { font-size: 13px; color: var(--warn); margin-top: 8px; }
+.caption { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+footer { margin-top: 32px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--border); padding-top: 12px; }
+</style>
+</head>
+<body>
+  <h1>IRQ stubs review — RedLabel / MCS-96</h1>
+  <p>Offline RE only. Blocker 1 (LJMP/LCALL PC-rel) is closed. Open issue: stub landings in high <code>0xAxxx</code> still labeled DATA by the coarse region map.</p>
+  <div class="banner" id="banner"></div>
+  <div class="stats" id="stats"></div>
+  <div class="toolbar">
+    <button type="button" class="active" data-filter="all">All sites</button>
+    <button type="button" data-filter="axxx">0xAxxx DATA only</button>
+    <button type="button" data-filter="code">CODE landing</button>
+  </div>
+  <h2>Index</h2>
+  <table>
+    <thead>
+      <tr><th>Vec</th><th>Stub</th><th>Prologue</th><th>Ghidra LJMP</th><th>Landing</th><th>Region conflict</th></tr>
+    </thead>
+    <tbody id="index"></tbody>
+  </table>
+  <h2>Sites (hex + explanation)</h2>
+  <div id="sites"></div>
+  <footer id="footer"></footer>
+<script>
+const DATA = {"schemaVersion":1,"id":"irq_stubs_review_v1","purpose":"Human visual review of IRQ stub PC-rel landings (esp. 0xAxxx labeled DATA)","rom":"BMW DME413 SW623 D466.29 C16x900A 94 RedLabel.bin","isa":"mcs96_80c196_family","ghidraLanguage":"MCS96:LE:16:default","addressingNote":"LJMP/LCALL are PC-relative disp16; Ghidra SLEIGH correct (blocker1 resolved).","vectorTable":"0x2000","siteCount":8,"axxxLandingCount":7,"dataLandingCount":7,"uniqueLandings":[{"addr":8367,"addrHex":"0x20AF","region_label":"CODE","referencedBy":["vec6_stub"],"bytes":{"start":8367,"endExclusive":8391,"hex":"e7f80de7b401e7230ee77d0ee7ea14e7ed19e76e17e79f1b","focusOffset":0}},{"addr":42105,"addrHex":"0xA479","region_label":"DATA","referencedBy":["vec0_stub"],"bytes":{"start":42105,"endExclusive":42129,"hex":"b09e5c94155c33a808305c059101092012077ae0dc0db105","focusOffset":0}},{"addr":42142,"addrHex":"0xA49E","region_label":"DATA","referencedBy":["vec7_stub"],"bytes":{"start":42142,"endExclusive":42166,"hex":"17dbdb02f3f0b1ffdbf3f0f090169f389f0220a8b10802b1","focusOffset":0}},{"addr":42153,"addrHex":"0xA4A9","region_label":"DATA","referencedBy":["vec1_stub","vec4_stub"],"bytes":{"start":42153,"endExclusive":42177,"hex":"f090169f389f0220a8b10802b1180665f40186a086040146","focusOffset":0}},{"addr":42154,"addrHex":"0xA4AA","region_label":"DATA","referencedBy":["vec5_stub"],"bytes":{"start":42154,"endExclusive":42178,"hex":"90169f389f0220a8b10802b1180665f40186a0860401463c","focusOffset":0}},{"addr":42560,"addrHex":"0xA640","region_label":"DATA","referencedBy":["vec3_stub"],"bytes":{"start":42560,"endExclusive":42584,"hex":"b09ea1b0159e949ea130a108c701a61800e7f19a3ca10220","focusOffset":0}},{"addr":43150,"addrHex":"0xA88E","region_label":"DATA","referencedBy":["vec2_stub"],"bytes":{"start":43150,"endExclusive":43174,"hex":"90169f379f373ba83639bf31a00492713f9fa00492713f9f","focusOffset":0}}],"sites":[{"id":"vec0_stub","vectorIndex":0,"vectorAddr":8192,"vectorAddrHex":"0x2000","stubAddr":16760,"stubAddrHex":"0x4178","stubBytes":{"start":16760,"endExclusive":16768,"hex":"f2e7fd62fde72963","focusOffset":0},"stubPrologue":"PUSHF","ljmpAddr":16761,"ljmpAddrHex":"0x4179","bytes":{"start":16757,"endExclusive":16777,"hex":"e7852df2e7fd62fde72963f2e70a67f2e7b864fd","focusOffset":4},"ghidra_insn":"LJMP 0xa479","ghidra_insn_at_stub":"PUSHF","region_label":"CODE","region_note":"ghidra_insn","cfg_edge_from":{"from":16761,"fromHex":"0x4179","op":"LJMP","bytesHex":"e7fd62","dispHex":"0x62FD","to":42105,"toHex":"0xA479","toRegion":"DATA","verificationStatus":"cross_checked"},"landing":{"addr":42105,"addrHex":"0xA479","region_label":"DATA","region_note":"data_cal","bytes":{"start":42105,"endExclusive":42129,"hex":"b09e5c94155c33a808305c059101092012077ae0dc0db105","focusOffset":0},"ghidra_insns_nearby":[],"inHighAxxx":true},"explanation":"Vector[0] @0x2000 -> stub 0x4178 (PUSHF + LJMP @0x4179) PC-rel CFG: LJMP disp 0x62FD -> 0xA479 (region DATA). Landing is region-labeled DATA (high image); candidate code-in-cal / IRQ handler island for visual review — encoding is PC-rel LJMP, not absolute."},{"id":"vec1_stub","vectorIndex":1,"vectorAddr":8194,"vectorAddrHex":"0x2002","stubAddr":16764,"stubAddrHex":"0x417C","stubBytes":{"start":16764,"endExclusive":16772,"hex":"fde72963f2e70a67","focusOffset":0},"stubPrologue":"NOP","ljmpAddr":16765,"ljmpAddrHex":"0x417D","bytes":{"start":16761,"endExclusive":16781,"hex":"e7fd62fde72963f2e70a67f2e7b864fde71d63f2","focusOffset":4},"ghidra_insn":"LJMP 0xa4a9","ghidra_insn_at_stub":"NOP","region_label":"CODE","region_note":"ghidra_insn","cfg_edge_from":{"from":16765,"fromHex":"0x417D","op":"LJMP","bytesHex":"e72963","dispHex":"0x6329","to":42153,"toHex":"0xA4A9","toRegion":"DATA","verificationStatus":"cross_checked"},"landing":{"addr":42153,"addrHex":"0xA4A9","region_label":"DATA","region_note":"data_cal","bytes":{"start":42153,"endExclusive":42177,"hex":"f090169f389f0220a8b10802b1180665f40186a086040146","focusOffset":0},"ghidra_insns_nearby":[],"inHighAxxx":true},"explanation":"Vector[1] @0x2002 -> stub 0x417C (NOP + LJMP @0x417D) PC-rel CFG: LJMP disp 0x6329 -> 0xA4A9 (region DATA). Landing is region-labeled DATA (high image); candidate code-in-cal / IRQ handler island for visual review — encoding is PC-rel LJMP, not absolute."},{"id":"vec2_stub","vectorIndex":2,"vectorAddr":8196,"vectorAddrHex":"0x2004","stubAddr":16768,"stubAddrHex":"0x4180","stubBytes":{"start":16768,"endExclusive":16776,"hex":"f2e70a67f2e7b864","focusOffset":0},"stubPrologue":"PUSHF","ljmpAddr":16769,"ljmpAddrHex":"0x4181","bytes":{"start":16765,"endExclusive":16785,"hex":"e72963f2e70a67f2e7b864fde71d63f2e71a63f2","focusOffset":4},"ghidra_insn":"LJMP 0xa88e","ghidra_insn_at_stub":"PUSHF","region_label":"CODE","region_note":"ghidra_insn","cfg_edge_from":{"from":16769,"fromHex":"0x4181","op":"LJMP","bytesHex":"e70a67","dispHex":"0x670A","to":43150,"toHex":"0xA88E","toRegion":"DATA","verificationStatus":"cross_checked"},"landing":{"addr":43150,"addrHex":"0xA88E","region_label":"DATA","region_note":"data_cal","bytes":{"start":43150,"endExclusive":43174,"hex":"90169f379f373ba83639bf31a00492713f9fa00492713f9f","focusOffset":0},"ghidra_insns_nearby":[],"inHighAxxx":true},"explanation":"Vector[2] @0x2004 -> stub 0x4180 (PUSHF + LJMP @0x4181) PC-rel CFG: LJMP disp 0x670A -> 0xA88E (region DATA). Landing is region-labeled DATA (high image); candidate code-in-cal / IRQ handler island for visual review — encoding is PC-rel LJMP, not absolute."},{"id":"vec3_stub","vectorIndex":3,"vectorAddr":8198,"vectorAddrHex":"0x2006","stubAddr":16772,"stubAddrHex":"0x4184","stubBytes":{"start":16772,"endExclusive":16780,"hex":"f2e7b864fde71d63","focusOffset":0},"stubPrologue":"PUSHF","ljmpAddr":16773,"ljmpAddrHex":"0x4185","bytes":{"start":16769,"endExclusive":16789,"hex":"e70a67f2e7b864fde71d63f2e71a63f2e71bdff2","focusOffset":4},"ghidra_insn":"LJMP 0xa640","ghidra_insn_at_stub":"PUSHF","region_label":"CODE","region_note":"ghidra_insn","cfg_edge_from":{"from":16773,"fromHex":"0x4185","op":"LJMP","bytesHex":"e7b864","dispHex":"0x64B8","to":42560,"toHex":"0xA640","toRegion":"DATA","verificationStatus":"cross_checked"},"landing":{"addr":42560,"addrHex":"0xA640","region_label":"DATA","region_note":"data_cal","bytes":{"start":42560,"endExclusive":42584,"hex":"b09ea1b0159e949ea130a108c701a61800e7f19a3ca10220","focusOffset":0},"ghidra_insns_nearby":[],"inHighAxxx":true},"explanation":"Vector[3] @0x2006 -> stub 0x4184 (PUSHF + LJMP @0x4185) PC-rel CFG: LJMP disp 0x64B8 -> 0xA640 (region DATA). Landing is region-labeled DATA (high image); candidate code-in-cal / IRQ handler island for visual review — encoding is PC-rel LJMP, not absolute."},{"id":"vec4_stub","vectorIndex":4,"vectorAddr":8200,"vectorAddrHex":"0x2008","stubAddr":16776,"stubAddrHex":"0x4188","stubBytes":{"start":16776,"endExclusive":16784,"hex":"fde71d63f2e71a63","focusOffset":0},"stubPrologue":"NOP","ljmpAddr":16777,"ljmpAddrHex":"0x4189","bytes":{"start":16773,"endExclusive":16793,"hex":"e7b864fde71d63f2e71a63f2e71bdff2e70663fd","focusOffset":4},"ghidra_insn":"LJMP 0xa4a9","ghidra_insn_at_stub":"NOP","region_label":"CODE","region_note":"ghidra_insn","cfg_edge_from":{"from":16777,"fromHex":"0x4189","op":"LJMP","bytesHex":"e71d63","dispHex":"0x631D","to":42153,"toHex":"0xA4A9","toRegion":"DATA","verificationStatus":"cross_checked"},"landing":{"addr":42153,"addrHex":"0xA4A9","region_label":"DATA","region_note":"data_cal","bytes":{"start":42153,"endExclusive":42177,"hex":"f090169f389f0220a8b10802b1180665f40186a086040146","focusOffset":0},"ghidra_insns_nearby":[],"inHighAxxx":true},"explanation":"Vector[4] @0x2008 -> stub 0x4188 (NOP + LJMP @0x4189) PC-rel CFG: LJMP disp 0x631D -> 0xA4A9 (region DATA). Landing is region-labeled DATA (high image); candidate code-in-cal / IRQ handler island for visual review — encoding is PC-rel LJMP, not absolute."},{"id":"vec5_stub","vectorIndex":5,"vectorAddr":8202,"vectorAddrHex":"0x200A","stubAddr":16780,"stubAddrHex":"0x418C","stubBytes":{"start":16780,"endExclusive":16788,"hex":"f2e71a63f2e71bdf","focusOffset":0},"stubPrologue":"PUSHF","ljmpAddr":16781,"ljmpAddrHex":"0x418D","bytes":{"start":16777,"endExclusive":16797,"hex":"e71d63f2e71a63f2e71bdff2e70663fdfdfdfdfd","focusOffset":4},"ghidra_insn":"LJMP 0xa4aa","ghidra_insn_at_stub":"PUSHF","region_label":"CODE","region_note":"ghidra_insn","cfg_edge_from":{"from":16781,"fromHex":"0x418D","op":"LJMP","bytesHex":"e71a63","dispHex":"0x631A","to":42154,"toHex":"0xA4AA","toRegion":"DATA","verificationStatus":"cross_checked"},"landing":{"addr":42154,"addrHex":"0xA4AA","region_label":"DATA","region_note":"data_cal","bytes":{"start":42154,"endExclusive":42178,"hex":"90169f389f0220a8b10802b1180665f40186a0860401463c","focusOffset":0},"ghidra_insns_nearby":[],"inHighAxxx":true},"explanation":"Vector[5] @0x200A -> stub 0x418C (PUSHF + LJMP @0x418D) PC-rel CFG: LJMP disp 0x631A -> 0xA4AA (region DATA). Landing is region-labeled DATA (high image); candidate code-in-cal / IRQ handler island for visual review — encoding is PC-rel LJMP, not absolute."},{"id":"vec6_stub","vectorIndex":6,"vectorAddr":8204,"vectorAddrHex":"0x200C","stubAddr":16784,"stubAddrHex":"0x4190","stubBytes":{"start":16784,"endExclusive":16792,"hex":"f2e71bdff2e70663","focusOffset":0},"stubPrologue":"PUSHF","ljmpAddr":16785,"ljmpAddrHex":"0x4191","bytes":{"start":16781,"endExclusive":16801,"hex":"e71a63f2e71bdff2e70663fdfdfdfdfdfdfdfdfd","focusOffset":4},"ghidra_insn":"LJMP 0x20af","ghidra_insn_at_stub":"PUSHF","region_label":"CODE","region_note":"ghidra_insn","cfg_edge_from":{"from":16785,"fromHex":"0x4191","op":"LJMP","bytesHex":"e71bdf","dispHex":"0xDF1B","to":8367,"toHex":"0x20AF","toRegion":"CODE","verificationStatus":"cross_checked"},"landing":{"addr":8367,"addrHex":"0x20AF","region_label":"CODE","region_note":"ghidra_insn","bytes":{"start":8367,"endExclusive":8391,"hex":"e7f80de7b401e7230ee77d0ee7ea14e7ed19e76e17e79f1b","focusOffset":0},"ghidra_insns_nearby":[{"addr":8367,"addrHex":"0x20AF","insn":"LJMP 0x2eaa"},{"addr":8370,"addrHex":"0x20B2","insn":"LJMP 0x2269"},{"addr":8373,"addrHex":"0x20B5","insn":"LJMP 0x2edb"},{"addr":8376,"addrHex":"0x20B8","insn":"LJMP 0x2f38"},{"addr":8379,"addrHex":"0x20BB","insn":"LJMP 0x35a8"},{"addr":8382,"addrHex":"0x20BE","insn":"LJMP 0x3aae"},{"addr":8385,"addrHex":"0x20C1","insn":"LJMP 0x3832"},{"addr":8388,"addrHex":"0x20C4","insn":"LJMP 0x3c66"}],"inHighAxxx":false},"explanation":"Vector[6] @0x200C -> stub 0x4190 (PUSHF + LJMP @0x4191) PC-rel CFG: LJMP disp 0xDF1B -> 0x20AF (region CODE). Landing is inside coarse CODE window."},{"id":"vec7_stub","vectorIndex":7,"vectorAddr":8206,"vectorAddrHex":"0x200E","stubAddr":16788,"stubAddrHex":"0x4194","stubBytes":{"start":16788,"endExclusive":16796,"hex":"f2e70663fdfdfdfd","focusOffset":0},"stubPrologue":"PUSHF","ljmpAddr":16789,"ljmpAddrHex":"0x4195","bytes":{"start":16785,"endExclusive":16805,"hex":"e71bdff2e70663fdfdfdfdfdfdfdfdfdfdfdfdfd","focusOffset":4},"ghidra_insn":"LJMP 0xa49e","ghidra_insn_at_stub":"PUSHF","region_label":"CODE","region_note":"ghidra_insn","cfg_edge_from":{"from":16789,"fromHex":"0x4195","op":"LJMP","bytesHex":"e70663","dispHex":"0x6306","to":42142,"toHex":"0xA49E","toRegion":"DATA","verificationStatus":"cross_checked"},"landing":{"addr":42142,"addrHex":"0xA49E","region_label":"DATA","region_note":"data_cal","bytes":{"start":42142,"endExclusive":42166,"hex":"17dbdb02f3f0b1ffdbf3f0f090169f389f0220a8b10802b1","focusOffset":0},"ghidra_insns_nearby":[],"inHighAxxx":true},"explanation":"Vector[7] @0x200E -> stub 0x4194 (PUSHF + LJMP @0x4195) PC-rel CFG: LJMP disp 0x6306 -> 0xA49E (region DATA). Landing is region-labeled DATA (high image); candidate code-in-cal / IRQ handler island for visual review — encoding is PC-rel LJMP, not absolute."}],"relatedArtifacts":["tools/re/out/blocker1_ljmp_lcall.md","tools/re/out/mcs96_cfg_edges.json","tools/re/out/ghidra/ghidra_listing.txt","tools/re/out/byte_map.json"],"shippingNote":"Review-only. Do not promote into definitions/packs/*.shipping.json."};
+function u16(n){ return "0x"+n.toString(16).toUpperCase().padStart(4,"0"); }
+function hexBytes(hex){
+  const out=[]; for(let i=0;i<hex.length;i+=2) out.push(hex.slice(i,i+2).toUpperCase()); return out;
+}
+function renderHex(hex, focusOffset, focusLen, cls){
+  return hexBytes(hex).map((b,i)=>{
+    const on = i>=focusOffset && i<(focusOffset+focusLen);
+    return '<span class="b '+(on?cls:"")+'">'+b+"</span>";
+  }).join("");
+}
+function decision(site){
+  if(site.landing.inHighAxxx){
+    return "Decide: keep DATA_CAL, carve a CODE island at the landing, or mark UNKNOWN-pending. Do not promote into shipping packs.";
+  }
+  return "Landing already in CODE — useful control case; Axxx sites are the blocker.";
+}
+document.getElementById("banner").innerHTML =
+  "<strong>Review gate</strong> — "+DATA.shippingNote+" "+DATA.addressingNote;
+document.getElementById("stats").innerHTML = [
+  ["siteCount","IRQ stub sites"],
+  ["axxxLandingCount","Land in 0xAxxx DATA"],
+  ["dataLandingCount","DATA landings"],
+].map(([k,l])=>'<div class="stat"><b>'+DATA[k]+"</b><span>"+l+"</span></div>").join("")
+  + '<div class="stat"><b>'+DATA.ghidraLanguage+"</b><span>Ghidra language</span></div>";
+
+const index=document.getElementById("index");
+const sitesEl=document.getElementById("sites");
+let filter="all";
+
+function matches(site){
+  if(filter==="all") return true;
+  if(filter==="axxx") return site.landing.inHighAxxx;
+  if(filter==="code") return site.landing.region_label==="CODE";
+  return true;
+}
+
+function render(){
+  index.innerHTML="";
+  sitesEl.innerHTML="";
+  DATA.sites.filter(matches).forEach(site=>{
+    const conflict = site.landing.region_label==="DATA"
+      ? '<span class="tag data">Ghidra CODE path → region DATA</span>'
+      : '<span class="tag code">aligned CODE</span>';
+    const tr=document.createElement("tr");
+    tr.innerHTML =
+      "<td>v"+site.vectorIndex+"</td><td><code>"+site.stubAddrHex+
+      "</code></td><td>"+site.stubPrologue+"</td><td><code>"+site.ghidra_insn+
+      "</code></td><td><code>"+site.landing.addrHex+"</code></td><td>"+conflict+"</td>";
+    tr.onclick=()=>{ document.getElementById(site.id).scrollIntoView({behavior:"smooth"}); };
+    index.appendChild(tr);
+
+    const stubLen = site.stubBytes.hex.length/2;
+    const nearby = (site.landing.ghidra_insns_nearby||[])
+      .map(x=>"<li><code>"+x.addrHex+"</code> "+x.insn+"</li>").join("");
+    const card=document.createElement("section");
+    card.className="site";
+    card.id=site.id;
+    card.innerHTML =
+      "<h3>"+site.id+" — vector["+site.vectorIndex+"] @ "+site.vectorAddrHex+"</h3>"+
+      '<div class="meta">'+
+        "<div>Stub <code>"+site.stubAddrHex+"</code> ("+site.stubPrologue+")</div>"+
+        "<div>LJMP @ <code>"+site.ljmpAddrHex+"</code></div>"+
+        "<div>Disp <code>"+site.cfg_edge_from.dispHex+"</code> → <code>"+site.landing.addrHex+"</code></div>"+
+        "<div>CFG <code>"+site.cfg_edge_from.verificationStatus+"</code></div>"+
+        '<div>Stub region <span class="tag code">'+site.region_label+"</span></div>"+
+        '<div>Landing region <span class="tag '+(site.landing.region_label==="DATA"?"data":"code")+'">'+
+          site.landing.region_label+"</span></div>"+
+      "</div>"+
+      '<div class="caption">Stub window (focus = prologue+LJMP) starting '+u16(site.bytes.start)+"</div>"+
+      '<div class="hex">'+renderHex(site.bytes.hex, site.bytes.focusOffset, stubLen, "focus")+"</div>"+
+      '<div class="caption">Landing window starting '+site.landing.addrHex+" (first 8 bytes emphasized)</div>"+
+      '<div class="hex">'+renderHex(site.landing.bytes.hex, 0, 8, "land")+"</div>"+
+      (nearby
+        ? '<div class="caption">Ghidra nearby at landing</div><ul>'+nearby+"</ul>"
+        : '<div class="caption">No Ghidra instructions at landing (outside seeded CODE disasm).</div>')+
+      '<p class="explain">'+site.explanation+"</p>"+
+      '<p class="decide">'+decision(site)+"</p>";
+    sitesEl.appendChild(card);
+  });
+}
+document.querySelectorAll(".toolbar button").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll(".toolbar button").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    filter=btn.dataset.filter;
+    render();
+  });
+});
+document.getElementById("footer").textContent =
+  "Source: "+DATA.id+" · ROM "+DATA.rom+" · ISA "+DATA.isa+" · related: "+
+  (DATA.relatedArtifacts||[]).join(", ");
+render();
+</script>
+</body>
+</html>
