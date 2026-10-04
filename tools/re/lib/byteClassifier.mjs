@@ -219,7 +219,7 @@ export function classifyRom(buf, opts = {}) {
       paint(bytes, a, Math.min(a + 2, 0x7fff), {
         region: 'CODE',
         confidence: 0.78,
-        evidence: `Ghidra listing instruction start (${lang}); LJMP/LCALL targets may need absolute fixup`,
+        evidence: `Ghidra listing instruction start (${lang}); LJMP/LCALL are PC-relative disp16`,
         source: 'ghidra',
         note: 'ghidra_insn',
         verificationStatus: 'plausible',

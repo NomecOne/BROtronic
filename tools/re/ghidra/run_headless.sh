@@ -4,14 +4,12 @@
 # Canonical CODE analysis path. Does not use "C16x900A" as a processor hint
 # (that token is checksum16=0x900A only).
 #
-# Default language: MCS96:LE:16:default (canonical after x86 Real Mode reject).
-# First-attempt negative control:
-#   bash tools/re/ghidra/run_headless.sh --language 'x86:LE:16:Real Mode'
+# Default language: MCS96:LE:16:default (locked CODE ISA — MCS-96 / 80C196-class).
+# x86 Real Mode is historical reject only; do not use as default.
 #
 # Usage (repo root):
 #   export GHIDRA_INSTALL_DIR="$HOME/tools/ghidra_11.3.2_PUBLIC"
 #   bash tools/re/ghidra/run_headless.sh
-#   bash tools/re/ghidra/run_headless.sh --language 'MCS96:LE:16:default'
 #   bash tools/re/ghidra/run_headless.sh --detect-only
 set -euo pipefail
 

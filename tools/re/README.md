@@ -14,32 +14,28 @@ Standalone (Node + **Ghidra**) tooling that **feeds** BROtronic definition packs
 
 The RedLabel filename token **`C16x900A` means checksum16 = `0x900A`**, not Siemens/Infineon **C16x** CPU family. Never pick a C166/C167 Ghidra language from the filename.
 
-## ISA conclusion (Ghidra-backed)
+## ISA conclusion (locked)
 
 | Item | Value |
 |------|--------|
-| **Conclusion** | **MCS-96 / 80C196-class** |
-| Ghidra language | `MCS96:LE:16:default` (stock in Ghidra 11.3.2) |
-| First attempt | `x86:LE:16:Real Mode` — **rejected** (nonsense at vector stubs) |
-| verificationStatus | `plausible` (not shipping) |
-| Proof | `tools/re/out/isa_ghidra_conclusion.md` |
+| **CODE ISA** | **MCS-96 / 80C196-class** (canonical going forward) |
+| Ghidra language | `MCS96:LE:16:default` (default in `run_headless.sh` / `.ps1`) |
+| LJMP/LCALL | PC-relative `disp16` — Intel + Ghidra SLEIGH agree (`blocker1_ljmp_lcall.md`) |
+| x86 Real Mode | Historical reject only (`compare_x86_real/`) — do not re-evaluate |
+| verificationStatus | ISA locked; CODE maps still gated (not shipping) |
+| Proof | `tools/re/out/isa_ghidra_conclusion.md`, `blocker1_ljmp_lcall.md` |
 
-Caveat: stock MCS96 SLEIGH treats LJMP/LCALL immediates as PC-relative; use `node tools/re/ghidra/correct_ljmp_targets.mjs` for absolute targets.
-
-## Quick start (Linux cloud — commands that worked)
+## Quick start (Linux cloud — MCS-96 default)
 
 ```bash
-# 0) JDK 21 already on PATH in this environment (OpenJDK 21). If missing:
-#    sudo apt-get update && sudo apt-get install -y temurin-21-jdk   # or openjdk-21-jdk
+# 0) JDK 21 on PATH (OpenJDK 21 in this cloud image)
 
-# 1) Ghidra 11.3.2 → ~/tools (no root required)
+# 1) Ghidra 11.3.2 → ~/tools
 mkdir -p "$HOME/tools" /tmp/ghidra-dl
 curl -fL -o /tmp/ghidra-dl/ghidra.zip \
   "https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_11.3.2_build/ghidra_11.3.2_PUBLIC_20250415.zip"
 unzip -q /tmp/ghidra-dl/ghidra.zip -d "$HOME/tools"
 export GHIDRA_INSTALL_DIR="$HOME/tools/ghidra_11.3.2_PUBLIC"
-# confirm:
-"$GHIDRA_INSTALL_DIR/support/analyzeHeadless" 2>&1 | head -5
 node tools/re/ghidra/detect.mjs   # ready:true
 
 # 2) Fetch ROM + XDF + sheet (see tools/re/data/README.md)
@@ -51,23 +47,16 @@ curl -fsSL -o tools/re/data/seed.xdf \
 curl -fsSL -o tools/re/data/cal_sheet.csv \
   "https://docs.google.com/spreadsheets/d/1VseRUjv0rCux27Zhj9VFZbR-7iODh_PXcO4c1uwBE7c/export?format=csv&gid=408706323"
 
-# 3) Negative control (user-stated 8086 path)
-bash tools/re/ghidra/run_headless.sh --language 'x86:LE:16:Real Mode'
-mkdir -p tools/re/out/ghidra/compare_x86_real
-cp tools/re/out/ghidra/ghidra_* tools/re/out/ghidra/compare_x86_real/
-
-# 4) Canonical MCS-96 headless + export
-bash tools/re/ghidra/run_headless.sh --language 'MCS96:LE:16:default'
-
-# 5) Absolute branch fixup + annotate/ingest
-node tools/re/ghidra/correct_ljmp_targets.mjs
+# 3) Canonical MCS-96 headless (default language) + CFG edges + annotate/ingest
+bash tools/re/ghidra/run_headless.sh
+node tools/re/ghidra/correct_ljmp_targets.mjs   # PC-rel CFG → mcs96_cfg_edges.*
 node tools/re/annotate.mjs
 node tools/re/ingest.mjs
 ```
 
-Windows: `pwsh -File tools/re/ghidra/run_headless.ps1 -Language 'MCS96:LE:16:default'` (or `npm run re:ghidra:win`).
+Windows: `pwsh -File tools/re/ghidra/run_headless.ps1` (defaults to MCS96) or `npm run re:ghidra:win`.
 
-npm aliases: `npm run re:ingest`, `npm run re:annotate`, `npm run re:ghidra:detect`, `npm run re:ghidra`, `npm run re:ghidra:win`.
+npm aliases: `npm run re:ingest`, `npm run re:annotate`, `npm run re:ghidra:detect`, `npm run re:ghidra`, `npm run re:ghidra:branches`, `npm run re:ghidra:win`.
 
 ### Expected inputs
 
@@ -87,11 +76,13 @@ npm aliases: `npm run re:ingest`, `npm run re:annotate`, `npm run re:ghidra:dete
 | `tools/re/out/byte_map_runs.csv` | Run-length region table |
 | `tools/re/out/gap_report.md` | Unknowns / coarse CODE gaps + ISA notes |
 | `tools/re/out/isa_report.json` | ISA hypothesis + conflicts |
-| `tools/re/out/isa_ghidra_conclusion.{json,md}` | Ghidra compare verdict |
-| `tools/re/out/mcs96_absolute_branches.{json,csv}` | Absolute LJMP/LCALL targets |
+| `tools/re/out/isa_ghidra_conclusion.{json,md}` | Ghidra ISA verdict (MCS-96 locked) |
+| `tools/re/out/blocker1_ljmp_lcall.md` | LJMP/LCALL PC-rel analysis |
+| `tools/re/out/mcs96_cfg_edges.{json,csv}` | Trustworthy PC-rel CFG edges |
+| `tools/re/out/mcs96_branch_resolve.json` | Branch resolve summary |
 | `tools/re/out/structural_code.json` | Pre-Ghidra structural markers (not canonical) |
 | `tools/re/out/ghidra/*` | Canonical MCS-96 listing / functions / symbols |
-| `tools/re/out/ghidra/compare_x86_real/*` | Rejected x86 Real Mode compare |
+| `tools/re/out/ghidra/compare_x86_real/*` | Historical x86 reject only |
 | `tools/re/out/ghidra_detect.json` | Install detection report |
 | `tools/re/out/ghidra_headless_status.json` | Last headless status |
 
@@ -123,11 +114,11 @@ export GHIDRA_INSTALL_DIR="$HOME/tools/ghidra_11.3.2_PUBLIC"
 
 ### Processor / language selection
 
-| Candidate | Role | Notes |
-|-----------|------|--------|
-| `x86:LE:16:Real Mode` | First attempt (user-stated 8086) | **Rejected** on RedLabel — see compare tree. |
-| `MCS96:LE:16:default` | **Canonical** | Stock Ghidra 11.3.2. Coherent CODE; fix LJMP targets via `correct_ljmp_targets.mjs`. |
-| C166/C167 | **Do not select from filename** | `C16x900A` ≠ C16x CPU. |
+| Language | Role | Notes |
+|----------|------|--------|
+| `MCS96:LE:16:default` | **Default / locked** | CODE ISA for RedLabel. LJMP/LCALL = PC-rel; CFG via `re:ghidra:branches`. |
+| `x86:LE:16:Real Mode` | Historical reject only | Do not re-run as ISA candidate; keep `compare_x86_real/`. |
+| C166/C167 | Never | `C16x900A` is checksum fingerprint, not CPU. |
 
 ## Memory map hypothesis (64KB)
 

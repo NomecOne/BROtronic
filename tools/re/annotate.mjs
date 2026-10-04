@@ -93,8 +93,8 @@ function buildGapReport({ isa, classification, structural, sum16, romName, ghidr
   } else {
     lines.push(`- ${ghidra?.detail ?? 'Run tools/re/ghidra/run_headless.ps1 after installing Ghidra+JDK'}`);
   }
-  lines.push('- First language attempt: `x86:LE:16:Real Mode` (user-stated 8086 interest).');
-  lines.push('- Canonical language after compare: `MCS96:LE:16:default` (see `isa_ghidra_conclusion.md`).');
+  lines.push('- Locked language: `MCS96:LE:16:default` (MCS-96 / 80C196-class).');
+  lines.push('- LJMP/LCALL: PC-relative `disp16` — see `blocker1_ljmp_lcall.md` / `mcs96_cfg_edges.*`.');
   lines.push('- Filename `C16x900A` is **CS16=0x900A only** — never select a C166/C167 language from it.');
   lines.push('');
   lines.push('## Gap list (coarse CODE + UNKNOWN)');
@@ -110,9 +110,9 @@ function buildGapReport({ isa, classification, structural, sum16, romName, ghidr
   lines.push('');
   lines.push('## Blockers');
   lines.push('');
-  lines.push('- Stock Ghidra MCS96 SLEIGH appears to treat LJMP/LCALL immediates as PC-relative; use absolute LE16 from bytes for control-flow proof.');
+  lines.push('- Blocker 1 (LJMP/LCALL addressing) **resolved**: PC-relative; Ghidra SLEIGH correct (`blocker1_ljmp_lcall.md`).');
+  lines.push('- IRQ stub targets in high `0xAxxx` (region-labeled DATA) need follow-up under MCS-96 CFG — not an encoding bug.');
   lines.push('- Mid-CODE data islands still need manual separation; do not promote CODE-derived maps to shipping.');
-  lines.push('- `verificationStatus` remains below `cross_checked` until LJMP operand decode is corrected or independently validated.');
   lines.push('');
   return lines.join('\n');
 }

@@ -5,20 +5,20 @@ Checksum16 (full-file byte sum): `0x900A` — filename token `C16x900A` means th
 
 ## ISA
 
-- User-stated path: **8086**
-- Working hypothesis (tooling): **mcs96_80c196_family** (confidence 0.82)
+- User-stated path: **mcs96_80c196_family**
+- Working hypothesis (tooling): **mcs96_80c196_family** (confidence 0.9)
 - Evidence-preferred ISA: **mcs96_80c196_family**
-- verificationStatus: `plausible`
+- verificationStatus: `cross_checked`
 
 ### Conflicts
-- Binary+sheet patterns favor Intel MCS-96 / 80C196-class markers (LJMP-like E7 abs16, FD pad~=NOP per sheet) over classic 8086 (no 55 8B EC prologues; 0x90 NOP rarer than 0xFD). Ghidra compare: try x86:LE:16:Real Mode first (user-stated), then MCS96:LE:16:default — do not pick C16x from filename.
+- MCS-96 / 80C196-class is the locked CODE ISA (Richard confirmation + Ghidra MCS96:LE:16:default). x86 Real Mode remains historical reject only. LJMP/LCALL are PC-relative disp16 (see blocker1_ljmp_lcall.md). Do not pick C16x from filename.
 
 ### Evidence bullets
 - `[naming_clarification]` ROM filename token C16x900A denotes full-file byte-sum fingerprint 0x900A, not Siemens/Infineon C16x CPU family.
 - `[memory_layout]` First non-0xFF byte at 0x2000; shipping pack maps CODE 0x0000-0x7FFF / DATA 0x8000-0xFFFD. Bytes 0x0000-0x1FFF are erased (0xFF) in this external image.
 - `[sheet_ida_note]` CAL sheet @0x2000: "Hard coded vector addresses for interupts ?"; @0x2010: "Internal 16kb of ROM Not always internal?". Community IDA notes treat some mid-CODE ranges as data.
 - `[vector_table]` LE u16 table at 0x2000 -> 0x4178, 0x417C, 0x4180, 0x4184, 0x4188, 0x418C, 0x4190, 0x4194 (targets step +4).
-- `[mcs96_opcode_pattern]` In CODE window: opcode 0xE7 (MCS-96 LJMP) count=142, targets in 0x2000-0x7FFF=22. Pad byte 0xFD count=144; community sheet states 0xFD~=NOP and 0xFF~=reset - matches MCS-96 (NOP=0xFD, unimplemented/RST often 0xFF), not classic 8086 (NOP=0x90).
+- `[mcs96_opcode_pattern]` In CODE window: opcode 0xE7 (MCS-96 LJMP, PC-rel disp16) count=142; naive abs-in-window count=22 (use PC-rel CFG, not abs). Pad byte 0xFD count=144; sheet: 0xFD~=NOP / 0xFF~=reset — matches MCS-96.
 - `[8086_opcode_pattern]` In CODE window: 0xE8 near-call-like bytes=27 (in-range targets=18); classic prologue 55 8B EC count=0; 0x90 (8086 NOP) count=42 vs 0xFD count=144.
 
 ## Coverage
@@ -44,8 +44,8 @@ Checksum16 (full-file byte sum): `0x900A` — filename token `C16x900A` means th
 - Exports present: **yes**
 - Language: `MCS96:LE:16:default`
 - Functions: 213
-- First language attempt: `x86:LE:16:Real Mode` (user-stated 8086 interest).
-- Canonical language after compare: `MCS96:LE:16:default` (see `isa_ghidra_conclusion.md`).
+- Locked language: `MCS96:LE:16:default` (MCS-96 / 80C196-class).
+- LJMP/LCALL: PC-relative `disp16` — see `blocker1_ljmp_lcall.md` / `mcs96_cfg_edges.*`.
 - Filename `C16x900A` is **CS16=0x900A only** — never select a C166/C167 language from it.
 
 ## Gap list (coarse CODE + UNKNOWN)
@@ -95,6 +95,6 @@ Checksum16 (full-file byte sum): `0x900A` — filename token `C16x900A` means th
 
 ## Blockers
 
-- Stock Ghidra MCS96 SLEIGH appears to treat LJMP/LCALL immediates as PC-relative; use absolute LE16 from bytes for control-flow proof.
+- Blocker 1 (LJMP/LCALL addressing) **resolved**: PC-relative; Ghidra SLEIGH correct (`blocker1_ljmp_lcall.md`).
+- IRQ stub targets in high `0xAxxx` (region-labeled DATA) need follow-up under MCS-96 CFG — not an encoding bug.
 - Mid-CODE data islands still need manual separation; do not promote CODE-derived maps to shipping.
-- `verificationStatus` remains below `cross_checked` until LJMP operand decode is corrected or independently validated.

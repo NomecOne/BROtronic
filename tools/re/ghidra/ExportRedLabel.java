@@ -92,7 +92,7 @@ public class ExportRedLabel extends GhidraScript {
 			sb.append("    \"Inspect whether seeded sites decode as coherent 8086 control flow or nonsense\",\n");
 		}
 		if (looksMcs96) {
-			sb.append("    \"Expect LJMP/NOP (E7/FD) patterns near vector targets if MCS-96 is correct\",\n");
+			sb.append("    \"MCS-96 locked: LJMP/LCALL use PC-relative disp16 (Intel + SLEIGH); see blocker1_ljmp_lcall.md\",\n");
 		}
 		sb.append("    \"Do not promote CODE-derived maps until verificationStatus is raised\"\n");
 		sb.append("  ]\n");
@@ -155,7 +155,7 @@ public class ExportRedLabel extends GhidraScript {
 		StringBuilder sb = new StringBuilder();
 		sb.append("; BROtronic RedLabel listing export\n");
 		sb.append("; language=").append(currentProgram.getLanguageID()).append('\n');
-		sb.append("; NOTE: unverified — if x86 Real Mode looks wrong, try MCS-96 module (not C16x from filename)\n\n");
+		sb.append("; NOTE: canonical language MCS96:LE:16:default; LJMP/LCALL are PC-relative (not C16x from filename)\n\n");
 
 		Address start = currentProgram.getAddressFactory().getDefaultAddressSpace().getAddress(0x2000);
 		boolean hasCodeWindow = currentProgram.getMemory().contains(start);

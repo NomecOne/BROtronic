@@ -111,8 +111,8 @@ export function probeIsa(buf) {
     },
     {
       kind: 'mcs96_opcode_pattern',
-      detail: `In CODE window: opcode 0xE7 (MCS-96 LJMP) count=${ljmp.hits}, targets in 0x2000-0x7FFF=${ljmp.inRange}. Pad byte 0xFD count=${fdPad}; community sheet states 0xFD~=NOP and 0xFF~=reset - matches MCS-96 (NOP=0xFD, unimplemented/RST often 0xFF), not classic 8086 (NOP=0x90).`,
-      sources: ['re_pipeline', 'sheet'],
+      detail: `In CODE window: opcode 0xE7 (MCS-96 LJMP, PC-rel disp16) count=${ljmp.hits}; naive abs-in-window count=${ljmp.inRange} (use PC-rel CFG, not abs). Pad byte 0xFD count=${fdPad}; sheet: 0xFD~=NOP / 0xFF~=reset — matches MCS-96.`,
+      sources: ['re_pipeline', 'sheet', 'ghidra'],
     },
     {
       kind: '8086_opcode_pattern',
@@ -132,28 +132,26 @@ export function probeIsa(buf) {
     (pushBpFrame > 5 ? 2 : 0) +
     (nop90 > fdPad ? 1 : 0);
 
+  // Historical note only: early probe contrasted MCS-96 vs 8086. ISA is now locked.
   if (mcs96Score > i8086Score) {
     conflicts.push({
-      kind: 'isa_conflict',
+      kind: 'isa_locked',
       detail:
-        'Binary+sheet patterns favor Intel MCS-96 / 80C196-class markers (LJMP-like E7 abs16, FD pad~=NOP per sheet) over classic 8086 (no 55 8B EC prologues; 0x90 NOP rarer than 0xFD). Ghidra compare: try x86:LE:16:Real Mode first (user-stated), then MCS96:LE:16:default — do not pick C16x from filename.',
+        'MCS-96 / 80C196-class is the locked CODE ISA (Richard confirmation + Ghidra MCS96:LE:16:default). x86 Real Mode remains historical reject only. LJMP/LCALL are PC-relative disp16 (see blocker1_ljmp_lcall.md). Do not pick C16x from filename.',
       preferredByEvidence: 'mcs96_80c196_family',
-      userStated: '8086',
+      lockedIsa: 'mcs96_80c196_family',
       scores: { mcs96Score, i8086Score },
     });
   }
 
-  // Prefer MCS-96 as working hypothesis when binary markers dominate; Ghidra listing compare
-  // (tools/re/out/isa_ghidra_conclusion.*) is the canonical confirmation path.
-  const preferMcs = mcs96Score > i8086Score;
   return {
-    verificationStatus: 'plausible',
-    userStatedIsa: '8086',
-    workingHypothesis: preferMcs ? 'mcs96_80c196_family' : '8086',
-    evidencePreferredIsa: preferMcs ? 'mcs96_80c196_family' : '8086',
-    ghidraLanguageCanonical: preferMcs ? 'MCS96:LE:16:default' : 'x86:LE:16:Real Mode',
-    ghidraLanguageFirstAttempt: 'x86:LE:16:Real Mode',
-    confidence: preferMcs ? 0.82 : 0.45,
+    verificationStatus: 'cross_checked',
+    userStatedIsa: 'mcs96_80c196_family',
+    workingHypothesis: 'mcs96_80c196_family',
+    evidencePreferredIsa: 'mcs96_80c196_family',
+    ghidraLanguageCanonical: 'MCS96:LE:16:default',
+    ghidraLanguageHistoricalReject: 'x86:LE:16:Real Mode',
+    confidence: 0.9,
     scores: { mcs96Score, i8086Score, ljmp, nearCall, fdPad, ffPad, nop90, pushBpFrame },
     firstNonFf,
     vectors,
@@ -161,9 +159,9 @@ export function probeIsa(buf) {
     conflicts,
     notes: [
       'Do not infer CPU from "C16x####" ROM naming — that is checksum16.',
-      'Canonical CODE path is Ghidra (tools/re/ghidra). First language attempt remains x86:LE:16:Real Mode; stock Ghidra 11.3.2 also ships MCS96:LE:16:default.',
-      'Stock Ghidra MCS96 may mis-decode LJMP/LCALL immediates as PC-relative; treat absolute LE16 targets from the bytes as authoritative until SLEIGH is patched.',
-      'See tools/re/out/isa_ghidra_conclusion.md after headless compare runs.',
+      'CODE ISA locked: MCS-96 / 80C196-class. Default Ghidra language MCS96:LE:16:default.',
+      'LJMP (E7) / LCALL (EF) use PC-relative disp16 per Intel MCS-96; Ghidra SLEIGH matches. CFG edges: tools/re/out/mcs96_cfg_edges.*',
+      'x86 Real Mode compare tree is historical only — do not re-evaluate as ISA candidate.',
     ],
   };
 }

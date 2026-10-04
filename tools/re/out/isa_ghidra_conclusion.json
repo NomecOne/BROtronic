@@ -1,20 +1,26 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "rom": "BMW DME413 SW623 D466.29 C16x900A 94 RedLabel.bin",
   "namingNote": "C16x900A = CS16 0x900A fingerprint only; not C16x CPU",
   "conclusion": {
     "isa": "MCS96 / 80C196-class",
     "ghidraLanguage": "MCS96:LE:16:default",
-    "verificationStatus": "plausible",
-    "confidence": 0.82,
+    "locked": true,
+    "verificationStatus": "cross_checked",
+    "confidence": 0.9,
     "rejected": [
       {
         "id": "x86:LE:16:Real Mode",
-        "reason": "Seeded disassembly at vector targets yields incoherent I/O/flag ops (e.g. OUT 0xfd,AX) and only ~200 instructions / 0 functions"
+        "role": "historical_reject_only",
+        "reason": "Seeded disassembly at vector targets yields incoherent I/O/flag ops; do not re-evaluate"
       },
       {
         "id": "C166/C167",
         "reason": "Filename token is checksum fingerprint, not CPU evidence"
+      },
+      {
+        "id": "ljmp_lcall_absolute_le16",
+        "reason": "Rejected Blocker-1 misread; Intel MCS-96 LJMP/LCALL are PC-relative disp16"
       }
     ]
   },
@@ -22,35 +28,25 @@
     "x86_real_mode": {
       "instructionCount": 206,
       "functionCount": 0,
-      "sampleAt4178": "0000:4178  OUT 0xfd,AX"
+      "sampleAt4178": "0000:4178  OUT 0xfd,AX",
+      "role": "historical_reject_only"
     },
     "mcs96": {
       "instructionCount": 5972,
       "functionCount": 213,
       "sampleAt4178": "4178  PUSHF",
-      "sampleAt417C": "417c  NOP"
+      "sampleAt417C": "417c  NOP",
+      "role": "canonical_locked"
     }
   },
-  "proof": [
-    "Tried x86:LE:16:Real Mode first with ForceDisassembleRedLabel seeds at LE16 vectors @0x2000.",
-    "x86 @0x4178 decodes as OUT 0xfd,AX / STD \u2014 incoherent interrupt stub (~206 insn, 0 functions).",
-    "MCS96:LE:16:default (stock Ghidra 11.3.2) yields ~5972 instructions / ~213 functions with LJMP/LCALL/SJMP/JBS/INT_MASK/TIMER1.",
-    "MCS96 @0x4178/@0x417C: PUSHF / NOP matching bytes F2 / FD.",
-    "Binary markers: E7 abs16 density + FD pad in CODE window align with MCS-96 LJMP/NOP.",
-    "Caveat: stock MCS96.sinc adds inst_next to LJMP/LCALL immediates; absolute targets from bytes are authoritative.",
-    "Filename C16x900A is CS16=0x900A only \u2014 not C16x CPU evidence."
-  ],
+  "blocker1": {
+    "status": "resolved",
+    "addressing": "pc_relative_disp16",
+    "ghidraSleigh": "correct",
+    "ghidraAlignedMatches": "385/385",
+    "doc": "tools/re/out/blocker1_ljmp_lcall.md",
+    "cfgEdges": "tools/re/out/mcs96_cfg_edges.json"
+  },
   "canonicalExportDir": "tools/re/out/ghidra",
-  "compareDirs": [
-    "tools/re/out/ghidra/compare_x86_real",
-    "tools/re/out/ghidra/compare_mcs96"
-  ],
-  "promotionGate": "Do not promote CODE-derived maps into definitions/packs until verificationStatus is cross_checked/verified.",
-  "sleighCaveat": {
-    "file": "Ghidra/Processors/MCS96/data/languages/MCS96.sinc",
-    "rule": "jmpdest16: reloc is disp16 [reloc = inst_next + disp16;]",
-    "correct": "absolute disp16 (Intel MCS-96 LJMP/LCALL)",
-    "example": "E7 FD 62 @0x4179 -> abs 0x62FD; Ghidra may show 0xA479",
-    "fixup": "node tools/re/ghidra/correct_ljmp_targets.mjs"
-  }
+  "promotionGate": "Do not promote CODE-derived maps into definitions/packs until map-level verificationStatus is cross_checked/verified."
 }

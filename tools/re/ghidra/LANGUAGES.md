@@ -2,29 +2,27 @@
 
 Filename `C16x900A` = **checksum16 0x900A only**. Do not select C166/C167 from it.
 
-## First attempt (user-stated)
+## Canonical ISA (locked)
 
-- Language ID: `x86:LE:16:Real Mode`
-- Compiler: `default`
-- Image base: `0x0000`
-- File: `public/rom/BMW DME413 SW623 D466.29 C16x900A 94 RedLabel.bin`
-- Requires `ForceDisassembleRedLabel.java` (raw binary has no natural entry).
+**MCS-96 / 80C196-class** is the ROM’s CODE ISA (Richard confirmation + Ghidra evidence).
 
-Sanity result on RedLabel (cloud run): **FAIL**
-
-| Check | Result |
+| Field | Value |
 |-------|--------|
-| Coherent control flow near `0x4178` | No — `OUT 0xfd,AX` / `STD` |
-| Instructions / functions | ~206 / 0 |
-| Compare tree | `tools/re/out/ghidra/compare_x86_real/` |
+| Ghidra language | `MCS96:LE:16:default` (stock Ghidra 11.3.2) |
+| Compiler | `default` |
+| Image base | `0x0000` |
+| ROM | `public/rom/BMW DME413 SW623 D466.29 C16x900A 94 RedLabel.bin` |
+| Seed script | `ForceDisassembleRedLabel.java` (raw binary has no natural entry) |
 
-## Canonical language (evidence + Ghidra)
+Default headless path:
 
-- Language ID: `MCS96:LE:16:default` (**stock in Ghidra 11.3.2**)
-- Compiler: `default`
-- Same image base / file / force-disassemble seeds
+```bash
+export GHIDRA_INSTALL_DIR="$HOME/tools/ghidra_11.3.2_PUBLIC"
+bash tools/re/ghidra/run_headless.sh   # defaults to MCS96:LE:16:default
+node tools/re/ghidra/correct_ljmp_targets.mjs   # PC-rel CFG edges
+```
 
-Sanity result on RedLabel (cloud run): **PASS (plausible)**
+### Sanity (cloud run)
 
 | Check | Result |
 |-------|--------|
@@ -32,25 +30,23 @@ Sanity result on RedLabel (cloud run): **PASS (plausible)**
 | `0x4178` / `0x417C` | `PUSHF` / `NOP` (`F2` / `FD`) |
 | Instructions / functions | ~5972 / ~213 |
 | Canonical export | `tools/re/out/ghidra/` |
-| Compare tree | `tools/re/out/ghidra/compare_mcs96/` |
 
-### SLEIGH caveat (important)
+### LJMP / LCALL addressing (Blocker 1 resolved)
 
-Stock `MCS96.sinc` defines:
+Intel MCS-96 + stock Ghidra SLEIGH agree: **PC-relative** `disp16`.
 
 ```text
 jmpdest16: reloc is disp16 [reloc = inst_next + disp16;]
+target = (insn_addr + 3 + le16(disp)) & 0xFFFF
 ```
 
-Intel MCS-96 **LJMP (`E7`) / LCALL (`EF`)** take an **absolute** 16-bit address. Ghidra listings therefore show wrong targets (PC+3+imm). Use:
+A prior offline note that claimed “absolute LE16” is **rejected**. See `tools/re/out/blocker1_ljmp_lcall.md` and `mcs96_cfg_edges.*`.
 
-```bash
-node tools/re/ghidra/correct_ljmp_targets.mjs
-# → tools/re/out/mcs96_absolute_branches.{json,csv}
-```
+## Historical reject only (do not re-evaluate)
 
-Example: bytes `E7 FD 62` at `0x4179` → absolute `0x62FD` (Ghidra may display `0xA479`).
+`x86:LE:16:Real Mode` was tried once and **rejected** (nonsense at vector stubs; ~206 insn / 0 functions). Evidence kept under `tools/re/out/ghidra/compare_x86_real/` for history — not a candidate ISA going forward.
 
 ## Do not use
 
 - C166/C167 from filename `C16x900A`
+- Further x86 Real/Protected Mode ISA exploration

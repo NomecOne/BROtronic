@@ -95,20 +95,15 @@ const report = {
   },
   processorCandidates: [
     {
-      id: 'x86:LE:16:Real Mode',
-      role: 'user_stated_first_attempt',
-      note: 'First headless language (user-stated 8086 interest). On RedLabel, seeded disassembly at vector targets is incoherent — keep only as negative control.',
-    },
-    {
       id: 'MCS96:LE:16:default',
-      role: 'evidence_preferred_canonical',
+      role: 'canonical_locked',
       note:
-        'Stock Ghidra 11.3.2 ships MCS-96. Binary+sheet markers (E7 abs16 LJMP, FD≈NOP, vectors @0x2000) + coherent listing (LJMP/LCALL/JBS/INT_MASK) prefer this. Caveat: SLEIGH may mis-decode LJMP immediates as PC-relative.',
+        'Locked CODE ISA for RedLabel (MCS-96 / 80C196-class). Default for run_headless. LJMP/LCALL are PC-relative disp16 (Intel + SLEIGH agree).',
     },
     {
-      id: 'x86:LE:16:Protected Mode',
-      role: 'alternate_x86_16',
-      note: 'Not useful once Real Mode fails sanity; do not prefer over MCS96.',
+      id: 'x86:LE:16:Real Mode',
+      role: 'historical_reject_only',
+      note: 'Rejected once; keep compare_x86_real/ for history. Do not re-evaluate as ISA candidate.',
     },
   ],
   namingNote:
