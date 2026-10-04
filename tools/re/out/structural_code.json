@@ -1,0 +1,506 @@
+{
+  "schemaVersion": 1,
+  "rom": "BMW DME413 SW623 D466.29 C16x900A 94 RedLabel.bin",
+  "verificationStatus": "unverified",
+  "description": "Structural markers only. Ambiguous opcodes (E7/E8) are dual-listed until ISA is confirmed in IDA/Ghidra.",
+  "vectorEntries": [
+    {
+      "kind": "vector_le16",
+      "at": 8192,
+      "target": 16760
+    },
+    {
+      "kind": "vector_le16",
+      "at": 8194,
+      "target": 16764
+    },
+    {
+      "kind": "vector_le16",
+      "at": 8196,
+      "target": 16768
+    },
+    {
+      "kind": "vector_le16",
+      "at": 8198,
+      "target": 16772
+    },
+    {
+      "kind": "vector_le16",
+      "at": 8200,
+      "target": 16776
+    },
+    {
+      "kind": "vector_le16",
+      "at": 8202,
+      "target": 16780
+    },
+    {
+      "kind": "vector_le16",
+      "at": 8204,
+      "target": 16784
+    },
+    {
+      "kind": "vector_le16",
+      "at": 8206,
+      "target": 16788
+    }
+  ],
+  "mcs96LjmpCandidates": [
+    {
+      "at": 8337,
+      "target": 8332,
+      "encoding": "E7_abs16",
+      "isaHint": "mcs96_LJMP_or_8086_OUT_imm"
+    },
+    {
+      "at": 16687,
+      "target": 20063,
+      "encoding": "E7_abs16",
+      "isaHint": "mcs96_LJMP_or_8086_OUT_imm"
+    },
+    {
+      "at": 16698,
+      "target": 20076,
+      "encoding": "E7_abs16",
+      "isaHint": "mcs96_LJMP_or_8086_OUT_imm"
+    },
+    {
+      "at": 16712,
+      "target": 25865,
+      "encoding": "E7_abs16",
+      "isaHint": "mcs96_LJMP_or_8086_OUT_imm"
+    },
+    {
+      "at": 16736,
+      "target": 19979,
+      "encoding": "E7_abs16",
+      "isaHint": "mcs96_LJMP_or_8086_OUT_imm"
+    },
+    {
+      "at": 16739,
+      "target": 20054,
+      "encoding": "E7_abs16",
+      "isaHint": "mcs96_LJMP_or_8086_OUT_imm"
+    },
+    {
+      "at": 16745,
+      "target": 23067,
+      "encoding": "E7_abs16",
+      "isaHint": "mcs96_LJMP_or_8086_OUT_imm"
+    },
+    {
+      "at": 16748,
+      "target": 17213,
+      "encoding": "E7_abs16",
+      "isaHint": "mcs96_LJMP_or_8086_OUT_imm"
+    },
+    {
+      "at": 16751,
+      "target": 11824,
+      "encoding": "E7_abs16",
+      "isaHint": "mcs96_LJMP_or_8086_OUT_imm"
+    },
+    {
+      "at": 16754,
+      "target": 11764,
+      "encoding": "E7_abs16",
+      "isaHint": "mcs96_LJMP_or_8086_OUT_imm"
+    },
+    {
+      "at": 16757,
+      "target": 11653,
+      "encoding": "E7_abs16",
+      "isaHint": "mcs96_LJMP_or_8086_OUT_imm"
+    },
+    {
+      "at": 16761,
+      "target": 25341,
+      "encoding": "E7_abs16",
+      "isaHint": "mcs96_LJMP_or_8086_OUT_imm"
+    },
+    {
+      "at": 16765,
+      "target": 25385,
+      "encoding": "E7_abs16",
+      "isaHint": "mcs96_LJMP_or_8086_OUT_imm"
+    },
+    {
+      "at": 16769,
+      "target": 26378,
+      "encoding": "E7_abs16",
+      "isaHint": "mcs96_LJMP_or_8086_OUT_imm"
+    },
+    {
+      "at": 16773,
+      "target": 25784,
+      "encoding": "E7_abs16",
+      "isaHint": "mcs96_LJMP_or_8086_OUT_imm"
+    },
+    {
+      "at": 16777,
+      "target": 25373,
+      "encoding": "E7_abs16",
+      "isaHint": "mcs96_LJMP_or_8086_OUT_imm"
+    },
+    {
+      "at": 16781,
+      "target": 25370,
+      "encoding": "E7_abs16",
+      "isaHint": "mcs96_LJMP_or_8086_OUT_imm"
+    },
+    {
+      "at": 16789,
+      "target": 25350,
+      "encoding": "E7_abs16",
+      "isaHint": "mcs96_LJMP_or_8086_OUT_imm"
+    },
+    {
+      "at": 17341,
+      "target": 25601,
+      "encoding": "E7_abs16",
+      "isaHint": "mcs96_LJMP_or_8086_OUT_imm"
+    },
+    {
+      "at": 27384,
+      "target": 8512,
+      "encoding": "E7_abs16",
+      "isaHint": "mcs96_LJMP_or_8086_OUT_imm"
+    },
+    {
+      "at": 27462,
+      "target": 9792,
+      "encoding": "E7_abs16",
+      "isaHint": "mcs96_LJMP_or_8086_OUT_imm"
+    },
+    {
+      "at": 27677,
+      "target": 8213,
+      "encoding": "E7_abs16",
+      "isaHint": "mcs96_LJMP_or_8086_OUT_imm"
+    }
+  ],
+  "i8086NearCallCandidates": [
+    {
+      "at": 9988,
+      "target": 17736,
+      "rel": 7745,
+      "encoding": "E8_rel16",
+      "isaHint": "8086_NEAR_CALL_candidate"
+    },
+    {
+      "at": 10630,
+      "target": 19340,
+      "rel": 8707,
+      "encoding": "E8_rel16",
+      "isaHint": "8086_NEAR_CALL_candidate"
+    },
+    {
+      "at": 11574,
+      "target": 18763,
+      "rel": 7186,
+      "encoding": "E8_rel16",
+      "isaHint": "8086_NEAR_CALL_candidate"
+    },
+    {
+      "at": 11658,
+      "target": 18847,
+      "rel": 7186,
+      "encoding": "E8_rel16",
+      "isaHint": "8086_NEAR_CALL_candidate"
+    },
+    {
+      "at": 11768,
+      "target": 18957,
+      "rel": 7186,
+      "encoding": "E8_rel16",
+      "isaHint": "8086_NEAR_CALL_candidate"
+    },
+    {
+      "at": 12304,
+      "target": 19751,
+      "rel": 7444,
+      "encoding": "E8_rel16",
+      "isaHint": "8086_NEAR_CALL_candidate"
+    },
+    {
+      "at": 13136,
+      "target": 18528,
+      "rel": 5389,
+      "encoding": "E8_rel16",
+      "isaHint": "8086_NEAR_CALL_candidate"
+    },
+    {
+      "at": 14503,
+      "target": 22363,
+      "rel": 7857,
+      "encoding": "E8_rel16",
+      "isaHint": "8086_NEAR_CALL_candidate"
+    },
+    {
+      "at": 17252,
+      "target": 23914,
+      "rel": 6659,
+      "encoding": "E8_rel16",
+      "isaHint": "8086_NEAR_CALL_candidate"
+    },
+    {
+      "at": 17694,
+      "target": 9508,
+      "rel": -8189,
+      "encoding": "E8_rel16",
+      "isaHint": "8086_NEAR_CALL_candidate"
+    },
+    {
+      "at": 17702,
+      "target": 17452,
+      "rel": -253,
+      "encoding": "E8_rel16",
+      "isaHint": "8086_NEAR_CALL_candidate"
+    },
+    {
+      "at": 18162,
+      "target": 25350,
+      "rel": 7185,
+      "encoding": "E8_rel16",
+      "isaHint": "8086_NEAR_CALL_candidate"
+    },
+    {
+      "at": 18782,
+      "target": 25973,
+      "rel": 7188,
+      "encoding": "E8_rel16",
+      "isaHint": "8086_NEAR_CALL_candidate"
+    },
+    {
+      "at": 19104,
+      "target": 26278,
+      "rel": 7171,
+      "encoding": "E8_rel16",
+      "isaHint": "8086_NEAR_CALL_candidate"
+    },
+    {
+      "at": 20918,
+      "target": 30140,
+      "rel": 9219,
+      "encoding": "E8_rel16",
+      "isaHint": "8086_NEAR_CALL_candidate"
+    },
+    {
+      "at": 20949,
+      "target": 30171,
+      "rel": 9219,
+      "encoding": "E8_rel16",
+      "isaHint": "8086_NEAR_CALL_candidate"
+    },
+    {
+      "at": 23222,
+      "target": 30411,
+      "rel": 7186,
+      "encoding": "E8_rel16",
+      "isaHint": "8086_NEAR_CALL_candidate"
+    },
+    {
+      "at": 25114,
+      "target": 31773,
+      "rel": 6656,
+      "encoding": "E8_rel16",
+      "isaHint": "8086_NEAR_CALL_candidate"
+    }
+  ],
+  "counts": {
+    "vectors": 8,
+    "ljmpCandidates": 22,
+    "nearCallCandidates": 18,
+    "uniqueEntrypoints": 47
+  },
+  "topEntrypoints": [
+    {
+      "addr": 25350,
+      "refs": 2
+    },
+    {
+      "addr": 8213,
+      "refs": 1
+    },
+    {
+      "addr": 8332,
+      "refs": 1
+    },
+    {
+      "addr": 8512,
+      "refs": 1
+    },
+    {
+      "addr": 9508,
+      "refs": 1
+    },
+    {
+      "addr": 9792,
+      "refs": 1
+    },
+    {
+      "addr": 11653,
+      "refs": 1
+    },
+    {
+      "addr": 11764,
+      "refs": 1
+    },
+    {
+      "addr": 11824,
+      "refs": 1
+    },
+    {
+      "addr": 16760,
+      "refs": 1
+    },
+    {
+      "addr": 16764,
+      "refs": 1
+    },
+    {
+      "addr": 16768,
+      "refs": 1
+    },
+    {
+      "addr": 16772,
+      "refs": 1
+    },
+    {
+      "addr": 16776,
+      "refs": 1
+    },
+    {
+      "addr": 16780,
+      "refs": 1
+    },
+    {
+      "addr": 16784,
+      "refs": 1
+    },
+    {
+      "addr": 16788,
+      "refs": 1
+    },
+    {
+      "addr": 17213,
+      "refs": 1
+    },
+    {
+      "addr": 17452,
+      "refs": 1
+    },
+    {
+      "addr": 17736,
+      "refs": 1
+    },
+    {
+      "addr": 18528,
+      "refs": 1
+    },
+    {
+      "addr": 18763,
+      "refs": 1
+    },
+    {
+      "addr": 18847,
+      "refs": 1
+    },
+    {
+      "addr": 18957,
+      "refs": 1
+    },
+    {
+      "addr": 19340,
+      "refs": 1
+    },
+    {
+      "addr": 19751,
+      "refs": 1
+    },
+    {
+      "addr": 19979,
+      "refs": 1
+    },
+    {
+      "addr": 20054,
+      "refs": 1
+    },
+    {
+      "addr": 20063,
+      "refs": 1
+    },
+    {
+      "addr": 20076,
+      "refs": 1
+    },
+    {
+      "addr": 22363,
+      "refs": 1
+    },
+    {
+      "addr": 23067,
+      "refs": 1
+    },
+    {
+      "addr": 23914,
+      "refs": 1
+    },
+    {
+      "addr": 25341,
+      "refs": 1
+    },
+    {
+      "addr": 25370,
+      "refs": 1
+    },
+    {
+      "addr": 25373,
+      "refs": 1
+    },
+    {
+      "addr": 25385,
+      "refs": 1
+    },
+    {
+      "addr": 25601,
+      "refs": 1
+    },
+    {
+      "addr": 25784,
+      "refs": 1
+    },
+    {
+      "addr": 25865,
+      "refs": 1
+    },
+    {
+      "addr": 25973,
+      "refs": 1
+    },
+    {
+      "addr": 26278,
+      "refs": 1
+    },
+    {
+      "addr": 26378,
+      "refs": 1
+    },
+    {
+      "addr": 30140,
+      "refs": 1
+    },
+    {
+      "addr": 30171,
+      "refs": 1
+    },
+    {
+      "addr": 30411,
+      "refs": 1
+    },
+    {
+      "addr": 31773,
+      "refs": 1
+    }
+  ]
+}

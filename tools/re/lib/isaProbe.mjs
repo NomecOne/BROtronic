@@ -136,23 +136,24 @@ export function probeIsa(buf) {
     conflicts.push({
       kind: 'isa_conflict',
       detail:
-        'Binary+sheet patterns currently favor Intel MCS-96 / 80C196-class markers (LJMP-like E7 abs16, FD pad~=NOP per sheet) over classic 8086 (no 55 8B EC prologues; 0x90 NOP rarer than 0xFD). Keep user-stated 8086 as first Ghidra language (x86:LE:16:Real Mode); confirm or reject via listing sanity - do not pick C16x from filename.',
+        'Binary+sheet patterns favor Intel MCS-96 / 80C196-class markers (LJMP-like E7 abs16, FD pad~=NOP per sheet) over classic 8086 (no 55 8B EC prologues; 0x90 NOP rarer than 0xFD). Ghidra compare: try x86:LE:16:Real Mode first (user-stated), then MCS96:LE:16:default — do not pick C16x from filename.',
       preferredByEvidence: 'mcs96_80c196_family',
       userStated: '8086',
       scores: { mcs96Score, i8086Score },
     });
   }
 
+  // Prefer MCS-96 as working hypothesis when binary markers dominate; Ghidra listing compare
+  // (tools/re/out/isa_ghidra_conclusion.*) is the canonical confirmation path.
+  const preferMcs = mcs96Score > i8086Score;
   return {
     verificationStatus: 'plausible',
     userStatedIsa: '8086',
-    /**
-     * Analysis default for this offline pass: follow Richard's stated 8086 path for tooling,
-     * but do not treat it as verified — evidence currently leans MCS-96-class.
-     */
-    workingHypothesis: '8086',
-    evidencePreferredIsa: mcs96Score > i8086Score ? 'mcs96_80c196_family' : '8086',
-    confidence: mcs96Score > i8086Score ? 0.35 : 0.45,
+    workingHypothesis: preferMcs ? 'mcs96_80c196_family' : '8086',
+    evidencePreferredIsa: preferMcs ? 'mcs96_80c196_family' : '8086',
+    ghidraLanguageCanonical: preferMcs ? 'MCS96:LE:16:default' : 'x86:LE:16:Real Mode',
+    ghidraLanguageFirstAttempt: 'x86:LE:16:Real Mode',
+    confidence: preferMcs ? 0.82 : 0.45,
     scores: { mcs96Score, i8086Score, ljmp, nearCall, fdPad, ffPad, nop90, pushBpFrame },
     firstNonFf,
     vectors,
@@ -160,8 +161,9 @@ export function probeIsa(buf) {
     conflicts,
     notes: [
       'Do not infer CPU from "C16x####" ROM naming — that is checksum16.',
-      'No IDA .i64/.idb checked into this repo; sheet references IDA views as external evidence. Canonical CODE path is now Ghidra (tools/re/ghidra).',
-      'Headless full disassembly requires Ghidra + JDK; default language attempt x86:LE:16:Real Mode — validate vs MCS-96 markers before trusting.',
+      'Canonical CODE path is Ghidra (tools/re/ghidra). First language attempt remains x86:LE:16:Real Mode; stock Ghidra 11.3.2 also ships MCS96:LE:16:default.',
+      'Stock Ghidra MCS96 may mis-decode LJMP/LCALL immediates as PC-relative; treat absolute LE16 targets from the bytes as authoritative until SLEIGH is patched.',
+      'See tools/re/out/isa_ghidra_conclusion.md after headless compare runs.',
     ],
   };
 }

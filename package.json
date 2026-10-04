@@ -13,7 +13,9 @@
     "re:ingest": "node tools/re/ingest.mjs",
     "re:annotate": "node tools/re/annotate.mjs",
     "re:ghidra:detect": "node tools/re/ghidra/detect.mjs",
-    "re:ghidra": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/re/ghidra/run_headless.ps1",
+    "re:ghidra": "bash tools/re/ghidra/run_headless.sh",
+    "re:ghidra:win": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/re/ghidra/run_headless.ps1",
+    "re:ghidra:branches": "node tools/re/ghidra/correct_ljmp_targets.mjs",
     "test": "vitest run",
     "test:watch": "vitest"
   },

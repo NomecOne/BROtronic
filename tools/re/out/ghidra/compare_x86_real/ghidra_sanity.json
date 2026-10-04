@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "language": "x86:LE:16:Real Mode",
+  "instructionCount": 206,
+  "functionCount": 0,
+  "sampleAt4178": "0000:4178  OUT 0xfd,AX",
+  "sampleAt417C": "0000:417c  STD",
+  "sampleAt2000": null,
+  "namingNote": "C16x900A = CS16 0x900A only",
+  "notes": [
+    "Raw binary required ForceDisassembleRedLabel seeds at LE16 vectors @0x2000",
+    "Inspect whether seeded sites decode as coherent 8086 control flow or nonsense",
+    "Do not promote CODE-derived maps until verificationStatus is raised"
+  ]
+}

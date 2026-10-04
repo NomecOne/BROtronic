@@ -84,7 +84,7 @@ function findPadRuns(buf, start, end, padByte, minLen = 16) {
 
 /**
  * @param {Buffer} buf
- * @param {{ xdfText?: string }} [opts]
+ * @param {{ xdfText?: string, ghidraInsnAddrs?: number[], ghidraLanguage?: string|null }} [opts]
  */
 export function classifyRom(buf, opts = {}) {
   /** @type {Array<{region:string,confidence:number,evidence:string,source:string,note:string,verificationStatus:string}>} */
@@ -210,7 +210,33 @@ export function classifyRom(buf, opts = {}) {
     }
   }
 
-  // Re-assert trailing checksum after any DATA overlays
+  // Ghidra listing instruction starts → raise CODE confidence (still not shipping-verified)
+  if (Array.isArray(opts.ghidraInsnAddrs) && opts.ghidraInsnAddrs.length) {
+    const lang = opts.ghidraLanguage || 'unknown';
+    for (const a of opts.ghidraInsnAddrs) {
+      if (a < 0x2010 || a > 0x7fff) continue; // keep 0x2000-0x200F as VECTOR
+      // Paint a short byte run for the opcode start; full insn length unknown without SLEIGH.
+      paint(bytes, a, Math.min(a + 2, 0x7fff), {
+        region: 'CODE',
+        confidence: 0.78,
+        evidence: `Ghidra listing instruction start (${lang}); LJMP/LCALL targets may need absolute fixup`,
+        source: 'ghidra',
+        note: 'ghidra_insn',
+        verificationStatus: 'plausible',
+      });
+    }
+  }
+
+  // Re-assert vector table + trailing checksum after overlays
+  paint(bytes, 0x2000, 0x200f, {
+    region: 'VECTOR',
+    confidence: 0.7,
+    evidence:
+      'LE u16 interrupt/vector candidates @0x2000 (sheet: hard-coded vector addresses). Targets 0x4178..0x4194 step +4.',
+    source: 'sheet',
+    note: 'vector_table_0x2000',
+    verificationStatus: 'plausible',
+  });
   paint(bytes, 0xfffe, 0xffff, {
     region: 'OTHER',
     confidence: 0.95,

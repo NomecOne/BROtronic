@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "rom": "BMW DME413 SW623 D466.29 C16x900A 94 RedLabel.bin",
+  "checksum16": "0x900A",
+  "generatedAt": "2026-10-04T22:03:00.000Z",
+  "byteRegionCoverage": {
+    "classifiedPct": 100,
+    "byRegion": {
+      "PAD": 8423,
+      "VECTOR": 16,
+      "CODE": 24329,
+      "DATA": 32766,
+      "OTHER": 2
+    },
+    "note": "Every byte has a region label; this is not the same as instruction-verified CODE."
+  },
+  "codeVerification": {
+    "isa": "mcs96_80c196_family",
+    "ghidraLanguage": "MCS96:LE:16:default",
+    "verificationStatus": "plausible",
+    "ghidraInstructions": 5972,
+    "ghidraFunctions": 213,
+    "ghidraBackedCodeBytes": 16393,
+    "ghidraBackedPctOfCodeRegion": 67.38,
+    "remainingCoarseCodeBytes": 7936,
+    "blockers": [
+      "Stock Ghidra MCS96 SLEIGH mis-decodes LJMP/LCALL as PC-relative; absolute fixup via mcs96_absolute_branches.*",
+      "Mid-CODE data islands still coarsely labeled",
+      "Do not promote CODE-derived maps to shipping until cross_checked/verified"
+    ]
+  },
+  "artifacts": [
+    "tools/re/out/isa_ghidra_conclusion.md",
+    "tools/re/out/byte_map.json",
+    "tools/re/out/gap_report.md",
+    "tools/re/out/ghidra/",
+    "tools/re/out/mcs96_absolute_branches.json"
+  ]
+}

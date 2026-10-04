@@ -11,7 +11,11 @@ import { DATA_DIR, OUT_DIR, ROM_NAME, ROM_PATH, EXPECTED_SUM16, ensureOutDirs, r
 import { probeIsa } from './lib/isaProbe.mjs';
 import { classifyRom } from './lib/byteClassifier.mjs';
 import { structuralCodePass } from './lib/structuralPass.mjs';
-import { ghidraStatusSummary, loadGhidraFunctions } from './lib/ghidraImport.mjs';
+import {
+  ghidraStatusSummary,
+  loadGhidraFunctions,
+  loadGhidraInstructionAddresses,
+} from './lib/ghidraImport.mjs';
 
 function writeJson(filePath, obj) {
   fs.writeFileSync(filePath, JSON.stringify(obj, null, 2) + '\n', 'utf8');
@@ -89,7 +93,8 @@ function buildGapReport({ isa, classification, structural, sum16, romName, ghidr
   } else {
     lines.push(`- ${ghidra?.detail ?? 'Run tools/re/ghidra/run_headless.ps1 after installing Ghidra+JDK'}`);
   }
-  lines.push('- Default language attempt: `x86:LE:16:Real Mode` (user-stated 8086 interest).');
+  lines.push('- First language attempt: `x86:LE:16:Real Mode` (user-stated 8086 interest).');
+  lines.push('- Canonical language after compare: `MCS96:LE:16:default` (see `isa_ghidra_conclusion.md`).');
   lines.push('- Filename `C16x900A` is **CS16=0x900A only** — never select a C166/C167 language from it.');
   lines.push('');
   lines.push('## Gap list (coarse CODE + UNKNOWN)');
@@ -105,9 +110,9 @@ function buildGapReport({ isa, classification, structural, sum16, romName, ghidr
   lines.push('');
   lines.push('## Blockers');
   lines.push('');
-  lines.push('- ISA not locked: binary+sheet markers lean MCS-96/80C196-class vs user-stated 8086 — confirm with Ghidra listing sanity + MCU docs.');
-  lines.push('- Ghidra+JDK must be installed and `GHIDRA_INSTALL_DIR` set before headless CODE export.');
-  lines.push('- CODE bytes are region-labeled but not instruction-verified until Ghidra exports land under `tools/re/out/ghidra/`; do not promote CODE-derived maps to shipping.');
+  lines.push('- Stock Ghidra MCS96 SLEIGH appears to treat LJMP/LCALL immediates as PC-relative; use absolute LE16 from bytes for control-flow proof.');
+  lines.push('- Mid-CODE data islands still need manual separation; do not promote CODE-derived maps to shipping.');
+  lines.push('- `verificationStatus` remains below `cross_checked` until LJMP operand decode is corrected or independently validated.');
   lines.push('');
   return lines.join('\n');
 }
@@ -126,11 +131,16 @@ function main() {
   const xdfText = fs.existsSync(xdfPath) ? fs.readFileSync(xdfPath, 'utf8') : '';
 
   const isa = probeIsa(buf);
-  const classification = classifyRom(buf, { xdfText });
-  const structural = structuralCodePass(buf);
   const ghidraOut = path.join(OUT_DIR, 'ghidra');
   const ghidra = ghidraStatusSummary(ghidraOut);
   const ghidraFns = loadGhidraFunctions(ghidraOut);
+  const ghidraInsns = loadGhidraInstructionAddresses(ghidraOut);
+  const classification = classifyRom(buf, {
+    xdfText,
+    ghidraInsnAddrs: ghidraInsns?.addresses ?? [],
+    ghidraLanguage: ghidra?.language ?? null,
+  });
+  const structural = structuralCodePass(buf);
 
   const artifact = {
     schemaVersion: 1,
