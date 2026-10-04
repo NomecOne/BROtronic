@@ -12,18 +12,27 @@ function bytesFromHex(hex) {
   return out;
 }
 
+const staleCount = data.sites.filter((s) => s.landing.coarseMapConflict).length;
+const axxxCount = data.sites.filter((s) => s.landing.inHighAxxx).length;
+const codeEnd = data.codeWindow?.endExclusiveHex || "0xB930";
+
 const pack = {
   meta: {
     siteCount: data.siteCount,
-    axxxLandingCount: data.axxxLandingCount,
+    axxxLandingCount: data.axxxLandingCount ?? axxxCount,
+    baselineCodeLandingCount: data.baselineCodeLandingCount ?? data.siteCount,
+    staleCoarseDataCount: staleCount,
     isa: data.isa,
     ghidraLanguage: data.ghidraLanguage,
     rom: data.rom,
+    codeEndExclusiveHex: codeEnd,
     addressingNote: data.addressingNote,
     shippingNote: data.shippingNote,
   },
   sites: data.sites.map((s) => {
     const stubLen = s.stubBytes.hex.length / 2;
+    const inBaseline = !!s.landing.inBaselineCode;
+    const stale = !!s.landing.coarseMapConflict;
     return {
       id: s.id,
       vectorIndex: s.vectorIndex,
@@ -36,7 +45,9 @@ const pack = {
       stubRegion: s.region_label,
       landingAddrHex: s.landing.addrHex,
       landingRegion: s.landing.region_label,
-      inHighAxxx: s.landing.inHighAxxx,
+      inHighAxxx: !!s.landing.inHighAxxx,
+      inBaselineCode: inBaseline,
+      coarseMapConflict: stale,
       dispHex: s.cfg_edge_from.dispHex,
       edgeStatus: s.cfg_edge_from.verificationStatus,
       stubHexBytes: bytesFromHex(s.bytes.hex),
@@ -47,9 +58,11 @@ const pack = {
       landingWindowStartHex: "0x" + s.landing.bytes.start.toString(16).toUpperCase(),
       landingNearby: (s.landing.ghidra_insns_nearby || []).map((x) => x.addrHex + " " + x.insn),
       explanation: s.explanation,
-      decision: s.landing.inHighAxxx
-        ? "Decide: keep DATA_CAL label, carve CODE island at landing, or mark UNKNOWN-pending — do not ship yet."
-        : "Landing already in CODE window; low priority vs Axxx conflict sites.",
+      decision: inBaseline
+        ? stale
+          ? "Baseline: inside CODE (ends 0xB930). Decide: real IRQ handler vs mid-CODE data island; retire stale coarse DATA label. Do not ship yet."
+          : "Landing in low CODE window — control case under baseline CODE through 0xB930."
+        : "Landing beyond baseline CODE end 0xB930 — still needs human review.",
     };
   }),
 };
@@ -125,7 +138,6 @@ function SiteCard({
   onOpenChange: (open: boolean) => void;
 }) {
   const theme = useHostTheme();
-  const conflict = site.landingRegion === "DATA";
   return (
     <Card collapsible open={open} onOpenChange={onOpenChange}>
       <CardHeader
@@ -144,8 +156,10 @@ function SiteCard({
               {site.stubPrologue}
             </Pill>
             <Pill size="sm">{site.ghidraLjmp}</Pill>
-            <Pill size="sm" active={conflict}>
-              {conflict ? "CODE stub → DATA landing" : "CODE stub → CODE landing"}
+            <Pill size="sm" active={site.coarseMapConflict}>
+              {site.coarseMapConflict
+                ? "baseline CODE · coarse was DATA"
+                : "baseline CODE"}
             </Pill>
           </Row>
           <Grid columns={2} gap={12}>
@@ -178,7 +192,8 @@ function SiteCard({
           </Grid>
           <Text size="small" tone="secondary">
             CFG edge {site.ljmpAddrHex} {site.ghidraLjmp} disp {site.dispHex} · status{" "}
-            {site.edgeStatus} · landing region {site.landingRegion}
+            {site.edgeStatus} · baseline landing {site.landingRegion}
+            {site.coarseMapConflict ? " · coarse map was DATA (stale)" : ""}
           </Text>
           {site.landingNearby.length > 0 ? (
             <Stack gap={4}>
@@ -193,12 +208,12 @@ function SiteCard({
             </Stack>
           ) : (
             <Text size="small" tone="tertiary">
-              No Ghidra instructions at landing (outside seeded CODE disasm).
+              No Ghidra instructions seeded at landing yet (still inside CODE through 0xB930).
             </Text>
           )}
           <Divider />
           <Text>{site.explanation}</Text>
-          <Callout tone={conflict ? "warning" : "info"} title="What to decide">
+          <Callout tone={site.coarseMapConflict ? "info" : "neutral"} title="What to decide">
             {site.decision}
           </Callout>
         </Stack>
@@ -209,12 +224,12 @@ function SiteCard({
 
 export default function IrqStubsReview() {
   const theme = useHostTheme();
-  const [filter, setFilter] = useState<"all" | "axxx" | "code">("all");
+  const [filter, setFilter] = useState<"all" | "axxx" | "stale">("all");
   const [openId, setOpenId] = useState<string | null>(REVIEW.sites[0]?.id ?? null);
 
   const sites = REVIEW.sites.filter((s) => {
     if (filter === "axxx") return s.inHighAxxx;
-    if (filter === "code") return s.landingRegion === "CODE";
+    if (filter === "stale") return s.coarseMapConflict;
     return true;
   });
 
@@ -223,24 +238,31 @@ export default function IrqStubsReview() {
       <Stack gap={8}>
         <H1>IRQ stubs review</H1>
         <Text tone="secondary">
-          RedLabel MCS-96 — vector table stubs that PC-rel LJMP into high image. Source:
-          tools/re/out/irq_stubs_review.json · {REVIEW.meta.rom}
+          RedLabel MCS-96 — baseline CODE through {REVIEW.meta.codeEndExclusiveHex}. 0xAxxx stub
+          landings are inside CODE. Source: tools/re/out/irq_stubs_review.json · {REVIEW.meta.rom}
         </Text>
       </Stack>
 
-      <Callout tone="warning" title="Review-only — do not ship">
+      <Callout tone="info" title={"Baseline CODE → " + REVIEW.meta.codeEndExclusiveHex}>
         {REVIEW.meta.shippingNote} {REVIEW.meta.addressingNote}
       </Callout>
 
       <Grid columns={4} gap={12}>
         <Stat value={String(REVIEW.meta.siteCount)} label="IRQ stub sites" />
         <Stat
-          value={String(REVIEW.meta.axxxLandingCount)}
-          label="0xAxxx DATA landings"
-          tone="warning"
+          value={String(REVIEW.meta.baselineCodeLandingCount)}
+          label="Inside baseline CODE"
+          tone="success"
         />
-        <Stat value="1" label="CODE control landing" tone="info" />
-        <Stat value={REVIEW.meta.ghidraLanguage} label="Ghidra language" />
+        <Stat
+          value={String(REVIEW.meta.axxxLandingCount)}
+          label="0xAxxx in CODE"
+          tone="info"
+        />
+        <Stat
+          value={String(REVIEW.meta.staleCoarseDataCount)}
+          label="Stale coarse DATA labels"
+        />
       </Grid>
 
       <Stack gap={8}>
@@ -250,10 +272,10 @@ export default function IrqStubsReview() {
             All 8
           </Pill>
           <Pill active={filter === "axxx"} onClick={() => setFilter("axxx")}>
-            0xAxxx DATA (7)
+            0xAxxx in CODE (7)
           </Pill>
-          <Pill active={filter === "code"} onClick={() => setFilter("code")}>
-            CODE landing (1)
+          <Pill active={filter === "stale"} onClick={() => setFilter("stale")}>
+            Stale coarse DATA (7)
           </Pill>
         </Row>
       </Stack>
@@ -261,20 +283,20 @@ export default function IrqStubsReview() {
       <Stack gap={8}>
         <H2>Index</H2>
         <Table
-          headers={["Vec", "Stub", "Prologue", "Ghidra", "Landing", "Conflict"]}
+          headers={["Vec", "Stub", "Prologue", "Ghidra", "Landing", "Baseline / coarse"]}
           columnAlign={["left", "left", "left", "left", "left", "left"]}
-          rowTone={sites.map((s) => (s.landingRegion === "DATA" ? "warning" : "info"))}
+          rowTone={sites.map((s) => (s.coarseMapConflict ? "info" : "success"))}
           rows={sites.map((s) => [
             String(s.vectorIndex),
             s.stubAddrHex,
             s.stubPrologue,
             s.ghidraLjmp,
             s.landingAddrHex,
-            s.landingRegion === "DATA" ? "CODE→DATA" : "CODE→CODE",
+            s.coarseMapConflict ? "CODE · coarse was DATA" : "CODE",
           ])}
         />
         <Text size="small" tone="tertiary">
-          Source: cloud RE evidence pack on PR branch cursor/redlabel-ghidra-re-48cf · CFG
+          Richard baseline 413/623 CODE end 0xB930 · PR branch cursor/redlabel-ghidra-re-48cf · CFG
           cross_checked
         </Text>
       </Stack>
@@ -282,8 +304,8 @@ export default function IrqStubsReview() {
       <Stack gap={12}>
         <H2>Sites</H2>
         <Text tone="secondary">
-          Expand a site for hex context at the stub and landing, Ghidra decode vs region label,
-          and the decision to make.
+          Expand a site for hex context at the stub and landing. 0xAxxx is not outside CODE under
+          the 0xB930 baseline — decide handler vs mid-CODE data island.
         </Text>
         {sites.map((site) => (
           <SiteCard
@@ -298,10 +320,10 @@ export default function IrqStubsReview() {
       <Stack gap={8}>
         <H3>Decision rubric</H3>
         <Text>
-          For each 0xAxxx landing: (1) true IRQ handler code-in-cal → carve CODE island; (2) still
-          calibration/data → keep DATA and document trampoline oddity; (3) unclear → leave
-          unlabeled for map work. Never promote into definitions/packs/*.shipping.json from this
-          review alone.
+          Under CODE through 0xB930, each 0xAxxx landing is inside the CODE window. Decide: (1) real
+          IRQ handler → keep/seed as CODE; (2) mid-CODE data island → mark data inside CODE range;
+          (3) unclear → leave for map work. Retire the old coarse DATA label that assumed CODE ended
+          at 0x7FFF. Never promote into definitions/packs/*.shipping.json from this review alone.
         </Text>
       </Stack>
     </Stack>

@@ -1,15 +1,15 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "irq_stubs_review_v1",
-  "purpose": "Human visual review of IRQ stub PC-rel landings (esp. 0xAxxx labeled DATA)",
+  "purpose": "Human visual review of IRQ stub PC-rel landings (0xAxxx are inside baseline CODE through 0xB930)",
   "rom": "BMW DME413 SW623 D466.29 C16x900A 94 RedLabel.bin",
   "isa": "mcs96_80c196_family",
   "ghidraLanguage": "MCS96:LE:16:default",
-  "addressingNote": "LJMP/LCALL are PC-relative disp16; Ghidra SLEIGH correct (blocker1 resolved).",
+  "addressingNote": "LJMP/LCALL are PC-relative disp16; Ghidra SLEIGH correct (blocker1 resolved). Baseline CODE extends through 0xB930 — 0xAxxx landings are inside CODE, not outside it.",
   "vectorTable": "0x2000",
   "siteCount": 8,
   "axxxLandingCount": 7,
-  "dataLandingCount": 7,
+  "dataLandingCount": 0,
   "uniqueLandings": [
     {
       "addr": 8367,
@@ -23,12 +23,16 @@
         "endExclusive": 8391,
         "hex": "e7f80de7b401e7230ee77d0ee7ea14e7ed19e76e17e79f1b",
         "focusOffset": 0
-      }
+      },
+      "region_note": "baseline_code_to_0xB930",
+      "inBaselineCode": true,
+      "coarseMapLabel": "CODE",
+      "coarseMapConflict": false
     },
     {
       "addr": 42105,
       "addrHex": "0xA479",
-      "region_label": "DATA",
+      "region_label": "CODE",
       "referencedBy": [
         "vec0_stub"
       ],
@@ -37,12 +41,16 @@
         "endExclusive": 42129,
         "hex": "b09e5c94155c33a808305c059101092012077ae0dc0db105",
         "focusOffset": 0
-      }
+      },
+      "region_note": "baseline_code_to_0xB930",
+      "inBaselineCode": true,
+      "coarseMapLabel": "DATA",
+      "coarseMapConflict": true
     },
     {
       "addr": 42142,
       "addrHex": "0xA49E",
-      "region_label": "DATA",
+      "region_label": "CODE",
       "referencedBy": [
         "vec7_stub"
       ],
@@ -51,12 +59,16 @@
         "endExclusive": 42166,
         "hex": "17dbdb02f3f0b1ffdbf3f0f090169f389f0220a8b10802b1",
         "focusOffset": 0
-      }
+      },
+      "region_note": "baseline_code_to_0xB930",
+      "inBaselineCode": true,
+      "coarseMapLabel": "DATA",
+      "coarseMapConflict": true
     },
     {
       "addr": 42153,
       "addrHex": "0xA4A9",
-      "region_label": "DATA",
+      "region_label": "CODE",
       "referencedBy": [
         "vec1_stub",
         "vec4_stub"
@@ -66,12 +78,16 @@
         "endExclusive": 42177,
         "hex": "f090169f389f0220a8b10802b1180665f40186a086040146",
         "focusOffset": 0
-      }
+      },
+      "region_note": "baseline_code_to_0xB930",
+      "inBaselineCode": true,
+      "coarseMapLabel": "DATA",
+      "coarseMapConflict": true
     },
     {
       "addr": 42154,
       "addrHex": "0xA4AA",
-      "region_label": "DATA",
+      "region_label": "CODE",
       "referencedBy": [
         "vec5_stub"
       ],
@@ -80,12 +96,16 @@
         "endExclusive": 42178,
         "hex": "90169f389f0220a8b10802b1180665f40186a0860401463c",
         "focusOffset": 0
-      }
+      },
+      "region_note": "baseline_code_to_0xB930",
+      "inBaselineCode": true,
+      "coarseMapLabel": "DATA",
+      "coarseMapConflict": true
     },
     {
       "addr": 42560,
       "addrHex": "0xA640",
-      "region_label": "DATA",
+      "region_label": "CODE",
       "referencedBy": [
         "vec3_stub"
       ],
@@ -94,12 +114,16 @@
         "endExclusive": 42584,
         "hex": "b09ea1b0159e949ea130a108c701a61800e7f19a3ca10220",
         "focusOffset": 0
-      }
+      },
+      "region_note": "baseline_code_to_0xB930",
+      "inBaselineCode": true,
+      "coarseMapLabel": "DATA",
+      "coarseMapConflict": true
     },
     {
       "addr": 43150,
       "addrHex": "0xA88E",
-      "region_label": "DATA",
+      "region_label": "CODE",
       "referencedBy": [
         "vec2_stub"
       ],
@@ -108,7 +132,11 @@
         "endExclusive": 43174,
         "hex": "90169f379f373ba83639bf31a00492713f9fa00492713f9f",
         "focusOffset": 0
-      }
+      },
+      "region_note": "baseline_code_to_0xB930",
+      "inBaselineCode": true,
+      "coarseMapLabel": "DATA",
+      "coarseMapConflict": true
     }
   ],
   "sites": [
@@ -146,14 +174,15 @@
         "dispHex": "0x62FD",
         "to": 42105,
         "toHex": "0xA479",
-        "toRegion": "DATA",
-        "verificationStatus": "cross_checked"
+        "toRegion": "CODE",
+        "verificationStatus": "cross_checked",
+        "coarseMapToRegion": "DATA"
       },
       "landing": {
         "addr": 42105,
         "addrHex": "0xA479",
-        "region_label": "DATA",
-        "region_note": "data_cal",
+        "region_label": "CODE",
+        "region_note": "baseline_code_to_0xB930",
         "bytes": {
           "start": 42105,
           "endExclusive": 42129,
@@ -161,9 +190,12 @@
           "focusOffset": 0
         },
         "ghidra_insns_nearby": [],
-        "inHighAxxx": true
+        "inHighAxxx": true,
+        "inBaselineCode": true,
+        "coarseMapLabel": "DATA",
+        "coarseMapConflict": true
       },
-      "explanation": "Vector[0] @0x2000 -> stub 0x4178 (PUSHF + LJMP @0x4179) PC-rel CFG: LJMP disp 0x62FD -> 0xA479 (region DATA). Landing is region-labeled DATA (high image); candidate code-in-cal / IRQ handler island for visual review \u2014 encoding is PC-rel LJMP, not absolute."
+      "explanation": "Vector[0] @0x2000 -> stub 0x4178 (PUSHF + LJMP @0x4179) PC-rel CFG: LJMP disp 0x62FD -> 0xA479 (baseline CODE, window ends 0xB930). Coarse map previously labeled this DATA (old CODE end 0x7FFF); Richard baseline CODE through 0xB930 places it inside CODE. Encoding is PC-rel LJMP; review whether this landing is a real IRQ handler vs mid-CODE data island — not an outside-CODE map error."
     },
     {
       "id": "vec1_stub",
@@ -199,14 +231,15 @@
         "dispHex": "0x6329",
         "to": 42153,
         "toHex": "0xA4A9",
-        "toRegion": "DATA",
-        "verificationStatus": "cross_checked"
+        "toRegion": "CODE",
+        "verificationStatus": "cross_checked",
+        "coarseMapToRegion": "DATA"
       },
       "landing": {
         "addr": 42153,
         "addrHex": "0xA4A9",
-        "region_label": "DATA",
-        "region_note": "data_cal",
+        "region_label": "CODE",
+        "region_note": "baseline_code_to_0xB930",
         "bytes": {
           "start": 42153,
           "endExclusive": 42177,
@@ -214,9 +247,12 @@
           "focusOffset": 0
         },
         "ghidra_insns_nearby": [],
-        "inHighAxxx": true
+        "inHighAxxx": true,
+        "inBaselineCode": true,
+        "coarseMapLabel": "DATA",
+        "coarseMapConflict": true
       },
-      "explanation": "Vector[1] @0x2002 -> stub 0x417C (NOP + LJMP @0x417D) PC-rel CFG: LJMP disp 0x6329 -> 0xA4A9 (region DATA). Landing is region-labeled DATA (high image); candidate code-in-cal / IRQ handler island for visual review \u2014 encoding is PC-rel LJMP, not absolute."
+      "explanation": "Vector[1] @0x2002 -> stub 0x417C (NOP + LJMP @0x417D) PC-rel CFG: LJMP disp 0x6329 -> 0xA4A9 (baseline CODE, window ends 0xB930). Coarse map previously labeled this DATA (old CODE end 0x7FFF); Richard baseline CODE through 0xB930 places it inside CODE. Encoding is PC-rel LJMP; review whether this landing is a real IRQ handler vs mid-CODE data island — not an outside-CODE map error."
     },
     {
       "id": "vec2_stub",
@@ -252,14 +288,15 @@
         "dispHex": "0x670A",
         "to": 43150,
         "toHex": "0xA88E",
-        "toRegion": "DATA",
-        "verificationStatus": "cross_checked"
+        "toRegion": "CODE",
+        "verificationStatus": "cross_checked",
+        "coarseMapToRegion": "DATA"
       },
       "landing": {
         "addr": 43150,
         "addrHex": "0xA88E",
-        "region_label": "DATA",
-        "region_note": "data_cal",
+        "region_label": "CODE",
+        "region_note": "baseline_code_to_0xB930",
         "bytes": {
           "start": 43150,
           "endExclusive": 43174,
@@ -267,9 +304,12 @@
           "focusOffset": 0
         },
         "ghidra_insns_nearby": [],
-        "inHighAxxx": true
+        "inHighAxxx": true,
+        "inBaselineCode": true,
+        "coarseMapLabel": "DATA",
+        "coarseMapConflict": true
       },
-      "explanation": "Vector[2] @0x2004 -> stub 0x4180 (PUSHF + LJMP @0x4181) PC-rel CFG: LJMP disp 0x670A -> 0xA88E (region DATA). Landing is region-labeled DATA (high image); candidate code-in-cal / IRQ handler island for visual review \u2014 encoding is PC-rel LJMP, not absolute."
+      "explanation": "Vector[2] @0x2004 -> stub 0x4180 (PUSHF + LJMP @0x4181) PC-rel CFG: LJMP disp 0x670A -> 0xA88E (baseline CODE, window ends 0xB930). Coarse map previously labeled this DATA (old CODE end 0x7FFF); Richard baseline CODE through 0xB930 places it inside CODE. Encoding is PC-rel LJMP; review whether this landing is a real IRQ handler vs mid-CODE data island — not an outside-CODE map error."
     },
     {
       "id": "vec3_stub",
@@ -305,14 +345,15 @@
         "dispHex": "0x64B8",
         "to": 42560,
         "toHex": "0xA640",
-        "toRegion": "DATA",
-        "verificationStatus": "cross_checked"
+        "toRegion": "CODE",
+        "verificationStatus": "cross_checked",
+        "coarseMapToRegion": "DATA"
       },
       "landing": {
         "addr": 42560,
         "addrHex": "0xA640",
-        "region_label": "DATA",
-        "region_note": "data_cal",
+        "region_label": "CODE",
+        "region_note": "baseline_code_to_0xB930",
         "bytes": {
           "start": 42560,
           "endExclusive": 42584,
@@ -320,9 +361,12 @@
           "focusOffset": 0
         },
         "ghidra_insns_nearby": [],
-        "inHighAxxx": true
+        "inHighAxxx": true,
+        "inBaselineCode": true,
+        "coarseMapLabel": "DATA",
+        "coarseMapConflict": true
       },
-      "explanation": "Vector[3] @0x2006 -> stub 0x4184 (PUSHF + LJMP @0x4185) PC-rel CFG: LJMP disp 0x64B8 -> 0xA640 (region DATA). Landing is region-labeled DATA (high image); candidate code-in-cal / IRQ handler island for visual review \u2014 encoding is PC-rel LJMP, not absolute."
+      "explanation": "Vector[3] @0x2006 -> stub 0x4184 (PUSHF + LJMP @0x4185) PC-rel CFG: LJMP disp 0x64B8 -> 0xA640 (baseline CODE, window ends 0xB930). Coarse map previously labeled this DATA (old CODE end 0x7FFF); Richard baseline CODE through 0xB930 places it inside CODE. Encoding is PC-rel LJMP; review whether this landing is a real IRQ handler vs mid-CODE data island — not an outside-CODE map error."
     },
     {
       "id": "vec4_stub",
@@ -358,14 +402,15 @@
         "dispHex": "0x631D",
         "to": 42153,
         "toHex": "0xA4A9",
-        "toRegion": "DATA",
-        "verificationStatus": "cross_checked"
+        "toRegion": "CODE",
+        "verificationStatus": "cross_checked",
+        "coarseMapToRegion": "DATA"
       },
       "landing": {
         "addr": 42153,
         "addrHex": "0xA4A9",
-        "region_label": "DATA",
-        "region_note": "data_cal",
+        "region_label": "CODE",
+        "region_note": "baseline_code_to_0xB930",
         "bytes": {
           "start": 42153,
           "endExclusive": 42177,
@@ -373,9 +418,12 @@
           "focusOffset": 0
         },
         "ghidra_insns_nearby": [],
-        "inHighAxxx": true
+        "inHighAxxx": true,
+        "inBaselineCode": true,
+        "coarseMapLabel": "DATA",
+        "coarseMapConflict": true
       },
-      "explanation": "Vector[4] @0x2008 -> stub 0x4188 (NOP + LJMP @0x4189) PC-rel CFG: LJMP disp 0x631D -> 0xA4A9 (region DATA). Landing is region-labeled DATA (high image); candidate code-in-cal / IRQ handler island for visual review \u2014 encoding is PC-rel LJMP, not absolute."
+      "explanation": "Vector[4] @0x2008 -> stub 0x4188 (NOP + LJMP @0x4189) PC-rel CFG: LJMP disp 0x631D -> 0xA4A9 (baseline CODE, window ends 0xB930). Coarse map previously labeled this DATA (old CODE end 0x7FFF); Richard baseline CODE through 0xB930 places it inside CODE. Encoding is PC-rel LJMP; review whether this landing is a real IRQ handler vs mid-CODE data island — not an outside-CODE map error."
     },
     {
       "id": "vec5_stub",
@@ -411,14 +459,15 @@
         "dispHex": "0x631A",
         "to": 42154,
         "toHex": "0xA4AA",
-        "toRegion": "DATA",
-        "verificationStatus": "cross_checked"
+        "toRegion": "CODE",
+        "verificationStatus": "cross_checked",
+        "coarseMapToRegion": "DATA"
       },
       "landing": {
         "addr": 42154,
         "addrHex": "0xA4AA",
-        "region_label": "DATA",
-        "region_note": "data_cal",
+        "region_label": "CODE",
+        "region_note": "baseline_code_to_0xB930",
         "bytes": {
           "start": 42154,
           "endExclusive": 42178,
@@ -426,9 +475,12 @@
           "focusOffset": 0
         },
         "ghidra_insns_nearby": [],
-        "inHighAxxx": true
+        "inHighAxxx": true,
+        "inBaselineCode": true,
+        "coarseMapLabel": "DATA",
+        "coarseMapConflict": true
       },
-      "explanation": "Vector[5] @0x200A -> stub 0x418C (PUSHF + LJMP @0x418D) PC-rel CFG: LJMP disp 0x631A -> 0xA4AA (region DATA). Landing is region-labeled DATA (high image); candidate code-in-cal / IRQ handler island for visual review \u2014 encoding is PC-rel LJMP, not absolute."
+      "explanation": "Vector[5] @0x200A -> stub 0x418C (PUSHF + LJMP @0x418D) PC-rel CFG: LJMP disp 0x631A -> 0xA4AA (baseline CODE, window ends 0xB930). Coarse map previously labeled this DATA (old CODE end 0x7FFF); Richard baseline CODE through 0xB930 places it inside CODE. Encoding is PC-rel LJMP; review whether this landing is a real IRQ handler vs mid-CODE data island — not an outside-CODE map error."
     },
     {
       "id": "vec6_stub",
@@ -465,13 +517,14 @@
         "to": 8367,
         "toHex": "0x20AF",
         "toRegion": "CODE",
-        "verificationStatus": "cross_checked"
+        "verificationStatus": "cross_checked",
+        "coarseMapToRegion": "CODE"
       },
       "landing": {
         "addr": 8367,
         "addrHex": "0x20AF",
         "region_label": "CODE",
-        "region_note": "ghidra_insn",
+        "region_note": "baseline_code_to_0xB930",
         "bytes": {
           "start": 8367,
           "endExclusive": 8391,
@@ -520,9 +573,12 @@
             "insn": "LJMP 0x3c66"
           }
         ],
-        "inHighAxxx": false
+        "inHighAxxx": false,
+        "inBaselineCode": true,
+        "coarseMapLabel": "CODE",
+        "coarseMapConflict": false
       },
-      "explanation": "Vector[6] @0x200C -> stub 0x4190 (PUSHF + LJMP @0x4191) PC-rel CFG: LJMP disp 0xDF1B -> 0x20AF (region CODE). Landing is inside coarse CODE window."
+      "explanation": "Vector[6] @0x200C -> stub 0x4190 (PUSHF + LJMP @0x4191) PC-rel CFG: LJMP disp 0xDF1B -> 0x20AF (baseline CODE, window ends 0xB930). Encoding is PC-rel LJMP; review whether this landing is a real IRQ handler vs mid-CODE data island — not an outside-CODE map error."
     },
     {
       "id": "vec7_stub",
@@ -558,14 +614,15 @@
         "dispHex": "0x6306",
         "to": 42142,
         "toHex": "0xA49E",
-        "toRegion": "DATA",
-        "verificationStatus": "cross_checked"
+        "toRegion": "CODE",
+        "verificationStatus": "cross_checked",
+        "coarseMapToRegion": "DATA"
       },
       "landing": {
         "addr": 42142,
         "addrHex": "0xA49E",
-        "region_label": "DATA",
-        "region_note": "data_cal",
+        "region_label": "CODE",
+        "region_note": "baseline_code_to_0xB930",
         "bytes": {
           "start": 42142,
           "endExclusive": 42166,
@@ -573,9 +630,12 @@
           "focusOffset": 0
         },
         "ghidra_insns_nearby": [],
-        "inHighAxxx": true
+        "inHighAxxx": true,
+        "inBaselineCode": true,
+        "coarseMapLabel": "DATA",
+        "coarseMapConflict": true
       },
-      "explanation": "Vector[7] @0x200E -> stub 0x4194 (PUSHF + LJMP @0x4195) PC-rel CFG: LJMP disp 0x6306 -> 0xA49E (region DATA). Landing is region-labeled DATA (high image); candidate code-in-cal / IRQ handler island for visual review \u2014 encoding is PC-rel LJMP, not absolute."
+      "explanation": "Vector[7] @0x200E -> stub 0x4194 (PUSHF + LJMP @0x4195) PC-rel CFG: LJMP disp 0x6306 -> 0xA49E (baseline CODE, window ends 0xB930). Coarse map previously labeled this DATA (old CODE end 0x7FFF); Richard baseline CODE through 0xB930 places it inside CODE. Encoding is PC-rel LJMP; review whether this landing is a real IRQ handler vs mid-CODE data island — not an outside-CODE map error."
     }
   ],
   "relatedArtifacts": [
@@ -584,5 +644,14 @@
     "tools/re/out/ghidra/ghidra_listing.txt",
     "tools/re/out/byte_map.json"
   ],
-  "shippingNote": "Review-only. Do not promote into definitions/packs/*.shipping.json."
+  "shippingNote": "Review-only. Baseline CODE through 0xB930 accepted for layout; do not promote map edits into definitions/packs/*.shipping.json until map-level verification.",
+  "codeWindow": {
+    "start": 0,
+    "startHex": "0x0000",
+    "endExclusive": 47408,
+    "endExclusiveHex": "0xB930",
+    "note": "Richard baseline 413/623: CODE section goes to offset 0xB930 (exclusive). Coarse region map that labeled 0x8000+ as DATA is superseded for this review."
+  },
+  "baselineCodeLandingCount": 8,
+  "beyondBaselineCodeCount": 0
 }

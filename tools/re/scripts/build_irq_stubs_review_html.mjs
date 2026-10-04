@@ -2,6 +2,7 @@ import fs from "node:fs";
 
 const data = JSON.parse(fs.readFileSync(new URL("../out/irq_stubs_review.json", import.meta.url), "utf8"));
 const json = JSON.stringify(data);
+const codeEnd = data.codeWindow?.endExclusiveHex || "0xB930";
 
 const html = `<!DOCTYPE html>
 <html lang="en">
@@ -35,7 +36,7 @@ p, li { color: var(--muted); font-size: 14px; }
 code { font-family: var(--mono); font-size: 12px; color: var(--text); }
 .banner {
   border: 1px solid var(--border); background: var(--panel);
-  padding: 12px 14px; margin: 16px 0 20px; border-left: 3px solid var(--warn);
+  padding: 12px 14px; margin: 16px 0 20px; border-left: 3px solid var(--accent);
 }
 .stats { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
 .stat {
@@ -75,25 +76,25 @@ tr:hover td { background: #222; cursor: pointer; }
 .hex .b.focus { background: var(--stub); color: #fff; }
 .hex .b.land { background: var(--landing); color: #fff; }
 .explain { font-size: 13px; color: var(--text); margin: 8px 0; }
-.decide { font-size: 13px; color: var(--warn); margin-top: 8px; }
+.decide { font-size: 13px; color: var(--accent); margin-top: 8px; }
 .caption { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
 footer { margin-top: 32px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--border); padding-top: 12px; }
 </style>
 </head>
 <body>
   <h1>IRQ stubs review — RedLabel / MCS-96</h1>
-  <p>Offline RE only. Blocker 1 (LJMP/LCALL PC-rel) is closed. Open issue: stub landings in high <code>0xAxxx</code> still labeled DATA by the coarse region map.</p>
+  <p>Offline RE only. Blocker 1 (LJMP/LCALL PC-rel) is closed. Richard baseline 413/623: <strong style="color:var(--text)">CODE through ${codeEnd}</strong> — high <code>0xAxxx</code> stub landings are <em>inside</em> CODE, not outside it. Coarse map DATA labels above 0x7FFF are stale for this layout.</p>
   <div class="banner" id="banner"></div>
   <div class="stats" id="stats"></div>
   <div class="toolbar">
     <button type="button" class="active" data-filter="all">All sites</button>
-    <button type="button" data-filter="axxx">0xAxxx DATA only</button>
-    <button type="button" data-filter="code">CODE landing</button>
+    <button type="button" data-filter="axxx">0xAxxx (in CODE)</button>
+    <button type="button" data-filter="stale">Stale coarse DATA</button>
   </div>
   <h2>Index</h2>
   <table>
     <thead>
-      <tr><th>Vec</th><th>Stub</th><th>Prologue</th><th>Ghidra LJMP</th><th>Landing</th><th>Region conflict</th></tr>
+      <tr><th>Vec</th><th>Stub</th><th>Prologue</th><th>Ghidra LJMP</th><th>Landing</th><th>Baseline / coarse</th></tr>
     </thead>
     <tbody id="index"></tbody>
   </table>
@@ -113,18 +114,24 @@ function renderHex(hex, focusOffset, focusLen, cls){
   }).join("");
 }
 function decision(site){
-  if(site.landing.inHighAxxx){
-    return "Decide: keep DATA_CAL, carve a CODE island at the landing, or mark UNKNOWN-pending. Do not promote into shipping packs.";
+  if(site.landing.inBaselineCode){
+    if(site.landing.coarseMapConflict){
+      return "Baseline: inside CODE (ends 0xB930). Decide: real IRQ handler vs mid-CODE data island; update coarse region map off the old 0x7FFF CODE end. Do not ship yet.";
+    }
+    return "Landing already in low CODE window — control case under baseline CODE through 0xB930.";
   }
-  return "Landing already in CODE — useful control case; Axxx sites are the blocker.";
+  return "Landing beyond baseline CODE end 0xB930 — still needs human review.";
 }
+const codeEndHex = (DATA.codeWindow && DATA.codeWindow.endExclusiveHex) || "0xB930";
+const staleCount = DATA.sites.filter(s => s.landing.coarseMapConflict).length;
 document.getElementById("banner").innerHTML =
-  "<strong>Review gate</strong> — "+DATA.shippingNote+" "+DATA.addressingNote;
+  "<strong>Baseline CODE → "+codeEndHex+"</strong> — "+DATA.shippingNote+" "+DATA.addressingNote;
 document.getElementById("stats").innerHTML = [
   ["siteCount","IRQ stub sites"],
-  ["axxxLandingCount","Land in 0xAxxx DATA"],
-  ["dataLandingCount","DATA landings"],
-].map(([k,l])=>'<div class="stat"><b>'+DATA[k]+"</b><span>"+l+"</span></div>").join("")
+  ["baselineCodeLandingCount","Inside baseline CODE"],
+  ["axxxLandingCount","0xAxxx in CODE"],
+].map(([k,l])=>'<div class="stat"><b>'+(DATA[k] ?? staleCount)+"</b><span>"+l+"</span></div>").join("")
+  + '<div class="stat"><b>'+staleCount+'</b><span>Stale coarse DATA labels</span></div>'
   + '<div class="stat"><b>'+DATA.ghidraLanguage+"</b><span>Ghidra language</span></div>";
 
 const index=document.getElementById("index");
@@ -134,7 +141,7 @@ let filter="all";
 function matches(site){
   if(filter==="all") return true;
   if(filter==="axxx") return site.landing.inHighAxxx;
-  if(filter==="code") return site.landing.region_label==="CODE";
+  if(filter==="stale") return !!site.landing.coarseMapConflict;
   return true;
 }
 
@@ -142,20 +149,21 @@ function render(){
   index.innerHTML="";
   sitesEl.innerHTML="";
   DATA.sites.filter(matches).forEach(site=>{
-    const conflict = site.landing.region_label==="DATA"
-      ? '<span class="tag data">Ghidra CODE path → region DATA</span>'
-      : '<span class="tag code">aligned CODE</span>';
+    const tag = site.landing.coarseMapConflict
+      ? '<span class="tag data">baseline CODE · coarse was DATA</span>'
+      : '<span class="tag code">baseline CODE</span>';
     const tr=document.createElement("tr");
     tr.innerHTML =
       "<td>v"+site.vectorIndex+"</td><td><code>"+site.stubAddrHex+
       "</code></td><td>"+site.stubPrologue+"</td><td><code>"+site.ghidra_insn+
-      "</code></td><td><code>"+site.landing.addrHex+"</code></td><td>"+conflict+"</td>";
+      "</code></td><td><code>"+site.landing.addrHex+"</code></td><td>"+tag+"</td>";
     tr.onclick=()=>{ document.getElementById(site.id).scrollIntoView({behavior:"smooth"}); };
     index.appendChild(tr);
 
     const stubLen = site.stubBytes.hex.length/2;
     const nearby = (site.landing.ghidra_insns_nearby||[])
       .map(x=>"<li><code>"+x.addrHex+"</code> "+x.insn+"</li>").join("");
+    const landTag = site.landing.region_label==="DATA" ? "data" : "code";
     const card=document.createElement("section");
     card.className="site";
     card.id=site.id;
@@ -167,8 +175,10 @@ function render(){
         "<div>Disp <code>"+site.cfg_edge_from.dispHex+"</code> → <code>"+site.landing.addrHex+"</code></div>"+
         "<div>CFG <code>"+site.cfg_edge_from.verificationStatus+"</code></div>"+
         '<div>Stub region <span class="tag code">'+site.region_label+"</span></div>"+
-        '<div>Landing region <span class="tag '+(site.landing.region_label==="DATA"?"data":"code")+'">'+
-          site.landing.region_label+"</span></div>"+
+        '<div>Landing (baseline) <span class="tag '+landTag+'">'+site.landing.region_label+"</span></div>"+
+        (site.landing.coarseMapConflict
+          ? '<div>Coarse map <span class="tag data">was DATA</span> (stale vs CODE through 0xB930)</div>'
+          : "")+
       "</div>"+
       '<div class="caption">Stub window (focus = prologue+LJMP) starting '+u16(site.bytes.start)+"</div>"+
       '<div class="hex">'+renderHex(site.bytes.hex, site.bytes.focusOffset, stubLen, "focus")+"</div>"+
@@ -176,7 +186,7 @@ function render(){
       '<div class="hex">'+renderHex(site.landing.bytes.hex, 0, 8, "land")+"</div>"+
       (nearby
         ? '<div class="caption">Ghidra nearby at landing</div><ul>'+nearby+"</ul>"
-        : '<div class="caption">No Ghidra instructions at landing (outside seeded CODE disasm).</div>')+
+        : '<div class="caption">No Ghidra instructions seeded at landing yet (layout still CODE under 0xB930).</div>')+
       '<p class="explain">'+site.explanation+"</p>"+
       '<p class="decide">'+decision(site)+"</p>";
     sitesEl.appendChild(card);
@@ -191,7 +201,7 @@ document.querySelectorAll(".toolbar button").forEach(btn=>{
   });
 });
 document.getElementById("footer").textContent =
-  "Source: "+DATA.id+" · ROM "+DATA.rom+" · ISA "+DATA.isa+" · related: "+
+  "Source: "+DATA.id+" · ROM "+DATA.rom+" · ISA "+DATA.isa+" · CODE end "+codeEndHex+" · related: "+
   (DATA.relatedArtifacts||[]).join(", ");
 render();
 </script>
