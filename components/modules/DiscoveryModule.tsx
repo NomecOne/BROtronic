@@ -23,6 +23,12 @@ const ActiveContextBar = ({ rom, def }: { rom: ROMFile, def?: VersionInfo | null
         <span className="text-indigo-400">{def.hw} / {def.sw}</span>
       </div>
     )}
+    {def?.candidateMaps && def.candidateMaps.length > 0 && (
+      <div className="flex items-center space-x-2 border-l border-slate-800 pl-4">
+        <span className="text-slate-600">Candidates:</span>
+        <span className="text-amber-400">{def.candidateMaps.length} research-only</span>
+      </div>
+    )}
   </div>
 );
 

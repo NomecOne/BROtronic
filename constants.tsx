@@ -1,19 +1,33 @@
 import { VersionInfo } from './types';
-import { M413_623_DEF as DEF_BASE } from './definitions/m413_623';
-import { M413_623_DEF as DEF_466_29 } from './definitions/m413_623_466_29_0x900A';
+import { enforceShippingGate, hydrateDefinitionPack } from './services/definitionPack';
+
+import shipping46629 from './definitions/packs/m413_623_466_29_0x900A.shipping.json';
+import candidates46629 from './definitions/packs/m413_623_466_29_0x900A.candidates.json';
+import family413623 from './definitions/packs/family_M331_413_623.json';
+
+const SHIPPING_466_29 = enforceShippingGate(hydrateDefinitionPack(shipping46629 as never));
+const CANDIDATES_466_29 = hydrateDefinitionPack(candidates46629 as never);
+const FAMILY_413_623 = enforceShippingGate(hydrateDefinitionPack(family413623 as never));
 
 /**
- * The DEFINITION_LIBRARY acts as the central registry for all supported ECU definitions.
- * Since the current environment does not support build-time macros like import.meta.glob,
- * we explicitly import and register each definition file here.
+ * Central registry of shipping definition packs (TuneDex).
+ * Only cross_checked|verified maps are exposed via maps[].
  */
 export const DEFINITION_LIBRARY: VersionInfo[] = [
-  DEF_BASE,
-  DEF_466_29
+  SHIPPING_466_29,
 ];
 
-/**
- * Fallback map set for initialization when no ROM is yet contextually matched.
- * We use the first discovered definition in the library as the baseline.
- */
+/** Layout-family templates used by the live definition builder */
+export const FAMILY_TEMPLATES: VersionInfo[] = [
+  FAMILY_413_623,
+];
+
+/** Candidate/research packs — Discovery / DEFman, not default TuneDex */
+export const CANDIDATE_LIBRARY: VersionInfo[] = [
+  CANDIDATES_466_29,
+];
+
 export const DEFAULT_MAPS = DEFINITION_LIBRARY[0]?.maps || [];
+
+/** @deprecated Use DEFINITION_LIBRARY — kept for any residual imports */
+export const LEGACY_DEFINITION_IDS = ['466.29', 'NA'] as const;

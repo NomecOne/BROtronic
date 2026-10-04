@@ -379,6 +379,48 @@ export class ROMParser {
     return sum;
   }
 
+  /** Full-file byte summation fingerprint (ROM names like C16x900A mean checksum 0x900A, not a CPU ISA). */
+  static calculateSummation16Public(data: Uint8Array): number {
+    return this.calculateSummation16(data);
+  }
+
+  /**
+   * Write trailing 16-bit checksum (big-endian) over all bytes except the last two.
+   * Returns the checksum value written.
+   */
+  static writeTrailingChecksum16(data: Uint8Array): number {
+    if (data.length < 2) return 0;
+    const cs = this.calculateCorrectChecksum(data);
+    data[data.length - 2] = (cs >> 8) & 0xFF;
+    data[data.length - 1] = cs & 0xFF;
+    return cs;
+  }
+
+  /** Encode a physical map grid back into ROM bytes at map.offset */
+  static writeMapData(rom: Uint8Array, map: DMEMap, grid: number[][]): void {
+    let currentOffset = map.offset;
+    const step = map.dataSize / 8;
+    for (let r = 0; r < map.rows; r++) {
+      for (let c = 0; c < map.cols; c++) {
+        const physical = grid[r]?.[c] ?? 0;
+        const raw = this.reverseFormula(map.formula, physical, map.dataSize);
+        if (currentOffset + step > rom.length) return;
+        if (map.dataSize === 16) {
+          if (map.endian === 'le') {
+            rom[currentOffset] = raw & 0xFF;
+            rom[currentOffset + 1] = (raw >> 8) & 0xFF;
+          } else {
+            rom[currentOffset] = (raw >> 8) & 0xFF;
+            rom[currentOffset + 1] = raw & 0xFF;
+          }
+        } else {
+          rom[currentOffset] = Math.max(0, Math.min(255, raw));
+        }
+        currentOffset += step;
+      }
+    }
+  }
+
   static verifyChecksum(data: Uint8Array): boolean {
     if (data.length < 0x4000) return false;
     const calculated = this.calculateCorrectChecksum(data);

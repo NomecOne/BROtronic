@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "id": "466.29",
+  "hw": "0261200413",
+  "sw": "1267357623",
+  "motronicVersion": "M3.3.1",
+  "name": "BRO",
+  "description": "BMW E36 325i M50B25TU (Red Label) — HW413 SW623 ID 466.29 — verified DATA shipping pack",
+  "isBuiltIn": true,
+  "expectedSize": 65536,
+  "expectedChecksum16": 36874,
+  "expectedMotronicchecksum": "TBD",
+  "expectedSwChecksum": "TBD",
+  "definitionRevision": "2026-10-04.phase1",
+  "layoutFamily": "M331_413_623",
+  "matchPolicy": "exact",
+  "fingerprint": {
+    "size": 65536,
+    "checksum16": 36874,
+    "hw": "0261200413",
+    "sw": "1267357623",
+    "releaseId": "466.29"
+  },
+  "regions": [
+    { "name": "CODE_LOW", "start": 0, "end": 32767, "kind": "CODE" },
+    { "name": "DATA_CAL", "start": 32768, "end": 65533, "kind": "DATA" },
+    { "name": "CS16_TRAIL", "start": 65534, "end": 65535, "kind": "OTHER" }
+  ],
+  "maps": [
+    {
+      "id": "maf_cal",
+      "name": "MAF Calibration",
+      "description": "Mass Air Flow sensor transfer function (ADC step → kg/h). Promoted after sheet+XDF+legacy agreement and RedLabel binary pattern check.",
+      "type": "Function",
+      "offset": 53904,
+      "relativeOffset": 21136,
+      "dimension": "1D",
+      "dataSize": 16,
+      "endian": "le",
+      "rows": 256,
+      "cols": 1,
+      "formula": "X/4",
+      "unit": "kg/hr",
+      "category": "Sensors",
+      "source": "xdf",
+      "confidence": 0.92,
+      "verificationStatus": "verified",
+      "evidence": [
+        {
+          "kind": "source_agreement",
+          "detail": "CAL sheet notes MAF transfer at D290; XDF title 0xD290[Func|5V|256]MAF Cal. kg/h; BROtronic legacy maf_cal — three-way offset/dims agreement (256×1, 16-bit).",
+          "sources": ["sheet", "xdf", "brotronic_legacy"]
+        },
+        {
+          "kind": "offset_in_data",
+          "detail": "0xD290 (53904) lies in DATA_CAL on RedLabel (64KB image); span 512 bytes fits before following XDF region at 0xD490."
+        },
+        {
+          "kind": "binary_pattern",
+          "detail": "RedLabel bytes at 0xD290 form a mostly-monotonic LE u16 transfer (≈239/255 non-decreasing steps); early samples near 0, mid-range ~50–60 kg/h via X/4."
+        },
+        {
+          "kind": "formula_range",
+          "detail": "Formula X/4 yields physical airflow in a plausible MAF kg/h band for M50 (~0–~60+ across the curve)."
+        }
+      ],
+      "yAxis": {
+        "label": "ADC Step",
+        "unit": "Step",
+        "size": 256,
+        "offset": 0,
+        "source": "Step",
+        "stepValue": 1,
+        "dataSize": 8,
+        "formula": "X"
+      }
+    }
+  ],
+  "candidateMaps": []
+}

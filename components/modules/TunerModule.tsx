@@ -57,12 +57,12 @@ const TunerModule: React.FC<TunerModuleProps> = ({
 
     // Identity check - force ASCII representation for identification markers
     if (selectedMap.type === MapType.STRING || cat.includes('identity') || cat.includes('header')) {
-      return { type: 'ascii', value: new TextDecoder().decode(raw) };
+      return { type: 'ascii' as const, value: new TextDecoder().decode(raw) };
     }
 
     // Structural pointer check - force HEX table with location indices
     if (cat.includes('pointer') || unit === 'addr' || unit === 'ref') {
-      const rows = [];
+      const rows: { idx: string; addr: string; ref: string }[] = [];
       for (let i = 0; i < raw.length; i += 2) {
         if (i + 1 < raw.length) {
           const val = selectedMap.endian === 'le' ? (raw[i] | (raw[i+1] << 8)) : ((raw[i] << 8) | raw[i+1]);
@@ -73,7 +73,7 @@ const TunerModule: React.FC<TunerModuleProps> = ({
           });
         }
       }
-      return { type: 'selfref', value: rows };
+      return { type: 'selfref' as const, value: rows };
     }
 
     return null;
@@ -89,7 +89,10 @@ const TunerModule: React.FC<TunerModuleProps> = ({
             <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest italic mb-1">Live Registers</span>
             <div className="flex items-center space-x-2 text-[10px] text-cyan-400/80 font-bold font-mono">
               <span className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
-              <span>{rom.detectedMaps.length} Active Profiles</span>
+              <span>{rom.detectedMaps.length} Shipping</span>
+              {activeDefinition?.candidateMaps && activeDefinition.candidateMaps.length > 0 && (
+                <span className="text-amber-500/80">· {activeDefinition.candidateMaps.length} candidates</span>
+              )}
             </div>
           </div>
           <div className="flex-1 overflow-y-auto p-3 space-y-1">
@@ -97,6 +100,7 @@ const TunerModule: React.FC<TunerModuleProps> = ({
               <button 
                 key={m.id} 
                 onClick={() => setSelectedMapId(m.id)} 
+                title={m.verificationStatus ? `${m.verificationStatus} · conf ${m.confidence ?? '—'}` : undefined}
                 className={`w-full text-left px-3 py-2.5 text-[11px] font-bold rounded-lg truncate transition-all flex items-center justify-between group
                   ${selectedMapId === m.id ? 'bg-cyan-500/20 text-cyan-100 shadow-lg ring-1 ring-cyan-500/30' : 'text-slate-500 hover:bg-slate-900/50 hover:text-slate-300'}`}
               >
@@ -171,7 +175,7 @@ const TunerModule: React.FC<TunerModuleProps> = ({
                                 </tr>
                              </thead>
                              <tbody className="divide-y divide-purple-900/10">
-                                {(inspectorData.value as {idx: string, addr: string, ref: string}[]).map((row, i) => (
+                                {inspectorData.value.map((row, i) => (
                                   <tr key={i} className="hover:bg-purple-900/20 transition-colors">
                                      <td className="px-3 py-1.5 font-mono text-[9px] text-slate-500">{row.idx}</td>
                                      <td className="px-3 py-1.5 font-mono text-[9px] text-purple-600">0x{row.addr}</td>

@@ -3,7 +3,8 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { ROMFile, VersionInfo } from '../types';
 import { ROMParser } from '../services/romParser';
 import { ROMLoaderService } from '../services/romLoader';
-import { DEFINITION_LIBRARY } from '../constants';
+import { DefinitionBuilder } from '../services/definitionBuilder';
+import { DEFINITION_LIBRARY, FAMILY_TEMPLATES } from '../constants';
 
 interface ROMLoaderProps {
   onLoad: (rom: ROMFile, definition?: VersionInfo) => void;
@@ -15,8 +16,8 @@ type LoadStep = 'source' | 'scanning' | 'review';
 type SourceType = 'upload' | 'link' | 'reference';
 
 const REFERENCE_ROMS = [
-  { 
-    name: 'BMW DME413 SW623 D466.29 C16x900A 94 RedLabel', 
+  {
+    name: 'BMW DME413 SW623 D466.29 C16x900A 94 RedLabel',
     path: 'rom/BMW DME413 SW623 D466.29 C16x900A 94 RedLabel.bin',
     hw: '0261200413',
     sw: '1267357623'
@@ -31,6 +32,7 @@ const ROMLoader: React.FC<ROMLoaderProps> = ({ onLoad, onCancel, themeColor = '#
   const [selectedDefId, setSelectedDefId] = useState<string | null>(null);
   const [customDef, setCustomDef] = useState<VersionInfo | null>(null);
   const [activeReference, setActiveReference] = useState<typeof REFERENCE_ROMS[0] | null>(null);
+  const [autoBuild, setAutoBuild] = useState<ReturnType<typeof DefinitionBuilder.build> | null>(null);
 
   const handleProcessBuffer = useCallback(async (buffer: ArrayBuffer, name: string) => {
     setStep('scanning');
@@ -39,14 +41,22 @@ const ROMLoader: React.FC<ROMLoaderProps> = ({ onLoad, onCancel, themeColor = '#
       await new Promise(r => setTimeout(r, 1200));
       const parsed = await ROMParser.parse(buffer, name);
       setTempRom(parsed);
-      
-      const suggestions = ROMLoaderService.getSuggestedDefinitions(parsed, DEFINITION_LIBRARY);
-      if (suggestions.length > 0 && suggestions[0].score >= 80) {
-        setSelectedDefId(suggestions[0].match.id);
+
+      const built = DefinitionBuilder.build(parsed, DEFINITION_LIBRARY, FAMILY_TEMPLATES);
+      setAutoBuild(built);
+
+      if (built.kind === 'exact' || built.kind === 'family') {
+        setSelectedDefId(built.kind === 'family' ? 'auto_family' : built.definition.id);
+        setCustomDef(built.definition);
       } else {
-        setSelectedDefId('heuristic');
+        const suggestions = ROMLoaderService.getSuggestedDefinitions(parsed, DEFINITION_LIBRARY);
+        if (suggestions.length > 0 && suggestions[0].score >= 80) {
+          setSelectedDefId(suggestions[0].match.id);
+        } else {
+          setSelectedDefId('heuristic');
+        }
       }
-      
+
       setStep('review');
     } catch (err: any) {
       setError(err.message || 'Failed to process binary');
@@ -60,7 +70,7 @@ const ROMLoader: React.FC<ROMLoaderProps> = ({ onLoad, onCancel, themeColor = '#
       try {
         const buffer = await file.arrayBuffer();
         handleProcessBuffer(buffer, file.name);
-      } catch (err) {
+      } catch {
         setError('Failed to read file buffer');
       }
     }
@@ -70,7 +80,6 @@ const ROMLoader: React.FC<ROMLoaderProps> = ({ onLoad, onCancel, themeColor = '#
     setStep('scanning');
     setActiveReference(ref);
     try {
-      // Use relative path - ROMLoaderService will handle subpath resolution
       const buffer = await ROMLoaderService.fetchFromUrl(ref.path);
       handleProcessBuffer(buffer, ref.name);
     } catch (err: any) {
@@ -82,7 +91,8 @@ const ROMLoader: React.FC<ROMLoaderProps> = ({ onLoad, onCancel, themeColor = '#
 
   const selectedDef = useMemo(() => {
     if (!selectedDefId || selectedDefId === 'heuristic') return null;
-    if (customDef && selectedDefId === 'custom') return customDef;
+    if (selectedDefId === 'auto_family' || selectedDefId === 'auto_exact') return customDef;
+    if (customDef && (selectedDefId === 'custom' || selectedDefId === customDef.id)) return customDef;
     return DEFINITION_LIBRARY.find(d => d.id === selectedDefId) || null;
   }, [selectedDefId, customDef]);
 
@@ -93,7 +103,7 @@ const ROMLoader: React.FC<ROMLoaderProps> = ({ onLoad, onCancel, themeColor = '#
 
   const reviewStats = useMemo(() => {
     if (!tempRom) return null;
-    
+
     const hw = tempRom.version?.hw || 'Unknown';
     const sw = tempRom.version?.sw || 'Unknown';
     const id = tempRom.version?.id || 'Unknown';
@@ -102,8 +112,8 @@ const ROMLoader: React.FC<ROMLoaderProps> = ({ onLoad, onCancel, themeColor = '#
 
     const hwMatch = selectedDef ? hw.includes(selectedDef.hw) || selectedDef.hw.includes(hw) : true;
     const swMatch = selectedDef ? sw.includes(selectedDef.sw) || selectedDef.sw.includes(sw) : true;
-    
-    const isReferenceVerified = activeReference 
+
+    const isReferenceVerified = activeReference
       ? (hw.includes(activeReference.hw.slice(-3)) && sw.includes(activeReference.sw.slice(-3)))
       : false;
 
@@ -123,6 +133,16 @@ const ROMLoader: React.FC<ROMLoaderProps> = ({ onLoad, onCancel, themeColor = '#
     if (!tempRom) return;
     let finalDef = selectedDef;
     const finalRom = { ...tempRom };
+
+    if (!finalDef && selectedDefId === 'heuristic') {
+      finalDef = autoBuild?.kind === 'unknown'
+        ? autoBuild.definition
+        : DefinitionBuilder.build(tempRom, [], []).definition;
+      finalRom.detectedMaps = [...(finalDef.maps || [])];
+      onLoad(finalRom, finalDef);
+      return;
+    }
+
     if (finalDef) {
       finalRom.detectedMaps = JSON.parse(JSON.stringify(finalDef.maps));
     }
@@ -148,13 +168,13 @@ const ROMLoader: React.FC<ROMLoaderProps> = ({ onLoad, onCancel, themeColor = '#
           {step === 'source' && (
             <div className="space-y-8 animate-in fade-in duration-300">
               <div className="flex justify-center space-x-2 p-1 bg-slate-950 border border-slate-800 rounded-2xl w-fit mx-auto">
-                <button 
+                <button
                   onClick={() => setSourceType('reference')}
                   className={`px-6 py-2 rounded-xl text-xs font-black uppercase italic transition-all ${sourceType === 'reference' ? 'bg-slate-800 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
                 >
                   Factory Repository
                 </button>
-                <button 
+                <button
                   onClick={() => setSourceType('upload')}
                   className={`px-6 py-2 rounded-xl text-xs font-black uppercase italic transition-all ${sourceType === 'upload' ? 'bg-slate-800 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
                 >
@@ -165,7 +185,7 @@ const ROMLoader: React.FC<ROMLoaderProps> = ({ onLoad, onCancel, themeColor = '#
               {sourceType === 'reference' && (
                 <div className="grid grid-cols-1 gap-4">
                   {REFERENCE_ROMS.map((ref) => (
-                    <button 
+                    <button
                       key={ref.path}
                       onClick={() => handleUrlLoad(ref)}
                       className="group flex items-center p-5 bg-slate-950 border border-slate-800 hover:border-cyan-500/50 rounded-3xl transition-all text-left"
@@ -246,14 +266,20 @@ const ROMLoader: React.FC<ROMLoaderProps> = ({ onLoad, onCancel, themeColor = '#
                   <div className="mt-2 space-y-1">
                     <div className="flex justify-between items-center">
                        <span className="text-[10px] text-slate-400 font-bold uppercase">Size:</span>
-                       <span className={`text-[10px] font-bold uppercase text-cyan-400`}>{validation?.message}</span>
+                       <span className="text-[10px] font-bold uppercase text-cyan-400">{validation?.message}</span>
                     </div>
                     <div className="flex justify-between items-center space-x-2">
                        <span className="text-[10px] text-slate-400 font-bold uppercase shrink-0">CS16:</span>
-                       <span className={`text-[10px] font-mono font-black italic truncate text-right text-cyan-400`}>
+                       <span className="text-[10px] font-mono font-black italic truncate text-right text-cyan-400">
                         {reviewStats.cs16.val}
                        </span>
                     </div>
+                    {autoBuild && (
+                      <div className="flex justify-between items-center pt-1">
+                        <span className="text-[10px] text-slate-400 font-bold uppercase">Builder:</span>
+                        <span className="text-[9px] font-black uppercase text-lime-400">{autoBuild.kind}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -261,7 +287,7 @@ const ROMLoader: React.FC<ROMLoaderProps> = ({ onLoad, onCancel, themeColor = '#
               <div className="space-y-4">
                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] italic">Protocol Definition Registry</h4>
                 <div className="space-y-2 max-h-48 overflow-y-auto pr-2 scrollbar-hide">
-                  <button 
+                  <button
                     onClick={() => { setSelectedDefId('heuristic'); setCustomDef(null); }}
                     className={`w-full flex items-center p-4 rounded-2xl border transition-all text-left group
                       ${selectedDefId === 'heuristic' ? 'bg-lime-600/20 border-lime-500 shadow-lg shadow-lime-900/20' : 'bg-slate-950 border-slate-800 hover:border-slate-700'}`}
@@ -273,16 +299,43 @@ const ROMLoader: React.FC<ROMLoaderProps> = ({ onLoad, onCancel, themeColor = '#
                     <div className="flex-1 min-w-0">
                       <div className="text-xs font-black text-white uppercase truncate italic">Heuristic Discovery Mode</div>
                       <div className="flex items-center space-x-2 mt-1">
-                        <span className="text-[9px] text-slate-500 font-mono">Dynamic Analysis</span>
-                        <span className="text-[9px] text-lime-600 font-black uppercase tracking-tighter">[{tempRom.detectedMaps.length} MAPS DISCOVERED]</span>
+                        <span className="text-[9px] text-slate-500 font-mono">Structural only</span>
+                        <span className="text-[9px] text-lime-600 font-black uppercase tracking-tighter">[{tempRom.detectedMaps.length} CANDIDATES]</span>
                       </div>
                     </div>
                   </button>
 
+                  {autoBuild && (autoBuild.kind === 'exact' || autoBuild.kind === 'family') && (
+                    <button
+                      onClick={() => {
+                        setSelectedDefId(autoBuild.kind === 'family' ? 'auto_family' : autoBuild.definition.id);
+                        setCustomDef(autoBuild.definition);
+                      }}
+                      className={`w-full flex items-center p-4 rounded-2xl border transition-all text-left group
+                        ${selectedDefId === autoBuild.definition.id || selectedDefId === 'auto_family' ? 'bg-cyan-600/20 border-cyan-500 shadow-lg shadow-cyan-900/20' : 'bg-slate-950 border-slate-800 hover:border-slate-700'}`}
+                    >
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 mr-4 border transition-colors
+                        ${selectedDefId === autoBuild.definition.id || selectedDefId === 'auto_family' ? 'bg-cyan-500 border-cyan-400 text-white' : 'bg-slate-900 border-slate-800 text-slate-600'}`}>
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-black text-white uppercase truncate italic">
+                          Live Builder · {autoBuild.kind}
+                        </div>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <span className="text-[9px] text-slate-500 font-mono truncate">{autoBuild.reason}</span>
+                          <span className="text-[9px] text-cyan-600 font-black uppercase tracking-tighter shrink-0">
+                            [{autoBuild.definition.maps.length} VERIFIED]
+                          </span>
+                        </div>
+                      </div>
+                    </button>
+                  )}
+
                   {DEFINITION_LIBRARY.map((match) => {
                     const isSelected = selectedDefId === match.id;
                     return (
-                      <button 
+                      <button
                         key={match.id}
                         onClick={() => { setSelectedDefId(match.id); setCustomDef(null); }}
                         className={`w-full flex items-center p-4 rounded-2xl border transition-all text-left group
@@ -296,7 +349,7 @@ const ROMLoader: React.FC<ROMLoaderProps> = ({ onLoad, onCancel, themeColor = '#
                           <div className="text-xs font-black text-white uppercase truncate italic">{match.description}</div>
                           <div className="flex items-center space-x-2 mt-1">
                             <span className="text-[9px] text-slate-500 font-mono">HW: {match.hw}</span>
-                            <span className="text-[9px] text-cyan-600 font-black uppercase tracking-tighter">[{match.maps.length} REGISTERS]</span>
+                            <span className="text-[9px] text-cyan-600 font-black uppercase tracking-tighter">[{match.maps.length} SHIPPING]</span>
                           </div>
                         </div>
                       </button>
@@ -310,7 +363,7 @@ const ROMLoader: React.FC<ROMLoaderProps> = ({ onLoad, onCancel, themeColor = '#
 
         <footer className="p-6 bg-slate-950/50 border-t border-slate-800 flex justify-end space-x-4">
           <button onClick={onCancel} className="px-6 py-3 rounded-2xl text-xs font-black uppercase italic text-slate-500 hover:text-slate-300 transition-colors">Abort</button>
-          <button 
+          <button
             disabled={step !== 'review'}
             onClick={handleFinalConfirm}
             className="px-10 py-3 bg-cyan-600 disabled:opacity-20 hover:bg-cyan-500 text-white rounded-2xl text-xs font-black uppercase italic tracking-widest shadow-xl transition-all active:scale-95"

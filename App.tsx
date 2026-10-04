@@ -105,11 +105,19 @@ const App: React.FC = () => {
   }, [rom, selectedMapId]);
 
   const handleUpdateValue = (r: number, c: number, val: number) => {
-    if (!editingData) return;
+    if (!editingData || !rom || !selectedMapId) return;
     const newData = [...editingData];
     newData[r] = [...newData[r]];
     newData[r][c] = val;
     setEditingData(newData);
+
+    // Persist edit into ROM buffer so multi-map sessions survive map switches / export
+    const selectedMap = rom.detectedMaps.find(m => m.id === selectedMapId);
+    if (selectedMap) {
+      const newRomData = new Uint8Array(rom.data);
+      ROMParser.writeMapData(newRomData, selectedMap, newData);
+      setRom({ ...rom, data: newRomData });
+    }
   };
 
   const handleUnloadRom = () => {
@@ -139,27 +147,14 @@ const App: React.FC = () => {
     const newData = new Uint8Array(rom.data);
     const selectedMap = rom.detectedMaps.find(m => m.id === selectedMapId);
 
+    // Flush any in-progress editor grid (covers last keystroke before state settle)
     if (selectedMap && editingData) {
-        let currentOffset = selectedMap.offset;
-        const step = selectedMap.dataSize / 8;
-        for (let r = 0; r < selectedMap.rows; r++) {
-            for (let c = 0; c < selectedMap.cols; c++) {
-                const raw = ROMParser.reverseFormula(selectedMap.formula, editingData[r][c], selectedMap.dataSize);
-                if (selectedMap.dataSize === 16) {
-                    if (selectedMap.endian === 'le') {
-                        newData[currentOffset] = raw & 0xFF;
-                        newData[currentOffset + 1] = (raw >> 8) & 0xFF;
-                    } else {
-                        newData[currentOffset] = (raw >> 8) & 0xFF;
-                        newData[currentOffset + 1] = raw & 0xFF;
-                    }
-                } else {
-                    newData[currentOffset] = Math.max(0, Math.min(255, raw));
-                }
-                currentOffset += step;
-            }
-        }
+      ROMParser.writeMapData(newData, selectedMap, editingData);
     }
+
+    // Recompute trailing CS16 so tuned bins are usable
+    const trailingCs = ROMParser.writeTrailingChecksum16(newData);
+    const fingerprintCs = ROMParser.calculateSummation16Public(newData);
 
     const romBlob = new Blob([newData], { type: 'application/octet-stream' });
     const romUrl = URL.createObjectURL(romBlob);
@@ -171,13 +166,32 @@ const App: React.FC = () => {
     document.body.removeChild(romLink);
     URL.revokeObjectURL(romUrl);
 
+    // Keep session ROM in sync with exported bytes
+    setRom({
+      ...rom,
+      data: newData,
+      checksum16: fingerprintCs,
+      checksumValid: ROMParser.verifyChecksum(newData),
+    });
+
     const definition: VersionInfo = {
+      schemaVersion: 1,
       id: `export_${Date.now()}`,
       hw: rom.version?.hw || 'Unknown',
       sw: rom.version?.sw || 'Unknown',
       description: `Project Definition exported for ${rom.name}`,
       maps: rom.detectedMaps,
-      version: 1
+      candidateMaps: activeDefinition?.candidateMaps,
+      version: 1,
+      expectedChecksum16: fingerprintCs,
+      fingerprint: {
+        size: newData.length,
+        checksum16: fingerprintCs,
+        hw: rom.version?.hw,
+        sw: rom.version?.sw,
+        releaseId: rom.version?.id,
+      },
+      definitionRevision: `export-cs16=0x${trailingCs.toString(16).toUpperCase()}`,
     };
     const defBlob = new Blob([JSON.stringify(definition, null, 2)], { type: 'application/json' });
     const defUrl = URL.createObjectURL(defBlob);

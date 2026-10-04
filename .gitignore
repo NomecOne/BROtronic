@@ -25,3 +25,7 @@ dist-ssr
 
 .github/workflows/*
 public/rom/*
+
+# Ghidra local project / headless locks (regen via tools/re/ghidra/run_headless.ps1)
+tools/re/ghidra/project/
+tools/re/out/ghidra_headless.log

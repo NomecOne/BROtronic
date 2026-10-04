@@ -1,0 +1,235 @@
+{
+  "schemaVersion": 1,
+  "id": "466.29.candidates",
+  "hw": "0261200413",
+  "sw": "1267357623",
+  "motronicVersion": "M3.3.1",
+  "name": "BRO-candidates",
+  "description": "Unverified/plausible candidate maps for RedLabel 413/623 — research layer only, not TuneDex shipping",
+  "isBuiltIn": true,
+  "expectedSize": 65536,
+  "expectedChecksum16": 36874,
+  "definitionRevision": "2026-10-04.phase1",
+  "layoutFamily": "M331_413_623",
+  "matchPolicy": "manual",
+  "fingerprint": {
+    "size": 65536,
+    "checksum16": 36874,
+    "hw": "0261200413",
+    "sw": "1267357623",
+    "releaseId": "466.29"
+  },
+  "regions": [
+    { "name": "CODE_LOW", "start": 0, "end": 32767, "kind": "CODE" },
+    { "name": "DATA_CAL", "start": 32768, "end": 65533, "kind": "DATA" },
+    { "name": "CS16_TRAIL", "start": 65534, "end": 65535, "kind": "OTHER" }
+  ],
+  "maps": [],
+  "candidateMaps": [
+    {
+      "id": "ign_main_legacy_8c00",
+      "name": "Ignition Main (WOT) [LEGACY — NOT PROMOTED]",
+      "description": "Legacy BROtronic claim at 0x8C00. Failed RedLabel verification: axes unordered, decoded timing out of range; XDF places WOT ign elsewhere (0xDD27/0xDDA1).",
+      "type": "Table",
+      "offset": 35840,
+      "relativeOffset": 3072,
+      "dimension": "3D",
+      "dataSize": 8,
+      "rows": 12,
+      "cols": 12,
+      "formula": "X*-0.75 + 72",
+      "unit": "°BTDC",
+      "category": "Ignition",
+      "source": "brotronic_legacy",
+      "confidence": 0.15,
+      "verificationStatus": "unverified",
+      "evidence": [
+        {
+          "kind": "source_claim",
+          "detail": "Copied from BROtronic built-in m413_623*_0x900A.ts only.",
+          "sources": ["brotronic_legacy"]
+        },
+        {
+          "kind": "binary_mismatch",
+          "detail": "On RedLabel, 0x8BC0/0x8BE0 do not form ordered RPM/load axes; 0x8C00 bytes decode to implausible °BTDC under the claimed formula."
+        },
+        {
+          "kind": "source_disagreement",
+          "detail": "XDF defines Ign WOT VANOS Ret/Adv at 0xDD27 / 0xDDA1 (16×6), not 0x8C00.",
+          "sources": ["xdf", "brotronic_legacy"]
+        }
+      ],
+      "xAxis": {
+        "label": "RPM",
+        "unit": "RPM",
+        "size": 12,
+        "offset": 35776,
+        "source": "ROM Address",
+        "dataSize": 8,
+        "formula": "X*40"
+      },
+      "yAxis": {
+        "label": "Load",
+        "unit": "ms",
+        "size": 12,
+        "offset": 35808,
+        "source": "ROM Address",
+        "dataSize": 8,
+        "formula": "X*0.05"
+      }
+    },
+    {
+      "id": "ign_wot_vanos_ret_xdf",
+      "name": "Ign. WOT Timing VANOS Retarded",
+      "description": "XDF candidate 0xDD27[D0xD5|16x6]. Timing values look physically plausible on RedLabel; axis linkage still single-source.",
+      "type": "Table",
+      "offset": 56615,
+      "relativeOffset": 23847,
+      "dimension": "3D",
+      "dataSize": 8,
+      "rows": 6,
+      "cols": 16,
+      "formula": "X*-0.75 + 72",
+      "unit": "°BTDC",
+      "category": "Ignition",
+      "source": "xdf",
+      "confidence": 0.55,
+      "verificationStatus": "plausible",
+      "evidence": [
+        {
+          "kind": "source_claim",
+          "detail": "TunerPro XDF: Ign., WOT, Timing VANOS Retarded @ 0xDD27; axes titled at 0xDD0F (RPM) and 0xDD21 (Load).",
+          "sources": ["xdf"]
+        },
+        {
+          "kind": "offset_in_data",
+          "detail": "0xDD27 within DATA_CAL; 16×6×1 byte fits contiguous region."
+        },
+        {
+          "kind": "formula_range",
+          "detail": "Sample RedLabel row decodes ~10–27 °BTDC under X*-0.75+72 — plausible WOT advance band — but axis byte layout not cross-checked against a second source."
+        }
+      ],
+      "xAxis": {
+        "label": "RPM",
+        "unit": "RPM",
+        "size": 16,
+        "offset": 56591,
+        "source": "ROM Address",
+        "dataSize": 8,
+        "formula": "X*40"
+      },
+      "yAxis": {
+        "label": "Load",
+        "unit": "ms",
+        "size": 6,
+        "offset": 56609,
+        "source": "ROM Address",
+        "dataSize": 8,
+        "formula": "X*0.05"
+      }
+    },
+    {
+      "id": "ign_wot_vanos_adv_xdf",
+      "name": "Ign. WOT Timing VANOS Advanced",
+      "description": "XDF candidate 0xDDA1. Same verification bar as VANOS-retarded sibling — plausible binary values, single-source axes.",
+      "type": "Table",
+      "offset": 56737,
+      "relativeOffset": 23969,
+      "dimension": "3D",
+      "dataSize": 8,
+      "rows": 6,
+      "cols": 16,
+      "formula": "X*-0.75 + 72",
+      "unit": "°BTDC",
+      "category": "Ignition",
+      "source": "xdf",
+      "confidence": 0.55,
+      "verificationStatus": "plausible",
+      "evidence": [
+        {
+          "kind": "source_claim",
+          "detail": "TunerPro XDF: Ign., WOT, Timing VANOS Advanced @ 0xDDA1; RPM axis title 0xDD89, Load axis title 0xDD9B.",
+          "sources": ["xdf"]
+        },
+        {
+          "kind": "offset_in_data",
+          "detail": "0xDDA1 within DATA_CAL on RedLabel."
+        }
+      ],
+      "xAxis": {
+        "label": "RPM",
+        "unit": "RPM",
+        "size": 16,
+        "offset": 56713,
+        "source": "ROM Address",
+        "dataSize": 8,
+        "formula": "X*40"
+      },
+      "yAxis": {
+        "label": "Load",
+        "unit": "ms",
+        "size": 6,
+        "offset": 56731,
+        "source": "ROM Address",
+        "dataSize": 8,
+        "formula": "X*0.05"
+      }
+    },
+    {
+      "id": "rev_limit_soft_xdf",
+      "name": "RPM Soft Fuel Cut (Rev Limit)",
+      "description": "XDF scalar 0xD032[16bit] RPM soft fuel cut. Offset in DATA; not cross-checked with sheet/IDA.",
+      "type": "Scalar",
+      "offset": 53298,
+      "relativeOffset": 20530,
+      "dimension": "Value",
+      "dataSize": 16,
+      "endian": "le",
+      "rows": 1,
+      "cols": 1,
+      "formula": "X",
+      "unit": "raw",
+      "category": "Limits",
+      "source": "xdf",
+      "confidence": 0.4,
+      "verificationStatus": "unverified",
+      "evidence": [
+        {
+          "kind": "source_claim",
+          "detail": "XDF constant title 0xD032[16bit] RPM, Rev Limit, Soft Fuel Cut.",
+          "sources": ["xdf"]
+        },
+        {
+          "kind": "offset_in_data",
+          "detail": "0xD032 in DATA_CAL; 2-byte span fits."
+        }
+      ]
+    },
+    {
+      "id": "speed_limiter_xdf",
+      "name": "Speed Limiter",
+      "description": "XDF scalar 0xD094. Dual titles km/h and MPH in XDF — units/formula not settled.",
+      "type": "Scalar",
+      "offset": 53396,
+      "relativeOffset": 20628,
+      "dimension": "Value",
+      "dataSize": 8,
+      "rows": 1,
+      "cols": 1,
+      "formula": "X",
+      "unit": "raw",
+      "category": "Limits",
+      "source": "xdf",
+      "confidence": 0.35,
+      "verificationStatus": "unverified",
+      "evidence": [
+        {
+          "kind": "source_claim",
+          "detail": "XDF: 0xD094 Speed Limiter km/h and MPH alternate views of same byte.",
+          "sources": ["xdf"]
+        }
+      ]
+    }
+  ]
+}

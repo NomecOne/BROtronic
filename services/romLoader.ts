@@ -1,5 +1,6 @@
 
 import { ROMFile, VersionInfo } from '../types';
+import { DefinitionBuilder } from './definitionBuilder';
 
 export class ROMLoaderService {
   /**
@@ -60,31 +61,12 @@ export class ROMLoaderService {
    * Analyzes the ROM and returns suggested definitions from the library.
    * Matching logic uses HW, SW, ID#, File Size, and 16-bit Checksum.
    */
-  static getSuggestedDefinitions(rom: ROMFile, library: VersionInfo[]): { 
-    match: VersionInfo; 
+  static getSuggestedDefinitions(rom: ROMFile, library: VersionInfo[]): {
+    match: VersionInfo;
     score: number;
     reason: string;
   }[] {
-    if (!rom.version) return [];
-
-    const { hw, sw, id } = rom.version;
-    const { size, checksum16 } = rom;
-
-    return library
-      .map(def => {
-        let score = 0;
-        let reasons: string[] = [];
-
-        if (def.hw === hw) { score += 20; reasons.push("HW"); }
-        if (def.sw === sw) { score += 20; reasons.push("SW"); }
-        if (id && (def.id.includes(id) || def.description.includes(id))) { score += 20; reasons.push("ID#"); }
-        if (def.expectedSize && def.expectedSize === size) { score += 20; reasons.push("SIZE"); }
-        if (def.expectedChecksum16 && def.expectedChecksum16 === checksum16) { score += 20; reasons.push("CS16"); }
-
-        return { match: def, score, reason: reasons.join(", ") };
-      })
-      .filter(item => item.score > 0)
-      .sort((a, b) => b.score - a.score);
+    return DefinitionBuilder.suggestFromLibrary(rom, library);
   }
 
   static getFileValidation(size: number): { valid: boolean; message: string } {

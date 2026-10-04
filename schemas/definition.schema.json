@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://brotronic.local/schemas/definition.schema.json",
+  "title": "BROtronic Definition Pack",
+  "description": "Versioned ECU definition artifact with explicit verification provenance. Only cross_checked|verified maps belong in shipping TuneDex packs.",
+  "type": "object",
+  "required": ["schemaVersion", "id", "hw", "sw", "description", "maps"],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "id": { "type": "string", "minLength": 1 },
+    "hw": { "type": "string" },
+    "sw": { "type": "string" },
+    "motronicVersion": { "type": "string" },
+    "name": { "type": "string" },
+    "description": { "type": "string" },
+    "isBuiltIn": { "type": "boolean" },
+    "version": { "type": "integer" },
+    "expectedSize": { "type": "integer" },
+    "expectedChecksum16": { "type": "integer" },
+    "expectedMotronicchecksum": { "type": "string" },
+    "expectedSwChecksum": { "type": "string" },
+    "definitionRevision": { "type": "string" },
+    "layoutFamily": { "type": "string" },
+    "matchPolicy": { "type": "string", "enum": ["exact", "family", "manual"] },
+    "fingerprint": {
+      "type": "object",
+      "properties": {
+        "size": { "type": "integer" },
+        "checksum16": { "type": "integer" },
+        "hw": { "type": "string" },
+        "sw": { "type": "string" },
+        "releaseId": { "type": "string" },
+        "motronicChecksum": { "type": "string" },
+        "swChecksum": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "regions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "start", "end", "kind"],
+        "properties": {
+          "name": { "type": "string" },
+          "start": { "type": "integer" },
+          "end": { "type": "integer" },
+          "kind": { "type": "string", "enum": ["CODE", "DATA", "RAM", "VECTORS", "OTHER"] }
+        },
+        "additionalProperties": false
+      }
+    },
+    "maps": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/dmeMap" }
+    },
+    "candidateMaps": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/dmeMap" }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "mapSource": {
+      "type": "string",
+      "enum": ["sheet", "xdf", "ida", "brotronic_legacy", "heuristic", "re_pipeline"]
+    },
+    "verificationStatus": {
+      "type": "string",
+      "enum": ["unverified", "plausible", "cross_checked", "verified"]
+    },
+    "evidenceItem": {
+      "type": "object",
+      "required": ["kind", "detail"],
+      "properties": {
+        "kind": { "type": "string" },
+        "detail": { "type": "string" },
+        "sources": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/mapSource" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "axis": {
+      "type": "object",
+      "required": ["label", "unit", "size", "offset", "source", "dataSize"],
+      "properties": {
+        "label": { "type": "string" },
+        "unit": { "type": "string" },
+        "size": { "type": "integer" },
+        "offset": { "type": "integer" },
+        "source": { "type": "string", "enum": ["Step", "ROM Address", "None/Disabled"] },
+        "stepValue": { "type": "number" },
+        "dataSize": { "type": "integer", "enum": [8, 16] },
+        "endian": { "type": "string", "enum": ["le", "be"] },
+        "formula": { "type": "string" },
+        "values": { "type": "array", "items": { "type": "number" } },
+        "relativeOffset": { "type": "integer" }
+      },
+      "additionalProperties": false
+    },
+    "dmeMap": {
+      "type": "object",
+      "required": [
+        "id", "name", "description", "type", "offset", "dimension",
+        "dataSize", "rows", "cols", "unit", "category"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "type": { "type": "string", "enum": ["Scalar", "Function", "Table", "Flag", "String"] },
+        "offset": { "type": "integer" },
+        "dimension": { "type": "string", "enum": ["Value", "1D", "2D", "3D", "Flag"] },
+        "dataSize": { "type": "integer", "enum": [8, 16] },
+        "endian": { "type": "string", "enum": ["le", "be"] },
+        "rows": { "type": "integer" },
+        "cols": { "type": "integer" },
+        "xAxis": { "$ref": "#/$defs/axis" },
+        "yAxis": { "$ref": "#/$defs/axis" },
+        "formula": { "type": "string" },
+        "unit": { "type": "string" },
+        "category": { "type": "string" },
+        "mask": { "type": "integer" },
+        "relativeOffset": { "type": "integer" },
+        "source": { "$ref": "#/$defs/mapSource" },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "verificationStatus": { "$ref": "#/$defs/verificationStatus" },
+        "evidence": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/evidenceItem" }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

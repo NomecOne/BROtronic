@@ -61,7 +61,7 @@ const Visualizer: React.FC<VisualizerProps> = ({ data, xAxis, yAxis }) => {
           <Tooltip 
             contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', fontSize: '12px' }}
             itemStyle={{ color: '#f1f5f9' }}
-            formatter={(value: number | undefined) => [value !== undefined ? value.toFixed(2) : '0.00', "Value"]}
+            formatter={(value) => [typeof value === 'number' ? value.toFixed(2) : String(value ?? '0.00'), "Value"]}
             labelFormatter={(label) => `Input: ${label}`}
           />
           {is1DVertical || is1DHorizontal ? (

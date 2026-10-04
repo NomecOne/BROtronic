@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "id": "family_M331_413_623",
+  "hw": "0261200413",
+  "sw": "1267357623",
+  "motronicVersion": "M3.3.1",
+  "name": "BRO-family",
+  "description": "Layout-family template for M3.3.1 HW413 SW623 — relative anchors from verified RedLabel maps only",
+  "isBuiltIn": true,
+  "expectedSize": 65536,
+  "definitionRevision": "2026-10-04.phase1",
+  "layoutFamily": "M331_413_623",
+  "matchPolicy": "family",
+  "fingerprint": {
+    "size": 65536,
+    "hw": "0261200413",
+    "sw": "1267357623"
+  },
+  "regions": [
+    { "name": "CODE_LOW", "start": 0, "end": 32767, "kind": "CODE" },
+    { "name": "DATA_CAL", "start": 32768, "end": 65533, "kind": "DATA" },
+    { "name": "CS16_TRAIL", "start": 65534, "end": 65535, "kind": "OTHER" }
+  ],
+  "maps": [
+    {
+      "id": "maf_cal",
+      "name": "MAF Calibration",
+      "description": "Family-inherited MAF transfer from verified RedLabel relative anchor (dataBase 0x8000 + 0x5290).",
+      "type": "Function",
+      "offset": 53904,
+      "relativeOffset": 21136,
+      "dimension": "1D",
+      "dataSize": 16,
+      "endian": "le",
+      "rows": 256,
+      "cols": 1,
+      "formula": "X/4",
+      "unit": "kg/hr",
+      "category": "Sensors",
+      "source": "re_pipeline",
+      "confidence": 0.85,
+      "verificationStatus": "cross_checked",
+      "evidence": [
+        {
+          "kind": "family_anchor",
+          "detail": "Relative offset 0x5290 from DATA base 0x8000 taken from verified RedLabel maf_cal; absolute offset rewritten at family-match time if dataBase differs.",
+          "sources": ["sheet", "xdf", "brotronic_legacy"]
+        }
+      ],
+      "yAxis": {
+        "label": "ADC Step",
+        "unit": "Step",
+        "size": 256,
+        "offset": 0,
+        "source": "Step",
+        "stepValue": 1,
+        "dataSize": 8,
+        "formula": "X"
+      }
+    }
+  ],
+  "candidateMaps": []
+}
