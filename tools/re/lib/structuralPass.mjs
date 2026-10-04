@@ -31,7 +31,8 @@ export function structuralCodePass(buf, { codeStart = 0x2000, codeEnd = 0x8000 }
     if (buf[i] === 0xe7) {
       const target = le16(buf, i + 1);
       if (target >= codeStart && target < codeEnd) {
-        ljmps.push({ at: i, target, encoding: 'E7_abs16', isaHint: 'mcs96_LJMP_or_8086_OUT_imm' });
+        // Note: true MCS-96 LJMP target is PC-rel (at+3+le16); `target` here is raw disp/legacy abs probe only.
+        ljmps.push({ at: i, target, encoding: 'E7_disp16', isaHint: 'mcs96_LJMP_pc_rel' });
       }
     }
     if (buf[i] === 0xe8) {
