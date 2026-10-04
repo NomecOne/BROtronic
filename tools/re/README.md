@@ -9,6 +9,13 @@ Standalone (Node + **Ghidra**) tooling that **feeds** BROtronic definition packs
 3. Emit candidate JSON packs + a verification report
 4. **Classify every byte** `0x0000–0xFFFF` (region / confidence / evidence)
 5. **Disassemble CODE** with **Ghidra** (canonical) — headless when possible
+6. **Engine control understanding** (elevated): control loop inventory + ignition/fuel XDF→CODE dataflow — still offline; **no unverified shipping**; do not claim full CODE+DATA control yet
+
+Regenerate engine-control artifacts (after Ghidra + ingest):
+
+```bash
+python3 tools/re/scripts/analyze_engine_control.py
+```
 
 ## Definition evidence (XDF-primary)
 
@@ -93,6 +100,9 @@ npm aliases: `npm run re:ingest`, `npm run re:annotate`, `npm run re:ghidra:dete
 | `tools/re/out/mcs96_cfg_edges.{json,csv}` | Trustworthy PC-rel CFG edges |
 | `tools/re/out/mcs96_branch_resolve.json` | Branch resolve summary |
 | `tools/re/out/structural_code.json` | Pre-Ghidra structural markers (not canonical) |
+| `tools/re/out/control_loops.{json,md}` | Hypothesized control loops (boot/IRQ/foreground) — not proven semantics |
+| `tools/re/out/ignition_fuel_dataflow.{json,md}` | Ignition/fuel XDF → DATA → CODE xref candidates + coverage % |
+| `tools/re/out/code_verification_progress.json` | CODE verification + engine-control coverage framing |
 | `tools/re/out/ghidra/*` | Canonical MCS-96 listing / functions / symbols |
 | `tools/re/out/ghidra/compare_x86_real/*` | Historical x86 reject only |
 | `tools/re/out/ghidra_detect.json` | Install detection report |
