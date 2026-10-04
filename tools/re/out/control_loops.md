@@ -126,5 +126,12 @@ Status: `partial_hypothesis` — **not** complete control.
 1. From FUN_4815 post-EI, enumerate LCALL 0x20C7 call sites and preceding page loads
 1. For each ignition timing + fueling XDF table, find exclusive page+index path (not just page hit)
 
+## Related follow-ups (priority traces)
+
+- IRQ RAM pubs: `irq_ram_publications.md` (vec2 `@0xA88E`, vec5 `@0xA4AA`)
+- SFR HSO/HSI audit: `sfr_hso_hsi_audit.md` (**cross_checked** — writes to Ghidra `HSI_*` are HSO schedules)
+- CAL access model v2: `cal_access_model.md` (retracts false page-index xrefs; **0%** proven ign/fuel XDF CODE reads)
+- Theory vs ROM: `motronic_331_function.md` §7
+
 ---
 Research-only. Verification gates for promotion unchanged.

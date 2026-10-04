@@ -288,6 +288,45 @@ Use these as search targets in MCS-96 listing / CFG (`tools/re/out/ghidra/`, `mc
 
 ---
 
+---
+
+## 7. Theory vs RedLabel ROM (this RE pass)
+
+Cross-check of §3–§5 control concept against MCS-96 listing / CFG / XDF (offline).  
+**Still not end-to-end CODE+DATA control.**
+
+### 7.1 Checklist
+
+| Theory element (from §§3–5) | ROM / RE status | Evidence |
+|----------------------------|-----------------|----------|
+| HFM/MAF → load → ti / zw chain (H1) | **Partial** | XDF maps present; **0%** proven CODE reads of those offsets (`0.0%`) |
+| MAF transfer `0xD290` | DATA present; CODE path **unresolved** | No absolute `LOOKUP[ZR]` to `0xD290`; likely descriptor/indirect via RW6E=`0x1E08` |
+| Ti constant `0xD030` scales load (H2) | **Structural hit** | Mid-CODE island `@0x432A`: LE16 `0xD000` then `0x0030` (=`0xD030`); CODE deref **not** proven |
+| Crank speed / position | **Strong IRQ** | vec2 `@0xA88E` reads `HSI_time`, publishes `0x14C0/0x14C2/0x14C4/0x14CC` |
+| ADC sensor sampling (MAF/temps) | **Strong IRQ** | vec5 `@0xA4AA` AD kick + `AD_resulthi` → `0x187C` / RW70 ring |
+| Injector / spark drivers | **HSO path identified** | Writes named `HSI_status`/`HSI_time` are Intel **HSO_COMMAND/HSO_TIME** aliases (SFR audit `cross_checked`); channel bits **open** |
+| Dual VANOS fuel/ign maps (H3) | REPO only | XDF dual tables; selector CODE TBD |
+| Alpha-N limp `0xDBC3` (H4) | REPO only | Fault path CODE TBD |
+| 10 ms / ignition-sync tasks | **Partial** | Foreground `FUN_4815`+EI; HSI/HSO sync in IRQ; exact 10 ms tick TBD |
+| EWS fuel lock (H6) | **Unknown** | No claim |
+
+### 7.2 Access-model correction (blocks false “page” xrefs)
+
+`LDB Rx,0xd0, LOOKUP[ZR]` is **register file `0x00D0`**, not ROM page `0xD0`.  
+Prior ign/fuel “page-indexed” candidates are **retracted**. Real CAL reads likely go:
+`RW6E(=0x1E08) → descriptor → [ptr]` into `0xDxxx`, with internal/low ROM visibility limited (`0x0000–0x1FFF` erased in external image).
+
+### 7.3 Artifacts
+
+- `tools/re/out/irq_ram_publications.{md,json}`
+- `tools/re/out/sfr_hso_hsi_audit.{md,json}`
+- `tools/re/out/cal_access_model.{md,json}`
+- Coverage headline: **0.0% proven CODE reads (0/69); 1 structural split-ptr (0xD030); page-index candidates retracted.**
+
+### 7.4 First proven ign/fuel XDF CODE read — status
+
+**None yet** (`0/69`). Closest: structural `0xD030` split-ptr in data island; next work is pointer-chase from `@0x432A` / descriptor walk through `0x20C7` interp.
+
 ## 8. Research session notes
 
 - Web search tool was unavailable in this subagent turn; discovery used Wikipedia API, Archive.org metadata/search, Crossref DOIs, Wayback Bosch history page, and local XDF/ingest.

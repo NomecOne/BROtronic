@@ -1,7 +1,115 @@
 {
   "schemaVersion": 2,
-  "id": "ignition_fuel_dataflow_v2",
+  "id": "cal_access_model_v2",
   "rom": "BMW DME413 SW623 D466.29 C16x900A 94 RedLabel.bin",
+  "correction": {
+    "priorError": "v1 treated `LDB Rx,0xd0, LOOKUP[ZR]` as ROM page-0xD0 indexed CAL access.",
+    "correctedSemantics": "SLEIGH long-indexed: ea = RWbase + immed16. With ZR=0 and bytes `b3 01 d0 00 dest`, immed16=0x00D0 \u2192 register-file address 0x00D0 (RD0), not ROM 0xD000.",
+    "examples": [
+      {
+        "site": 21297,
+        "siteHex": "0x5331",
+        "insn": "LDB R56,0xd0, LOOKUP[ZR]",
+        "bytesHex": "b301d00056",
+        "immed16": 208,
+        "immed16Hex": "0x00D0",
+        "effectiveAddressIfZR0": 208,
+        "interpretation": "register_file_0x00D0_not_rom_0xD000"
+      },
+      {
+        "site": 21406,
+        "siteHex": "0x539E",
+        "insn": "LDB R56,0xd0, LOOKUP[ZR]",
+        "bytesHex": "b301d00056",
+        "immed16": 208,
+        "immed16Hex": "0x00D0",
+        "effectiveAddressIfZR0": 208,
+        "interpretation": "register_file_0x00D0_not_rom_0xD000"
+      },
+      {
+        "site": 21843,
+        "siteHex": "0x5553",
+        "insn": "LDB R56,0xd0, LOOKUP[ZR]",
+        "bytesHex": "b301d00056",
+        "immed16": 208,
+        "immed16Hex": "0x00D0",
+        "effectiveAddressIfZR0": 208,
+        "interpretation": "register_file_0x00D0_not_rom_0xD000"
+      }
+    ]
+  },
+  "descriptorPath": {
+    "ramTable": "0x1E08",
+    "expectedInRw6E": true,
+    "initSite": "0x4ED9",
+    "initBehavior": "LD RW1C,#0x1E08; fill through 0x1F34 with pointer 0x42DF (and related 0x42E9) \u2014 template/default descriptors in mid-CODE island.",
+    "interpEntry": "0x33C2 via trampoline 0x20C7",
+    "interpMechanism": "ADD RW1A,RW6E; LD RW4C,[RW1A]; then axis/map walk via [RW4C]/[RW50].",
+    "blocker": "External RedLabel image has 0x0000\u20130x1FFF erased (0xFF). If production uses internal ROM content at 0x1E08 beyond the 0x4ED9 fill, those CAL pointers are invisible in this dump.",
+    "evidenceStrength": "high_for_mechanism_medium_for_cal_targets"
+  },
+  "provenAbsoluteDataReads": [
+    {
+      "site": 19726,
+      "siteHex": "0x4D0E",
+      "insn": "LDB R1C,0xffca, LOOKUP[ZR]",
+      "target": 65482,
+      "targetHex": "0xFFCA",
+      "ghidraProven": true,
+      "ignFuelXdfHit": false
+    },
+    {
+      "site": 21721,
+      "siteHex": "0x54D9",
+      "insn": "LDB R20,0xfe89, LOOKUP[ZR]",
+      "target": 65161,
+      "targetHex": "0xFE89",
+      "ghidraProven": true,
+      "ignFuelXdfHit": false
+    },
+    {
+      "site": 34430,
+      "siteHex": "0x867E",
+      "insn": "LDB R1D,0xfe85, LOOKUP[ZR]",
+      "target": 65157,
+      "targetHex": "0xFE85",
+      "ghidraProven": true,
+      "ignFuelXdfHit": false
+    },
+    {
+      "site": 34438,
+      "siteHex": "0x8686",
+      "insn": "LDB R1D,0xfe87, LOOKUP[ZR]",
+      "target": 65159,
+      "targetHex": "0xFE87",
+      "ghidraProven": true,
+      "ignFuelXdfHit": false
+    },
+    {
+      "site": 46144,
+      "siteHex": "0xB440",
+      "insn": "LDB R3E,0xffca, LOOKUP[ZR]",
+      "target": 65482,
+      "targetHex": "0xFFCA",
+      "ghidraProven": true,
+      "ignFuelXdfHit": false
+    }
+  ],
+  "structuralPointers": [
+    {
+      "kind": "split_base_plus_offset",
+      "baseAt": 17194,
+      "baseHex": "0x432A",
+      "baseValue": 53248,
+      "offsetAt": 17196,
+      "offsetValue": 48,
+      "composed": 53296,
+      "composedHex": "0xD030",
+      "xdfName": "0xD030[16bit] Inj. Constant(Ti) lb/h@3.5B|*DO NOT EDIT ALONE*",
+      "codeReadProven": false,
+      "note": "Mid-CODE data island holds LE16 0xD000 then 0x0030 (= Inj Constant 0xD030). No CODE site yet shown loading this pair into a pointer and dereferencing \u2014 structural only."
+    }
+  ],
   "coverage": {
     "items": 69,
     "ghidraProvenCodeRead": 0,
@@ -12,11 +120,6 @@
     "registerFileConfusionSitesNoted": 27,
     "headline": "0.0% proven CODE reads (0/69); 1 structural split-ptr (0xD030); page-index candidates retracted."
   },
-  "seeAlso": [
-    "tools/re/out/cal_access_model.json",
-    "tools/re/out/irq_ram_publications.json",
-    "tools/re/out/sfr_hso_hsi_audit.json"
-  ],
   "items": [
     {
       "offset": 53296,
@@ -1564,5 +1667,10 @@
       ]
     }
   ],
-  "shippingNote": "Research-only. Do not promote into definitions/packs/*.shipping.json."
+  "nextToProve": [
+    "Find CODE that loads 0xD000 from 0x432A (or descriptor) into RWxx and ADDs 0x0030, then [RWxx]",
+    "Dump/recover internal ROM 0x0000\u20130x1FFF or instrument RAM 0x1E08 descriptor contents after boot",
+    "Trace one 0x20C7 interp call with known RW1A index through [RW4C] to a 0xDxxx pointer"
+  ],
+  "shippingNote": "Research-only. Verification gates unchanged. No shipping promotion."
 }

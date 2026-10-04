@@ -46,22 +46,25 @@
     "completeControlClaimed": false,
     "artifacts": [
       "tools/re/out/control_loops.md",
-      "tools/re/out/control_loops.json",
       "tools/re/out/ignition_fuel_dataflow.md",
-      "tools/re/out/ignition_fuel_dataflow.json"
+      "tools/re/out/irq_ram_publications.md",
+      "tools/re/out/sfr_hso_hsi_audit.md",
+      "tools/re/out/cal_access_model.md",
+      "tools/re/out/motronic_331_function.md"
     ],
     "ignitionFuelCoverage": {
       "items": 69,
       "ghidraProvenCodeRead": 0,
       "ghidraProvenPct": 0.0,
-      "readishCandidate": 50,
-      "readishCandidatePct": 72.46,
-      "anyCandidateCodeHint": 69,
-      "anyCandidateCodeHintPct": 100.0,
-      "literalNearInsnOrRaw": 5,
-      "pageIndexedOnly": 45,
-      "pageCmpLookupOnly": 19,
-      "headline": "0.0% proven CODE reads (0/69); 72.46% readish candidates (page LD/LDB or literal); 100.0% any CODE page/literal hint (includes CMP LOOKUP)."
+      "structuralSplitPtr": 1,
+      "headline": "0.0% proven CODE reads (0/69); 1 structural split-ptr (0xD030); page-index candidates retracted.",
+      "note": "v2: retracted false page-index candidates; proven still requires absolute/indirect ea == XDF offset."
+    },
+    "priorityTraces": {
+      "irqRamPublications": "done_v1",
+      "sfrHsoHsiAudit": "cross_checked",
+      "calAccessModel": "corrected_v2",
+      "firstProvenIgnFuelXref": false
     }
   }
 }

@@ -15,7 +15,10 @@ Regenerate engine-control artifacts (after Ghidra + ingest):
 
 ```bash
 python3 tools/re/scripts/analyze_engine_control.py
+python3 tools/re/scripts/analyze_priority_traces.py   # IRQ RAM pubs, HSO/HSI SFR audit, CAL access model v2
 ```
+
+Priority-trace outputs: `irq_ram_publications.*`, `sfr_hso_hsi_audit.*`, `cal_access_model.*`; theory checklist in `motronic_331_function.md` §7.
 
 ## Definition evidence (XDF-primary)
 
@@ -101,7 +104,11 @@ npm aliases: `npm run re:ingest`, `npm run re:annotate`, `npm run re:ghidra:dete
 | `tools/re/out/mcs96_branch_resolve.json` | Branch resolve summary |
 | `tools/re/out/structural_code.json` | Pre-Ghidra structural markers (not canonical) |
 | `tools/re/out/control_loops.{json,md}` | Hypothesized control loops (boot/IRQ/foreground) — not proven semantics |
-| `tools/re/out/ignition_fuel_dataflow.{json,md}` | Ignition/fuel XDF → DATA → CODE xref candidates + coverage % |
+| `tools/re/out/ignition_fuel_dataflow.{json,md}` | Ignition/fuel XDF → DATA → CODE xref status (v2 corrects false page model) |
+| `tools/re/out/irq_ram_publications.{json,md}` | vec2/vec5 IRQ → RAM publication map |
+| `tools/re/out/sfr_hso_hsi_audit.{json,md}` | HSO_COMMAND/HSO_TIME vs HSI_* R/W alias (cross_checked) |
+| `tools/re/out/cal_access_model.{json,md}` | CAL access model correction + proven-xref attempt |
+| `tools/re/out/motronic_331_function.md` | Motronic 3.3.1 MAF theory + §7 theory-vs-ROM |
 | `tools/re/out/code_verification_progress.json` | CODE verification + engine-control coverage framing |
 | `tools/re/out/ghidra/*` | Canonical MCS-96 listing / functions / symbols |
 | `tools/re/out/ghidra/compare_x86_real/*` | Historical x86 reject only |
