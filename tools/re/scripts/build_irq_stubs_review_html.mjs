@@ -2,7 +2,11 @@ import fs from "node:fs";
 
 const data = JSON.parse(fs.readFileSync(new URL("../out/irq_stubs_review.json", import.meta.url), "utf8"));
 const json = JSON.stringify(data);
-const codeEnd = data.codeWindow?.endExclusiveHex || "0xB930";
+const bounds = data.codeBounds || {};
+const endInc = "0x" + (bounds.endInclusive ?? 0xb930).toString(16).toUpperCase();
+const endEx = "0x" + (bounds.endExclusive ?? 0xb931).toString(16).toUpperCase();
+const codeStart = "0x" + (bounds.start ?? 0x2000).toString(16).toUpperCase();
+const dataStart = "0x" + (bounds.dataStart ?? 0xb931).toString(16).toUpperCase();
 
 const html = `<!DOCTYPE html>
 <html lang="en">
@@ -83,18 +87,21 @@ footer { margin-top: 32px; font-size: 12px; color: var(--muted); border-top: 1px
 </head>
 <body>
   <h1>IRQ stubs review — RedLabel / MCS-96</h1>
-  <p>Offline RE only. Blocker 1 (LJMP/LCALL PC-rel) is closed. Richard baseline 413/623: <strong style="color:var(--text)">CODE through ${codeEnd}</strong> — high <code>0xAxxx</code> stub landings are <em>inside</em> CODE, not outside it. Coarse map DATA labels above 0x7FFF are stale for this layout.</p>
+  <p>Offline RE only. Blocker 1 (LJMP/LCALL PC-rel) is closed. Confirmed baseline:
+    <strong style="color:var(--text)">CODE ${codeStart}–${endInc} inclusive</strong>
+    (<code>endExclusive=${endEx}</code>; DATA from <code>${dataStart}</code>).
+    All eight IRQ stub landings (including high <code>0xAxxx</code>) are inside CODE.</p>
   <div class="banner" id="banner"></div>
   <div class="stats" id="stats"></div>
   <div class="toolbar">
     <button type="button" class="active" data-filter="all">All sites</button>
-    <button type="button" data-filter="axxx">0xAxxx (in CODE)</button>
-    <button type="button" data-filter="stale">Stale coarse DATA</button>
+    <button type="button" data-filter="axxx">0xAxxx landings</button>
+    <button type="button" data-filter="low">Low CODE landing</button>
   </div>
   <h2>Index</h2>
   <table>
     <thead>
-      <tr><th>Vec</th><th>Stub</th><th>Prologue</th><th>Ghidra LJMP</th><th>Landing</th><th>Baseline / coarse</th></tr>
+      <tr><th>Vec</th><th>Stub</th><th>Prologue</th><th>Ghidra LJMP</th><th>Landing</th><th>Baseline</th></tr>
     </thead>
     <tbody id="index"></tbody>
   </table>
@@ -114,25 +121,26 @@ function renderHex(hex, focusOffset, focusLen, cls){
   }).join("");
 }
 function decision(site){
-  if(site.landing.inBaselineCode){
-    if(site.landing.coarseMapConflict){
-      return "Baseline: inside CODE (ends 0xB930). Decide: real IRQ handler vs mid-CODE data island; update coarse region map off the old 0x7FFF CODE end. Do not ship yet.";
-    }
-    return "Landing already in low CODE window — control case under baseline CODE through 0xB930.";
+  if(site.landing.insideBaselineCode){
+    return "Inside CODE 0x2000–0xB930 inclusive. Decide: real IRQ handler vs mid-CODE data island. Do not promote into shipping packs.";
   }
-  return "Landing beyond baseline CODE end 0xB930 — still needs human review.";
+  return "Landing beyond CODE endInclusive 0xB930 (DATA from 0xB931) — unexpected under current baseline.";
 }
-const codeEndHex = (DATA.codeWindow && DATA.codeWindow.endExclusiveHex) || "0xB930";
-const staleCount = DATA.sites.filter(s => s.landing.coarseMapConflict).length;
+const bounds = DATA.codeBounds || {};
+const endInc = "0x"+(bounds.endInclusive ?? 0xB930).toString(16).toUpperCase();
+const endEx = "0x"+(bounds.endExclusive ?? 0xB931).toString(16).toUpperCase();
+const codeStart = "0x"+(bounds.start ?? 0x2000).toString(16).toUpperCase();
+const dataStart = "0x"+(bounds.dataStart ?? 0xB931).toString(16).toUpperCase();
 document.getElementById("banner").innerHTML =
-  "<strong>Baseline CODE → "+codeEndHex+"</strong> — "+DATA.shippingNote+" "+DATA.addressingNote;
-document.getElementById("stats").innerHTML = [
-  ["siteCount","IRQ stub sites"],
-  ["baselineCodeLandingCount","Inside baseline CODE"],
-  ["axxxLandingCount","0xAxxx in CODE"],
-].map(([k,l])=>'<div class="stat"><b>'+(DATA[k] ?? staleCount)+"</b><span>"+l+"</span></div>").join("")
-  + '<div class="stat"><b>'+staleCount+'</b><span>Stale coarse DATA labels</span></div>'
-  + '<div class="stat"><b>'+DATA.ghidraLanguage+"</b><span>Ghidra language</span></div>";
+  "<strong>CODE "+codeStart+"–"+endInc+" inclusive</strong> (endExclusive="+endEx+"; DATA from "+dataStart+") — "+
+  (DATA.codeBounds && DATA.codeBounds.note ? DATA.codeBounds.note+" " : "")+
+  (DATA.shippingNote||"")+" "+(DATA.addressingNote||"");
+document.getElementById("stats").innerHTML =
+  '<div class="stat"><b>'+DATA.siteCount+'</b><span>IRQ stub sites</span></div>'+
+  '<div class="stat"><b>'+(DATA.sitesInsideCodeToB930 ?? DATA.siteCount)+'</b><span>Inside CODE to 0xB930</span></div>'+
+  '<div class="stat"><b>'+DATA.axxxLandingCount+'</b><span>0xAxxx landings</span></div>'+
+  '<div class="stat"><b>'+endInc+' incl.</b><span>CODE end (excl. '+endEx+')</span></div>'+
+  '<div class="stat"><b>'+DATA.ghidraLanguage+'</b><span>Ghidra language</span></div>';
 
 const index=document.getElementById("index");
 const sitesEl=document.getElementById("sites");
@@ -140,8 +148,8 @@ let filter="all";
 
 function matches(site){
   if(filter==="all") return true;
-  if(filter==="axxx") return site.landing.inHighAxxx;
-  if(filter==="stale") return !!site.landing.coarseMapConflict;
+  if(filter==="axxx") return !!site.landing.inHighAxxx;
+  if(filter==="low") return !site.landing.inHighAxxx;
   return true;
 }
 
@@ -149,9 +157,10 @@ function render(){
   index.innerHTML="";
   sitesEl.innerHTML="";
   DATA.sites.filter(matches).forEach(site=>{
-    const tag = site.landing.coarseMapConflict
-      ? '<span class="tag data">baseline CODE · coarse was DATA</span>'
-      : '<span class="tag code">baseline CODE</span>';
+    const tag = site.landing.insideBaselineCode
+      ? '<span class="tag code">CODE (≤0xB930 incl.)</span>'
+      : '<span class="tag data">beyond CODE</span>';
+    const ljmpHex = site.addrHex || site.cfg_edge_from.fromHex;
     const tr=document.createElement("tr");
     tr.innerHTML =
       "<td>v"+site.vectorIndex+"</td><td><code>"+site.stubAddrHex+
@@ -163,7 +172,6 @@ function render(){
     const stubLen = site.stubBytes.hex.length/2;
     const nearby = (site.landing.ghidra_insns_nearby||[])
       .map(x=>"<li><code>"+x.addrHex+"</code> "+x.insn+"</li>").join("");
-    const landTag = site.landing.region_label==="DATA" ? "data" : "code";
     const card=document.createElement("section");
     card.className="site";
     card.id=site.id;
@@ -171,14 +179,11 @@ function render(){
       "<h3>"+site.id+" — vector["+site.vectorIndex+"] @ "+site.vectorAddrHex+"</h3>"+
       '<div class="meta">'+
         "<div>Stub <code>"+site.stubAddrHex+"</code> ("+site.stubPrologue+")</div>"+
-        "<div>LJMP @ <code>"+site.ljmpAddrHex+"</code></div>"+
+        "<div>LJMP @ <code>"+ljmpHex+"</code></div>"+
         "<div>Disp <code>"+site.cfg_edge_from.dispHex+"</code> → <code>"+site.landing.addrHex+"</code></div>"+
         "<div>CFG <code>"+site.cfg_edge_from.verificationStatus+"</code></div>"+
         '<div>Stub region <span class="tag code">'+site.region_label+"</span></div>"+
-        '<div>Landing (baseline) <span class="tag '+landTag+'">'+site.landing.region_label+"</span></div>"+
-        (site.landing.coarseMapConflict
-          ? '<div>Coarse map <span class="tag data">was DATA</span> (stale vs CODE through 0xB930)</div>'
-          : "")+
+        '<div>Landing region <span class="tag code">'+site.landing.region_label+"</span></div>"+
       "</div>"+
       '<div class="caption">Stub window (focus = prologue+LJMP) starting '+u16(site.bytes.start)+"</div>"+
       '<div class="hex">'+renderHex(site.bytes.hex, site.bytes.focusOffset, stubLen, "focus")+"</div>"+
@@ -186,7 +191,7 @@ function render(){
       '<div class="hex">'+renderHex(site.landing.bytes.hex, 0, 8, "land")+"</div>"+
       (nearby
         ? '<div class="caption">Ghidra nearby at landing</div><ul>'+nearby+"</ul>"
-        : '<div class="caption">No Ghidra instructions seeded at landing yet (layout still CODE under 0xB930).</div>')+
+        : '<div class="caption">No Ghidra instructions listed at landing.</div>')+
       '<p class="explain">'+site.explanation+"</p>"+
       '<p class="decide">'+decision(site)+"</p>";
     sitesEl.appendChild(card);
@@ -201,8 +206,8 @@ document.querySelectorAll(".toolbar button").forEach(btn=>{
   });
 });
 document.getElementById("footer").textContent =
-  "Source: "+DATA.id+" · ROM "+DATA.rom+" · ISA "+DATA.isa+" · CODE end "+codeEndHex+" · related: "+
-  (DATA.relatedArtifacts||[]).join(", ");
+  "Source: "+DATA.id+" · ROM "+DATA.rom+" · ISA "+DATA.isa+
+  " · CODE "+codeStart+"–"+endInc+" inclusive (endExclusive "+endEx+")";
 render();
 </script>
 </body>
