@@ -12,7 +12,9 @@ function le16(buf, off) {
   return buf[off] | (buf[off + 1] << 8);
 }
 
-export function structuralCodePass(buf, { codeStart = 0x2000, codeEnd = 0x8000 } = {}) {
+import { MEM } from './romPaths.mjs';
+
+export function structuralCodePass(buf, { codeStart = MEM.CODE_START, codeEnd = MEM.CODE_END_EXCLUSIVE } = {}) {
   const entries = [];
   const ljmps = [];
   const nearCalls = [];

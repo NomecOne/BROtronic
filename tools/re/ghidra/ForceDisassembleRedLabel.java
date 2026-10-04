@@ -18,7 +18,7 @@ public class ForceDisassembleRedLabel extends GhidraScript {
 	private static final long VECTOR_BASE = 0x2000L;
 	private static final int VECTOR_COUNT = 8;
 	private static final long CODE_LO = 0x2000L;
-	private static final long CODE_HI = 0x7FFFL;
+	private static final long CODE_HI = 0xB930L; // inclusive baseline CODE end (Richard)
 
 	@Override
 	public void run() throws Exception {
@@ -49,8 +49,11 @@ public class ForceDisassembleRedLabel extends GhidraScript {
 			}
 		}
 
-		// Also seed a few known CODE landmarks if present
-		long[] extras = new long[] { 0x2010L, 0x2100L, 0x3000L, 0x4000L, 0x4178L, 0x5000L, 0x6000L, 0x7000L };
+		// Also seed CODE landmarks + known IRQ PC-rel landings in high CODE (≤0xB930)
+		long[] extras = new long[] {
+			0x2010L, 0x2100L, 0x3000L, 0x4000L, 0x4178L, 0x5000L, 0x6000L, 0x7000L,
+			0xA000L, 0xA479L, 0xA49EL, 0xA4A9L, 0xA640L, 0xA88EL, 0xB000L, 0xB930L
+		};
 		for (long a : extras) {
 			Address addr = toAddr(a);
 			if (mem.contains(addr) && (mem.getByte(addr) & 0xff) != 0xff) {

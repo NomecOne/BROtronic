@@ -16,6 +16,7 @@
     "re:ghidra": "bash tools/re/ghidra/run_headless.sh",
     "re:ghidra:win": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/re/ghidra/run_headless.ps1",
     "re:ghidra:branches": "node tools/re/ghidra/correct_ljmp_targets.mjs",
+    "re:irq-review": "node tools/re/export_irq_stubs_review.mjs",
     "test": "vitest run",
     "test:watch": "vitest"
   },

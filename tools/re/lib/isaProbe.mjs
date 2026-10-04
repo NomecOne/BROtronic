@@ -4,9 +4,11 @@
  * Naming: "C16x900A" in the ROM filename is the checksum fingerprint (0x900A),
  * not Siemens/Infineon C16x CPU evidence.
  *
- * Working policy (Richard): prefer user-stated 8086 analysis path unless binary/docs
- * evidence is stronger for another ISA — and always report conflicts with proof.
+ * Working policy: MCS-96 / 80C196-class is the locked CODE ISA.
+ * LJMP/LCALL use PC-relative disp16. Baseline CODE ends at 0xB930 inclusive.
  */
+
+import { MEM } from './romPaths.mjs';
 
 function countByte(buf, start, end, value) {
   let n = 0;
@@ -39,7 +41,7 @@ function scoreMcs96Ljmp(buf, start, end) {
     if (buf[i] !== 0xe7) continue;
     hits++;
     const tgt = le16(buf, i + 1);
-    if (tgt >= 0x2000 && tgt < 0x8000) inRange++;
+    if (tgt >= MEM.CODE_START && tgt <= MEM.CODE_END) inRange++;
   }
   return { hits, inRange };
 }
@@ -53,14 +55,14 @@ function score8086NearCall(buf, start, end) {
     hits++;
     const rel = (le16(buf, i + 1) << 16) >> 16; // sign-extend
     const tgt = (i + 3 + rel) & 0xffff;
-    if (tgt >= 0x2000 && tgt < 0x8000) inRange++;
+    if (tgt >= MEM.CODE_START && tgt <= MEM.CODE_END) inRange++;
   }
   return { hits, inRange };
 }
 
 export function probeIsa(buf) {
-  const codeStart = 0x2000;
-  const codeEnd = 0x8000;
+  const codeStart = MEM.CODE_START;
+  const codeEnd = MEM.CODE_END_EXCLUSIVE; // probe loops use exclusive end
   const firstNonFf = (() => {
     for (let i = 0; i < buf.length; i++) if (buf[i] !== 0xff) return i;
     return -1;
@@ -93,8 +95,8 @@ export function probeIsa(buf) {
     },
     {
       kind: 'memory_layout',
-      detail: `First non-0xFF byte at 0x${firstNonFf.toString(16).toUpperCase()}; shipping pack maps CODE 0x0000-0x7FFF / DATA 0x8000-0xFFFD. Bytes 0x0000-0x1FFF are erased (0xFF) in this external image.`,
-      sources: ['re_pipeline', 'brotronic_legacy'],
+      detail: `First non-0xFF byte at 0x${firstNonFf.toString(16).toUpperCase()}; baseline CODE 0x2000–0xB930 inclusive (Richard); DATA_CAL from 0xB931. Bytes 0x0000-0x1FFF erased in external image. Legacy shipping pack CODE≤0x7FFF is superseded for region labeling.`,
+      sources: ['re_pipeline', 'sheet'],
     },
     {
       kind: 'sheet_ida_note',

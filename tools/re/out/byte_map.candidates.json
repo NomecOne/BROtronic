@@ -33,12 +33,12 @@
     {
       "name": "CODE_WINDOW",
       "start": 8192,
-      "end": 32767,
+      "end": 47408,
       "kind": "CODE"
     },
     {
       "name": "DATA_CAL",
-      "start": 32768,
+      "start": 47409,
       "end": 65533,
       "kind": "DATA"
     },

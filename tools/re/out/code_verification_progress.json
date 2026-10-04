@@ -19,9 +19,14 @@
       "cfgEdgesCrossChecked": 385,
       "doc": "tools/re/out/blocker1_ljmp_lcall.md"
     },
+    "codeBounds": {
+      "endInclusive": "0xB930",
+      "dataStart": "0xB931",
+      "note": "Baseline CODE through 0xB930 inclusive (Richard). All 8 IRQ stub landings are inside CODE."
+    },
     "openFollowUps": [
-      "IRQ stub PC-rel targets in high 0xAxxx (region-labeled DATA) — code-in-cal / map follow-up",
-      "Mid-CODE data islands still coarsely labeled",
+      "IRQ 0xAxxx landings are inside CODE≤0xB930 — review mid-CODE executable vs data-island (irq_stubs_review.json)",
+      "Mid-CODE data islands (XDF claims / pads) still coarsely labeled",
       "Do not promote CODE-derived maps to shipping until map-level cross_checked/verified"
     ]
   },

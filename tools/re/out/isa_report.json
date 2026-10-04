@@ -14,16 +14,16 @@
     "mcs96Score": 5,
     "i8086Score": 1,
     "ljmp": {
-      "hits": 142,
-      "inRange": 22
+      "hits": 169,
+      "inRange": 28
     },
     "nearCall": {
-      "hits": 27,
-      "inRange": 18
+      "hits": 38,
+      "inRange": 30
     },
-    "fdPad": 144,
-    "ffPad": 381,
-    "nop90": 42,
+    "fdPad": 174,
+    "ffPad": 493,
+    "nop90": 70,
     "pushBpFrame": 0
   },
   "firstNonFf": 8192,
@@ -71,10 +71,10 @@
     },
     {
       "kind": "memory_layout",
-      "detail": "First non-0xFF byte at 0x2000; shipping pack maps CODE 0x0000-0x7FFF / DATA 0x8000-0xFFFD. Bytes 0x0000-0x1FFF are erased (0xFF) in this external image.",
+      "detail": "First non-0xFF byte at 0x2000; baseline CODE 0x2000–0xB930 inclusive (Richard); DATA_CAL from 0xB931. Bytes 0x0000-0x1FFF erased in external image. Legacy shipping pack CODE≤0x7FFF is superseded for region labeling.",
       "sources": [
         "re_pipeline",
-        "brotronic_legacy"
+        "sheet"
       ]
     },
     {
@@ -95,7 +95,7 @@
     },
     {
       "kind": "mcs96_opcode_pattern",
-      "detail": "In CODE window: opcode 0xE7 (MCS-96 LJMP, PC-rel disp16) count=142; naive abs-in-window count=22 (use PC-rel CFG, not abs). Pad byte 0xFD count=144; sheet: 0xFD~=NOP / 0xFF~=reset — matches MCS-96.",
+      "detail": "In CODE window: opcode 0xE7 (MCS-96 LJMP, PC-rel disp16) count=169; naive abs-in-window count=28 (use PC-rel CFG, not abs). Pad byte 0xFD count=174; sheet: 0xFD~=NOP / 0xFF~=reset — matches MCS-96.",
       "sources": [
         "re_pipeline",
         "sheet",
@@ -104,7 +104,7 @@
     },
     {
       "kind": "8086_opcode_pattern",
-      "detail": "In CODE window: 0xE8 near-call-like bytes=27 (in-range targets=18); classic prologue 55 8B EC count=0; 0x90 (8086 NOP) count=42 vs 0xFD count=144.",
+      "detail": "In CODE window: 0xE8 near-call-like bytes=38 (in-range targets=30); classic prologue 55 8B EC count=0; 0x90 (8086 NOP) count=70 vs 0xFD count=174.",
       "sources": [
         "re_pipeline"
       ]

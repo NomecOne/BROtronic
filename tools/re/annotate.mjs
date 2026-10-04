@@ -111,8 +111,8 @@ function buildGapReport({ isa, classification, structural, sum16, romName, ghidr
   lines.push('## Blockers');
   lines.push('');
   lines.push('- Blocker 1 (LJMP/LCALL addressing) **resolved**: PC-relative; Ghidra SLEIGH correct (`blocker1_ljmp_lcall.md`).');
-  lines.push('- IRQ stub targets in high `0xAxxx` (region-labeled DATA) need follow-up under MCS-96 CFG — not an encoding bug.');
-  lines.push('- Mid-CODE data islands still need manual separation; do not promote CODE-derived maps to shipping.');
+  lines.push('- Baseline CODE ends at **0xB930 inclusive**; DATA_CAL starts at 0xB931. IRQ `0xAxxx` landings are inside CODE.');
+  lines.push('- Mid-CODE data islands (XDF claims / pads) still need separation; do not promote CODE-derived maps to shipping.');
   lines.push('');
   return lines.join('\n');
 }
@@ -154,17 +154,54 @@ function main() {
     generatedAt: new Date().toISOString(),
     isa,
     memoryMapHypothesis: [
-      { name: 'LOW_PAD_OR_INTERNAL_HOLE', start: 0, end: 0x1fff, kind: 'PAD', confidence: 0.9 },
-      { name: 'VECTOR_0x2000', start: 0x2000, end: 0x200f, kind: 'VECTOR', confidence: 0.7 },
-      { name: 'CODE_WINDOW', start: 0x2000, end: 0x7fff, kind: 'CODE', confidence: 0.55 },
-      { name: 'DATA_CAL', start: 0x8000, end: 0xfffd, kind: 'DATA', confidence: 0.85 },
-      { name: 'CS16_TRAIL', start: 0xfffe, end: 0xffff, kind: 'OTHER', confidence: 0.95 },
+      {
+        name: 'LOW_PAD_OR_INTERNAL_HOLE',
+        start: 0,
+        end: 0x1fff,
+        kind: 'PAD',
+        confidence: 0.9,
+        endInclusive: true,
+      },
+      {
+        name: 'VECTOR_0x2000',
+        start: 0x2000,
+        end: 0x200f,
+        kind: 'VECTOR',
+        confidence: 0.7,
+        endInclusive: true,
+      },
+      {
+        name: 'CODE_WINDOW',
+        start: 0x2000,
+        end: 0xb930,
+        kind: 'CODE',
+        confidence: 0.75,
+        endInclusive: true,
+        note: 'Baseline CODE through 0xB930 inclusive (Richard RedLabel 413/623).',
+      },
+      {
+        name: 'DATA_CAL',
+        start: 0xb931,
+        end: 0xfffd,
+        kind: 'DATA',
+        confidence: 0.85,
+        endInclusive: true,
+      },
+      {
+        name: 'CS16_TRAIL',
+        start: 0xfffe,
+        end: 0xffff,
+        kind: 'OTHER',
+        confidence: 0.95,
+        endInclusive: true,
+      },
     ],
     coverage: {
       classifiedBytes: classification.classifiedBytes,
       unknownBytes: classification.unknownBytes,
       classifiedPct: classification.classifiedPct,
       byRegion: classification.byRegion,
+      memoryMap: classification.memoryMap,
     },
     runs: classification.runs,
     gaps: classification.gaps,

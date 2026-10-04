@@ -11,20 +11,19 @@
     "intelRef": "Intel MCS-96 Macro Assembler User's Guide: LJMP/LCALL store offset from end of instruction; PC <- PC + disp. Opcodes E7 / EF."
   },
   "counts": {
-    "scannedE7EfInCodeWindow": 449,
-    "ljmp": 142,
-    "lcall": 307,
-    "ghidraAlignedLjLm": 385,
-    "ghidraMatchesPcRel": 385,
+    "scannedE7EfInCodeWindow": 573,
+    "ljmp": 169,
+    "lcall": 404,
+    "ghidraAlignedLjLm": 483,
+    "ghidraMatchesPcRel": 483,
     "ghidraMismatch": 0,
     "pcRelTargetRegions": {
-      "CODE": 349,
-      "DATA": 36
+      "CODE": 483
     },
     "rejectedAbsTargetRegions": {
-      "CODE": 46,
-      "PAD_LOW": 159,
-      "DATA": 180
+      "CODE": 103,
+      "PAD": 191,
+      "DATA": 189
     }
   },
   "representativeSites": [
@@ -60,7 +59,7 @@
       "targetRegion": "CODE",
       "rejectedAbsTarget": 5755,
       "rejectedAbsTargetHex": "0x167B",
-      "rejectedAbsRegion": "PAD_LOW",
+      "rejectedAbsRegion": "PAD",
       "ghidraText": "LJMP 0x3712",
       "ghidraTarget": 14098,
       "ghidraTargetHex": "0x3712",
@@ -80,7 +79,7 @@
       "targetRegion": "CODE",
       "rejectedAbsTarget": 5599,
       "rejectedAbsTargetHex": "0x15DF",
-      "rejectedAbsRegion": "PAD_LOW",
+      "rejectedAbsRegion": "PAD",
       "ghidraText": "LJMP 0x3679",
       "ghidraTarget": 13945,
       "ghidraTargetHex": "0x3679",
@@ -100,7 +99,7 @@
       "targetRegion": "CODE",
       "rejectedAbsTarget": 436,
       "rejectedAbsTargetHex": "0x01B4",
-      "rejectedAbsRegion": "PAD_LOW",
+      "rejectedAbsRegion": "PAD",
       "ghidraText": "LJMP 0x2269",
       "ghidraTarget": 8809,
       "ghidraTargetHex": "0x2269",
@@ -117,7 +116,7 @@
       "dispHex": "0x62FD",
       "target": 42105,
       "targetHex": "0xA479",
-      "targetRegion": "DATA",
+      "targetRegion": "CODE",
       "rejectedAbsTarget": 25341,
       "rejectedAbsTargetHex": "0x62FD",
       "rejectedAbsRegion": "CODE",
@@ -137,7 +136,7 @@
       "dispHex": "0x6329",
       "target": 42153,
       "targetHex": "0xA4A9",
-      "targetRegion": "DATA",
+      "targetRegion": "CODE",
       "rejectedAbsTarget": 25385,
       "rejectedAbsTargetHex": "0x6329",
       "rejectedAbsRegion": "CODE",
@@ -157,7 +156,7 @@
       "dispHex": "0x670A",
       "target": 43150,
       "targetHex": "0xA88E",
-      "targetRegion": "DATA",
+      "targetRegion": "CODE",
       "rejectedAbsTarget": 26378,
       "rejectedAbsTargetHex": "0x670A",
       "rejectedAbsRegion": "CODE",
@@ -189,5 +188,5 @@
       "siteNote": "Follow-on LCALL often misread as abs→DATA"
     }
   ],
-  "cfgEdgeCount": 385
+  "cfgEdgeCount": 483
 }

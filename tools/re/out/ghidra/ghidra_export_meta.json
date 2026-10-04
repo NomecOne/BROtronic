@@ -5,7 +5,7 @@
   "compiler": "default",
   "memorySize": 65536,
   "imageBase": "0000",
-  "instructionCount": 5972,
+  "instructionCount": 10352,
   "functionCount": 213,
   "namingNote": "C16x900A in ROM filename is CS16 fingerprint 0x900A, not a C16x language ID",
   "verificationStatus": "unverified"

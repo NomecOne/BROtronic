@@ -17,19 +17,13 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { OUT_DIR, ensureOutDirs, readRom } from '../lib/romPaths.mjs';
+import { OUT_DIR, ensureOutDirs, readRom, MEM, regionKindAt } from '../lib/romPaths.mjs';
 
-const CODE_LO = 0x2000;
-const CODE_HI = 0x7fff;
 const GHIDRA_LISTING = path.join(OUT_DIR, 'ghidra', 'ghidra_listing.txt');
 const COMPARE_LISTING = path.join(OUT_DIR, 'ghidra', 'compare_mcs96', 'ghidra_listing.txt');
 
 function regionOf(addr) {
-  if (addr <= 0x1fff) return 'PAD_LOW';
-  if (addr >= 0x2000 && addr <= 0x200f) return 'VECTOR';
-  if (addr >= 0x2010 && addr <= 0x7fff) return 'CODE';
-  if (addr >= 0x8000 && addr <= 0xfffd) return 'DATA';
-  return 'OTHER';
+  return regionKindAt(addr);
 }
 
 function loadListing(filePath) {
@@ -56,7 +50,7 @@ function main() {
   );
 
   const rows = [];
-  for (let i = CODE_LO; i <= CODE_HI - 2; i++) {
+  for (let i = MEM.CODE_START; i <= MEM.CODE_END - 2; i++) {
     const op = buf[i];
     if (op !== 0xe7 && op !== 0xef) continue;
     const disp = buf[i + 1] | (buf[i + 2] << 8);

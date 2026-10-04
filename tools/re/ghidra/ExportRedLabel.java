@@ -168,7 +168,7 @@ public class ExportRedLabel extends GhidraScript {
 		while (ii.hasNext() && count < MAX) {
 			Instruction ins = ii.next();
 			Address a = ins.getAddress();
-			if (hasCodeWindow && a.getOffset() > 0x7FFF) {
+			if (hasCodeWindow && a.getOffset() > 0xB930) {
 				break;
 			}
 			sb.append(a.toString()).append("  ").append(ins.toString()).append('\n');

@@ -4,6 +4,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import { MEM } from './romPaths.mjs';
 
 export function loadGhidraFunctions(ghidraOutDir) {
   const csvPath = path.join(ghidraOutDir, 'ghidra_functions.csv');
@@ -45,7 +46,7 @@ export function loadGhidraInstructionAddresses(ghidraOutDir) {
     const m = line.match(/^(?:[0-9A-Fa-f]{4}:)?([0-9A-Fa-f]{1,4})\s+\S/);
     if (!m) continue;
     const off = parseInt(m[1], 16);
-    if (!Number.isFinite(off) || off < 0x2000 || off > 0x7fff) continue;
+    if (!Number.isFinite(off) || off < MEM.CODE_START || off > MEM.CODE_END) continue;
     addrs.push(off);
   }
   return { listingPath, addresses: addrs, count: addrs.length };

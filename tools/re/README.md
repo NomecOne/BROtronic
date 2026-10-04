@@ -122,13 +122,17 @@ export GHIDRA_INSTALL_DIR="$HOME/tools/ghidra_11.3.2_PUBLIC"
 
 ## Memory map hypothesis (64KB)
 
+Bounds below use **inclusive** end addresses.
+
 | Range | Kind | Confidence | Basis |
 |-------|------|------------|-------|
-| `0x0000–0x1FFF` | PAD / missing internal window | high | All `0xFF` in external image; sheet note about internal 16KB |
+| `0x0000–0x1FFF` | PAD / missing internal window | high | All `0xFF` in external image |
 | `0x2000–0x200F` | VECTOR | medium | LE u16 table; sheet “interrupt vectors?” |
-| `0x2000–0x7FFF` | CODE (coarse) | medium | First non-`FF` @`0x2000`; shipping `CODE_LOW`; Ghidra MCS-96 listing |
-| `0x8000–0xFFFD` | DATA_CAL | high | Shipping pack + XDF addresses |
-| `0xFFFE–0xFFFF` | OTHER (CS16 trail) | high | Trailing checksum field; full-file sum `0x900A` |
+| `0x2000–0xB930` | CODE | high | **Baseline fact (Richard):** CODE runs through `0xB930` inclusive |
+| `0xB931–0xFFFD` | DATA_CAL | high | Starts immediately after CODE; XDF may also claim mid-CODE islands |
+| `0xFFFE–0xFFFF` | OTHER (CS16 trail) | high | Trailing checksum; full-file sum `0x900A` |
+
+Note: legacy shipping `CODE_LOW ≤0x7FFF` / `DATA≥0x8000` is superseded for offline region labeling. IRQ stub PC-rel landings in `0xAxxx` are **inside CODE** (≤`0xB930`).
 
 ## Promotion rule
 
