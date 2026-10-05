@@ -31,7 +31,6 @@
       "Trace HSI_*/PORT outputs to spark vs injector (SFR naming audit)",
       "Do not claim full CODE+DATA control; verification gates unchanged",
       "Trace descriptor slot 0xD0/0x30 after load (0x1566) to Ti/fuel map pointers",
-      "Engine control: 0% absolute; exclusive geometry 9/69 (Ti+VANOS axes) \u2014 chase descriptor\u21920xDxxx deref",
       "Compose island D000+|0030 and [deref] Ti; CODE-walk one VANOS RPM axis",
       "Engine control: 0% absolute; exclusive geometry growing \u2014 chase descriptor\u21920xDxxx deref"
     ]
