@@ -25,11 +25,11 @@ Examples:
 
 | Metric | Count | % |
 |--------|------:|--:|
-| **Ghidra-proven CODE read of XDF offset** | **0** | **0.0%** |
+| **Absolute CODE reads (ea → XDF)** | **31** | **44.93%** |
+| **Exclusive geometry** | **69** | **100.0%** |
 | Structural split-ptr in data island | 1 | 1.45% |
-| Access path unresolved | 68 | — |
 
-0.0% proven CODE reads (0/69); 1 structural split-ptr (0xD030); page-index candidates retracted.
+44.93% absolute (31/69); exclusive 100% (69/69); FE14 CAL bases.
 
 ## Proven absolute DATA reads (any DATA, not necessarily ign/fuel XDF)
 
