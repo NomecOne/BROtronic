@@ -299,30 +299,32 @@ Cross-check of Bosch M-Motronic TI (PRIMARY extract) against MCS-96 listing / XD
 
 ### 7.1 Bosch T1–T8 checklist
 
-See [`theory_vs_rom_bosch_ti.md`](theory_vs_rom_bosch_ti.md). Headline: exclusive geometry **69/69**; T1 MAF exclusive; T3 Ti exclusive; T5/T8 VANOS axes; D200/D978 **retracted**.
+See [`theory_vs_rom_bosch_ti.md`](theory_vs_rom_bosch_ti.md). Headline: **absolute 31/69**; exclusive **69/69**. T1 MAF absolute; T3 Ti absolute; T5 ign WOT absolute via descriptors. D200/D978 **retracted**.
 
-### 7.2 Access-model update (v6)
+### 7.2 Access-model update (v9)
 
-`LDB Rx,0xd0, LOOKUP[ZR]` remains register file `0x00D0`.
+`LDB Rx,0xd0, LOOKUP[ZR]` remains register file `0x00D0` (not ROM page).
 
-**ROM-proven bases (FE24):** `RW68=0x42EC`, `RW6A=0x43F0`, `RW6C=0x1A08`, `RW6E=0x1E08`.
+**Runtime FE14 CAL bases (loader 0x2EDB):** `RW68=0xD002`, `RW6A=0xD106`, `RW6C=0xD28E`, `RW6E=0xE67E`.
+
+**FE24 adjacent (not loaded):** `0x42EC/0x43F0/0x1A08/0x1E08`.
 
 **Retracted:** `RW68=0xD200` / `RW6A=0xD978` — do not revive.
 
-**Exclusive geometry (69/69):**
-- Fuel Ti `0xD030` — unique split @`0x432A`; CODE CMP `0x8B13, 0x8C17, 0x8C2E`
-- VANOS RPM axes — `050605070a05070b0909090f12130860` @ 8 offsets
-- Plus: WOT dwell axes, PT load axes, MAF D28E twin, ign idle timing/cold, soft fuel cut, cold enrich
+**Priority absolute:**
+- MAF `0xD290` — `0xA53B ADD RW64,0x2[RW46] (RW46=RW6C+2·ADC)`
+- Ti `0xD030` — `0x9A82`, `0xAFC7`
+- Ign WOT `0xDD0F` — `0x66EC LD RW1A,#0x9A → 0x6987 → 0x20CD → DD0D/DD0F`
 
 ### 7.3 Artifacts
 
 - `tools/re/out/theory_vs_rom_bosch_ti.{md,json}`
 - `tools/re/out/register_bases_fe24.{md,json}`
-- Coverage: **0.0% absolute (0/69); 0% CAL-content index-base (D200/D978 retracted); 100.0% exclusive geometry (69/69); 4 ROM-proven FE24 bases.**
+- Coverage: **44.93% absolute (31/69); exclusive geometry 100.0% (69/69); FE14 CAL bases RW68=D002/RW6A=D106/RW6C=D28E/RW6E=E67E; D200/D978 retracted.**
 
-### 7.4 First absolute / CAL-content ign/fuel XDF CODE read — status
+### 7.4 Absolute ign/fuel XDF CODE reads — status
 
-**None yet** (`0/69` absolute; `0/69` CAL-content index-base after retraction). Exclusive geometry: **69/69**. Closest CODE: Ti split CMPs + interp `0x20C7`.
+**31/69 absolute** (44.93%). Exclusive geometry: **69/69**. Addressing unlock = FE14 CAL bases + descriptor table at `RW6E`.
 
 ## 8. Research session notes
 

@@ -20,13 +20,15 @@ Richard added a **local PRIMARY** Bosch *M-Motronic Engine Management* Technical
 2. Prove or refute T1–T8 / H1–H7 in MCS-96 CODE against RedLabel + XDF.
 3. Do not promote shipping maps from the PDF alone.
 
-## Status after theory-vs-ROM pass (v8)
+## Status after theory-vs-ROM pass (v9)
 
-- **Retraction:** D200 (13) / D978 (6) remain retracted (do not revive).
-- **ROM-proven bases (FE24):** RW68=`0x42EC`, RW6A=`0x43F0`, RW6C=`0x1A08`, RW6E=`0x1E08`
-- **Coverage:** 0.0% absolute (0/69); 0% CAL-content index-base (D200/D978 retracted); 100.0% exclusive geometry (69/69); 4 ROM-proven FE24 bases.
-- **Fuel exclusive:** Ti `0xD030` — unique split @`0x432A`; CODE CMP ['0x8B13', '0x8C17', '0x8C2E']
-- **VANOS RPM axes:** ['0xD984', '0xD9A6', '0xD9C8', '0xDAA8', '0xDD0F', '0xDD89', '0xDE6D', '0xDF4D']
+- **Retraction:** D200 / D978 remain retracted (do not revive).
+- **Runtime FE14 CAL bases:** RW68=`0xD002`, RW6A=`0xD106`, RW6C=`0xD28E`, RW6E=`0xE67E`
+- **FE24 adjacent (not loaded):** `0x42EC/0x43F0/0x1A08/0x1E08`
+- **Coverage:** 44.93% absolute (31/69); exclusive geometry 100.0% (69/69); FE14 CAL bases RW68=D002/RW6A=D106/RW6C=D28E/RW6E=E67E; D200/D978 retracted.
+- **Absolute priority:** MAF `0xD290` @0xA53B; Ti `0xD030` @0xAFC7/0x9A82; ign WOT `0xDD0F` via RW1A=#0x9A
+- **Absolute offsets (31):** ['0xD030', '0xD032', '0xD06A', '0xD093', '0xD23E', '0xD240', '0xD244', '0xD256', '0xD257', '0xD25A', '0xD25B', '0xD27B', '0xD27D', '0xD27E', '0xD281', '0xD288', '0xD290', '0xD5A6', '0xD67C', '0xD69E', '0xD6E8', '0xD6FA', '0xD75E', '0xD984', '0xD9A6', '0xD9C8', '0xDAA8', '0xDD0F', '0xDD89', '0xDE6D', '0xDF4D']
+- **Exclusive geometry:** 69/69 retained
 - **VANOS WOT dwell RPM axes:** `0xD67C`, `0xD69E`
 - **VANOS PT load axes (fuel+ign):** `0xD9DA`, `0xDABA`, `0xDE7F`, `0xDF5F`
 - **Ign idle timing (Manual / A/T):** `0xDCF3`, `0xDD05`
@@ -47,4 +49,4 @@ Richard added a **local PRIMARY** Bosch *M-Motronic Engine Management* Technical
 - **Warm-up enrich + knock sensitivity tables:** `0xD815`, `0xD8B1`
 - **Knock-related block E044:** `0xE044`
 - **Lambda OFF RPM tables 1–4:** `0xE364`, `0xE372`, `0xE37E`, `0xE388`
-- **Next:** descriptor → 0xDxxx deref; compose+deref Ti; CODE-walk one VANOS axis
+- **Next:** grow absolute beyond 31/69; fuel map body walks

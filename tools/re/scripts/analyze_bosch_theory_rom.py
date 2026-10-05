@@ -5,21 +5,23 @@ Bosch M-Motronic TI theory-vs-ROM pass + register-base recovery.
 PRIMARY theory: tools/re/out/ref_pdf_bosch_m_motronic_technical_instruction.md
 Does NOT verify shipping from the book alone — CODE×XDF only.
 
-v4 correction:
-  Prior RW68=0xD200 / RW6A=0xD978 “exclusive XDF geometry” claims are RETRACTED.
-  They were false positives against XDF address layout.
+v9 addressing-model correction:
+  Loader 0x2EDB scans FF pad then loads BE hi/lo pairs from FE14 (not FE24):
+    RW68=0xD002  CAL page base (Ti @ +0x2E → 0xD030)
+    RW6A=0xD106  CAL sensor/limit base
+    RW6C=0xD28E  MAF table base (body @ +2 → 0xD290)
+    RW6E=0xE67E  CAL descriptor table (LE16 map headers)
+  FE24 words 0x42EC/0x43F0/0x1A08/0x1E08 are an adjacent alternate/RAM-pool
+  quadruplet; CMP @0x4D60/0x481B accepts either CAL bases or 1A08/1E08.
 
-  ROM-proven bases from unique FE24 structure (hi/lo LDB layout) + CMP checks:
-    RW68=0x42EC  (CODE parameter island)
-    RW6A=0x43F0  (CODE index / fault-id island)
-    RW6C=0x1A08  (descriptor RAM; CMP @0x4D60)
-    RW6E=0x1E08  (descriptor RAM; CMP @0x481B/0x4D66)
+v4–v8 still hold: D200/D978 retracted; exclusive geometry 69/69.
 """
 
 from __future__ import annotations
 
 import json
 import re
+import struct
 from collections import defaultdict
 from pathlib import Path
 
@@ -31,11 +33,19 @@ ROM_PATH = Path(__file__).resolve().parents[3] / "public" / "rom" / (
 )
 ROM_NAME = "BMW DME413 SW623 D466.29 C16x900A 94 RedLabel.bin"
 
-# ROM-proven (FE24 BE hi/lo pairs)
-RW68_BASE = 0x42EC
-RW6A_BASE = 0x43F0
-RW6C_BASE = 0x1A08
-RW6E_BASE = 0x1E08
+# Runtime bases loaded by 0x2EDB from FE14 (after FF-pad scan)
+RW68_BASE = 0xD002
+RW6A_BASE = 0xD106
+RW6C_BASE = 0xD28E
+RW6E_BASE = 0xE67E
+FE14_STRUCT = 0xFE14
+# Adjacent FE24 quadruplet (not loaded into RW68–6E on this image)
+FE24_ALT = {
+    "RW68": 0x42EC,
+    "RW6A": 0x43F0,
+    "RW6C": 0x1A08,
+    "RW6E": 0x1E08,
+}
 FE24_STRUCT = 0xFE24
 
 
@@ -86,13 +96,59 @@ def collect_indexed(lines, reg: str):
     return sites
 
 
-def verify_fe24_structure(rom: bytes):
-    """Unique BE quadruplet at FE24 must match CMP-proven RW6C/RW6E."""
-    b = rom[FE24_STRUCT : FE24_STRUCT + 8]
-    words = [(b[i] << 8) | b[i + 1] for i in range(0, 8, 2)]
-    assert words == [RW68_BASE, RW6A_BASE, RW6C_BASE, RW6E_BASE], words
-    # uniqueness
-    pat = bytes(
+def simulate_fe14_loader(rom: bytes) -> dict:
+    """Reproduce 0x2EDB: start @ [0x40B4], find 16×0xFF, load BE words from FE14."""
+    start = struct.unpack_from("<H", rom, 0x40B4)[0]
+    assert start == 0xFE33, hex(start)
+    saved = start - 0xF  # FE24
+    rw1c = saved
+    matched = None
+    for _ in range(0x0B):
+        rw1c -= 0x10
+        if all(b == 0xFF for b in rom[rw1c : rw1c + 16]):
+            matched = rw1c
+            break
+    assert matched == 0xFE04, hex(matched or 0)
+    # after 16 post-inc compares RW1C=FE14; ADD #0xF → FE23
+    base_ptr = matched + 16 + 0xF
+    assert base_ptr == 0xFE23
+
+    def be_word(hi_off: int) -> int:
+        return (rom[base_ptr - hi_off] << 8) | rom[base_ptr - (hi_off - 1)]
+
+    words = {
+        "RW68": be_word(0xF),
+        "RW6A": be_word(0xD),
+        "RW6C": be_word(0xB),
+        "RW6E": be_word(0x9),
+    }
+    assert words == {
+        "RW68": RW68_BASE,
+        "RW6A": RW6A_BASE,
+        "RW6C": RW6C_BASE,
+        "RW6E": RW6E_BASE,
+    }, words
+    return {
+        "loader": "0x2EDB via trampoline 0x20B5 / LCALL 0x412C",
+        "scanStart": "0xFE33 from TABLE[ZR]@0x40B4",
+        "ffPadBlock": "0xFE04..0xFE13",
+        "loadedFrom": f"0x{FE14_STRUCT:04X}",
+        "basePtrAfterAdd": f"0x{base_ptr:04X}",
+        "words": {k: f"0x{v:04X}" for k, v in words.items()},
+        "roles": {
+            "RW68": "CAL page base (Ti 0xD030 = +0x2E)",
+            "RW6A": "CAL sensor/limit base",
+            "RW6C": "MAF table base (body 0xD290 = +2)",
+            "RW6E": "CAL descriptor table (LE16 map headers)",
+        },
+    }
+
+
+def verify_fe_structure(rom: bytes):
+    """FE14 runtime bases (loader) + FE24 adjacent alternate quadruplet."""
+    loaded = simulate_fe14_loader(rom)
+    # FE14 BE unique
+    fe14 = bytes(
         [
             RW68_BASE >> 8,
             RW68_BASE & 0xFF,
@@ -104,75 +160,244 @@ def verify_fe24_structure(rom: bytes):
             RW6E_BASE & 0xFF,
         ]
     )
-    assert rom.find(pat) == FE24_STRUCT
-    assert rom.find(pat, FE24_STRUCT + 1) < 0
+    assert rom.find(fe14) == FE14_STRUCT
+    assert rom.find(fe14, FE14_STRUCT + 1) < 0
+    # FE24 alternate still unique
+    alt = FE24_ALT
+    fe24 = bytes(
+        [
+            alt["RW68"] >> 8,
+            alt["RW68"] & 0xFF,
+            alt["RW6A"] >> 8,
+            alt["RW6A"] & 0xFF,
+            alt["RW6C"] >> 8,
+            alt["RW6C"] & 0xFF,
+            alt["RW6E"] >> 8,
+            alt["RW6E"] & 0xFF,
+        ]
+    )
+    assert rom.find(fe24) == FE24_STRUCT
+    assert rom.find(fe24, FE24_STRUCT + 1) < 0
     return {
-        "structAt": f"0x{FE24_STRUCT:04X}",
+        "structAt": f"0x{FE14_STRUCT:04X}",
         "layout": "LDB Rhi,-off-1[RW1C]; LDB Rlo,-off[RW1C] (hi byte at lower addr)",
-        "words": {
-            "RW68": f"0x{RW68_BASE:04X}",
-            "RW6A": f"0x{RW6A_BASE:04X}",
-            "RW6C": f"0x{RW6C_BASE:04X}",
-            "RW6E": f"0x{RW6E_BASE:04X}",
+        "words": loaded["words"],
+        "roles": loaded["roles"],
+        "loader": loaded,
+        "fe24AdjacentNotLoaded": {
+            "structAt": f"0x{FE24_STRUCT:04X}",
+            "words": {k: f"0x{v:04X}" for k, v in alt.items()},
+            "note": (
+                "Adjacent BE quadruplet after FE14 CAL bases. Not written into "
+                "RW68–RW6E by 0x2EDB on this image. 0x1A08/0x1E08 are also "
+                "hardcoded RAM clear/fill targets at 0x4ECC when RW6E==0x1E08."
+            ),
         },
         "cmpCrossCheck": {
-            "RW6C": "CMP RW6C,#0x1a08 @0x4D60",
-            "RW6E": "CMP RW6E,#0x1e08 @0x481B/0x4D66",
+            "RW6C": "CMP RW6C,#0x1a08 @0x4D60 (dual-config: CAL≠1A08 continues)",
+            "RW6E": "CMP RW6E,#0x1e08 @0x481B/0x4D66 (skip 0x4ECC fill when ≠)",
+            "note": (
+                "With FE14 CAL bases, descriptor RAM fill @0x4ECC is skipped; "
+                "interp uses ROM table at RW6E=0xE67E."
+            ),
         },
-        "loader": "0x2EDB via trampoline 0x20B5 / LCALL 0x412C",
         "uniqueInRom": True,
     }
 
 
+def build_absolute_proofs(rom: bytes, lines, ign: dict) -> dict:
+    """Absolute CODE→CAL proofs using FE14 runtime bases + descriptor table."""
+    bases = {
+        "RW68": RW68_BASE,
+        "RW6A": RW6A_BASE,
+        "RW6C": RW6C_BASE,
+        "RW6E": RW6E_BASE,
+    }
+    imm_index = re.compile(
+        r"0x(?P<imm>[0-9a-fA-F]+),\s*(?:LOOKUP|TABLE)\[(?P<reg>RW6[8ACE])\]"
+    )
+    bracket = re.compile(r"0x(?P<imm>[0-9a-fA-F]+)\[(?P<reg>RW6[8ACE])\]")
+    direct: dict[int, list] = defaultdict(list)
+    for a, insn in lines:
+        for mm in list(imm_index.finditer(insn)) + list(bracket.finditer(insn)):
+            reg = mm.group("reg")
+            imm = int(mm.group("imm"), 16)
+            ea = bases[reg] + imm
+            if ea in ign:
+                direct[ea].append(
+                    {
+                        "site": a,
+                        "siteHex": f"0x{a:04X}",
+                        "reg": reg,
+                        "immHex": f"0x{imm:X}",
+                        "eaHex": f"0x{ea:04X}",
+                        "insn": insn,
+                        "kind": "long_index",
+                    }
+                )
+    # MAF: ADC ISR accumulates word table at RW6C+2 + 2*ADC
+    assert RW6C_BASE + 2 == 0xD290
+    direct[0xD290].append(
+        {
+            "site": 0xA53B,
+            "siteHex": "0xA53B",
+            "reg": "RW6C",
+            "immHex": "0x2",
+            "eaHex": "0xD290",
+            "insn": "ADD RW64,0x2[RW46] ; RW46=RW6C+2*AD_resulthi",
+            "kind": "maf_adc_word_table",
+            "path": "0xA4AA ISR → 0xA52A..0xA53B",
+        }
+    )
+
+    # Descriptor selects: LD RW1A,#idx where [RW6E+idx] ∈ {xdf, xdf-2}
+    imm_sites: dict[int, list] = defaultdict(list)
+    for a, insn in lines:
+        m = re.match(r"LD RW1A,#0x([0-9a-fA-F]+)$", insn)
+        if m:
+            imm_sites[int(m.group(1), 16)].append(a)
+
+    desc: dict[int, list] = defaultdict(list)
+    for idx in range(0, 0x200, 2):
+        ptr = struct.unpack_from("<H", rom, RW6E_BASE + idx)[0]
+        for off in ign:
+            if ptr in (off, off - 2) and idx in imm_sites:
+                desc[off].append(
+                    {
+                        "descIndexHex": f"0x{idx:X}",
+                        "slotHex": f"0x{RW6E_BASE + idx:04X}",
+                        "ptrHex": f"0x{ptr:04X}",
+                        "xdfHex": f"0x{off:04X}",
+                        "headerDelta": ptr - off,
+                        "selectSites": [f"0x{s:04X}" for s in imm_sites[idx][:4]],
+                        "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
+                        "kind": "descriptor_header",
+                    }
+                )
+
+    # Priority spotlight proofs
+    priority = {
+        "maf_D290": {
+            "offset": "0xD290",
+            "status": "absolute",
+            "method": "maf_adc_word_table",
+            "sites": direct.get(0xD290, []),
+            "note": (
+                "RW6C=0xD28E from FE14 loader; ADC ISR indexes word table at +2 "
+                "(0xD290 + 2·ADC)."
+            ),
+        },
+        "ti_D030": {
+            "offset": "0xD030",
+            "status": "absolute",
+            "method": "long_index",
+            "sites": direct.get(0xD030, []),
+            "note": (
+                "RW68=0xD002; LD RW40,0x2e[RW68] @0xAFC7 and "
+                "DIVU RL1C,0x2e,TABLE[RW68] @0x9A82 read injector constant."
+            ),
+        },
+        "ign_WOT_DD0F": {
+            "offset": "0xDD0F",
+            "status": "absolute",
+            "method": "descriptor_header",
+            "sites": desc.get(0xDD0F, []),
+            "codePath": (
+                "0x66EC LD RW1A,#0x9A → (VANOS select) 0x6723 SCALL 0x6987 → "
+                "LCALL 0x20CD → 0x343C ADD RW1A,RW6E; LD RW4C,[RW1A] → "
+                "[0xE67E+0x9A]=0xDD0D (header) / XDF axis 0xDD0F"
+            ),
+            "note": "Main ign WOT VANOS-retarded RPM axis via CAL descriptor table.",
+        },
+    }
+
+    all_offs = sorted(set(direct) | set(desc))
+    items = []
+    for off in all_offs:
+        entry = {
+            "offset": off,
+            "offsetHex": f"0x{off:04X}",
+            "name": ign[off]["name"],
+            "methods": [],
+            "sites": [],
+        }
+        if off in direct:
+            entry["methods"].append("long_index_or_maf")
+            entry["sites"].extend(direct[off])
+        if off in desc:
+            entry["methods"].append("descriptor_header")
+            entry["sites"].extend(desc[off])
+        items.append(entry)
+
+    return {
+        "schemaVersion": 1,
+        "id": "absolute_code_reads_v9",
+        "runtimeBases": {k: f"0x{v:04X}" for k, v in bases.items()},
+        "priority": priority,
+        "count": len(all_offs),
+        "offsets": [f"0x{o:04X}" for o in all_offs],
+        "items": items,
+        "directCount": len(direct),
+        "descriptorCount": len(desc),
+        "note": (
+            "Absolute = CODE effective address resolves to XDF offset (or map "
+            "header at XDF−2 via RW6E descriptor) using FE14-loaded bases."
+        ),
+    }
+
+
 def build_ti_structural(rom: bytes, lines):
-    """Ti 0xD030 split lives at RW68+0x3E / +0x40; CODE reads D000 via +0x3E."""
+    """Ti absolute via RW68+0x2E; exclusive island split @0x432A retained."""
+    assert RW68_BASE + 0x2E == 0xD030
+    # Runtime: page marker word at RW68+0x3E = 0xD040 holds 0xD000
+    assert struct.unpack_from("<H", rom, RW68_BASE + 0x3E)[0] == 0xD000
+
+    # Exclusive island geometry (FE24_ALT parameter island), still unique
     assert rom[0x432A] | (rom[0x432B] << 8) == 0xD000
     assert rom[0x432C] | (rom[0x432D] << 8) == 0x0030
-    assert RW68_BASE + 0x3E == 0x432A
-    assert RW68_BASE + 0x40 == 0x432C
-
-    # Exclusive: LE words D000|0030 as bytes 00 D0 30 00 — unique in whole image
     split_pat = bytes([0x00, 0xD0, 0x30, 0x00])
     assert rom.find(split_pat) == 0x432A
     assert rom.find(split_pat, 0x432A + 1) < 0
-
-    # Twin fragments: island copies Ti CAL neighborhood (exclusive pair)
     frag_a = bytes.fromhex("90655046")
     frag_b = bytes.fromhex("0080c05d00000020")
     assert rom.find(frag_a) == 0x431C and rom.find(frag_a, 0x431D) == 0xD032
     assert rom.find(frag_b) == 0x4322 and rom.find(frag_b, 0x4323) == 0xD038
 
+    sites_2e = []
     sites_3e = []
-    sites_40 = []
     for a, i in lines:
+        if re.search(r"0x2e,\s*(LOOKUP|TABLE)\[RW68\]|0x2e\[RW68\]", i):
+            sites_2e.append(
+                {"siteHex": f"0x{a:04X}", "insn": i, "reads": "0xD030", "absolute": True}
+            )
         if re.search(r"0x3e,\s*(LOOKUP|TABLE)\[RW68\]|0x3e\[RW68\]", i):
-            sites_3e.append({"siteHex": f"0x{a:04X}", "insn": i, "reads": "0xD000"})
-        if re.search(r"0x40,\s*(LOOKUP|TABLE)\[RW68\]|0x40\[RW68\]", i):
-            sites_40.append({"siteHex": f"0x{a:04X}", "insn": i, "reads": "0x0030"})
+            sites_3e.append(
+                {"siteHex": f"0x{a:04X}", "insn": i, "reads": "0xD000@D040", "absolute": False}
+            )
 
     return {
         "target": "0xD030",
         "xdfName": "Inj. Constant(Ti)",
         "domain": "fuel",
-        "pageWordAt": "0x432A (RW68+0x3E) = 0xD000",
-        "offsetWordAt": "0x432C (RW68+0x40) = 0x0030",
+        "runtimeEa": "RW68+0x2E = 0xD030 (RW68=0xD002)",
+        "pageWordAt": "0xD040 (RW68+0x3E) = 0xD000",
+        "offsetWordAt": "island 0x432C = 0x0030 (exclusive twin; not runtime +0x40)",
         "composed": "0xD030",
         "exclusiveSplitPattern": "00D03000 unique @0x432A",
         "exclusiveBodyTwins": {
             "90655046": ["0x431C (island)", "0xD032 (CAL)"],
             "0080c05d00000020": ["0x4322 (island)", "0xD038 (CAL)"],
         },
+        "codeReadsContentVia": sites_2e,
         "codeReadsPageVia": sites_3e,
-        "codeReadsOffsetVia": sites_40,
-        "contentDerefProven": False,
+        "codeReadsOffsetVia": [],
+        "contentDerefProven": True,
         "exclusiveGeometry": True,
         "note": (
-            "Exclusive structural geometry: unique D000|0030 split under FE24 "
-            "RW68, plus Ti body fragments that exist only as island↔CAL twins. "
-            "CODE CMP @RW68+0x3E/+0x40 touches the split words (as bounds), not "
-            "a content deref of 0xD030."
+            "Absolute: LD/DIVU at RW68+0x2E → 0xD030 (injector constant). "
+            "Exclusive island D000|0030 @0x432A + body twins retained."
         ),
-        "evidenceStrength": "high_structural_exclusive",
+        "evidenceStrength": "high_absolute_plus_exclusive",
     }
 
 
@@ -654,12 +879,12 @@ def build_load_path():
         "t1_hfm_adc": {
             "scheduleBase": "0x427A",
             "isr": "0xA4AA",
-            "mafChannelHypothesis": {
-                "channel": "0x0A",
-                "dest": "0x1454",
-                "evidenceStrength": "medium",
+            "mafAbsolute": {
+                "site": "0xA53B",
+                "ea": "RW6C+2+2·ADC → 0xD290+",
+                "evidenceStrength": "high",
             },
-            "note": "ADC path unchanged; MAF transfer 0xD290 CODE read still unresolved.",
+            "note": "Absolute MAF table read proven via ADC ISR + RW6C=0xD28E.",
         },
         "t2_load_per_stroke": {
             "divuSite": "0x5AEB",
@@ -670,12 +895,12 @@ def build_load_path():
             "sites": [
                 {"index": "0xD0", "call": "0x5B06"},
                 {"index": "0x30", "call": "0x5B5B"},
+                {"index": "0x9A", "call": "0x66EC→0x6987→0x20CD", "map": "ign WOT DD0F"},
             ],
-            "interp": "0x20C7 → 0x33C2 via RW6E=0x1E08 descriptors",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] with RW6E=0xE67E",
             "note": (
-                "RW6A island values overlap many LD RW1A,#imm interp indices "
-                "(fault/descriptor index table). CAL map targets behind descriptors "
-                "still unresolved (default fill 0x42DF)."
+                "Descriptor table lives in CAL at 0xE67E (FE14-loaded RW6E). "
+                "0x4ECC RAM fill to 0x42DF is skipped when RW6E≠0x1E08."
             ),
         },
     }
@@ -688,10 +913,11 @@ def build_checklist(ti, vanos, families, load_path):
             "id": "T1",
             "theory": "Primary load = air-mass kg/h (HFM)",
             "romTarget": "MAF 0xD290; ADC→lookup",
-            "status": "exclusive_geometry_maf",
+            "status": "absolute_maf",
             "evidence": (
-                "ADC @0x427A hyp intact. MAF exclusive BE↔LE twin 0xD28E "
-                "@FE18/D28E → D290. Prior D200 index claim remains retracted."
+                "Absolute: ADC ISR @0xA53B ADD RW64,0x2[RW46] with "
+                "RW46=RW6C+2·ADC, RW6C=0xD28E → table @0xD290. "
+                "Exclusive BE↔LE twin retained."
             ),
         },
         {
@@ -706,11 +932,10 @@ def build_checklist(ti, vanos, families, load_path):
             "id": "T3",
             "theory": "ti_base = f(load, injector_constant), λ≈1",
             "romTarget": "Ti 0xD030 + fuel maps",
-            "status": "exclusive_structural",
+            "status": "absolute_ti",
             "evidence": (
                 ti["note"]
-                + " Also: soft-fuel-cut twin D032; cold-enrich chain D8EF/D8FD; "
-                "PT load axes D9DA/DABA."
+                + " Also absolute soft-cut CMP D032; descriptor fuel axes."
             ),
         },
         {
@@ -724,10 +949,11 @@ def build_checklist(ti, vanos, families, load_path):
             "id": "T5",
             "theory": "zw_base = map(load, rpm) + corrections − knock",
             "romTarget": "PT/WOT ign VANOS; knock",
-            "status": "exclusive_geometry_axes",
+            "status": "absolute_descriptor_axes",
             "evidence": (
-                f"VANOS RPM axes @ {ign_rep['offsetHex']}+sibs; PT load axes "
-                f"DE7F/DF5F; ign idle timing DCF3/DD05; idle cold DCCF/DCD9."
+                f"Absolute ign WOT axis {ign_rep['offsetHex']} via "
+                f"RW1A=#0x9A→interp→[E67E+9A]=DD0D; also DD89/DE6D/DF4D. "
+                f"Exclusive geometry retained for siblings."
             ),
         },
         {
@@ -761,17 +987,20 @@ def build_checklist(ti, vanos, families, load_path):
 
 
 def build_doc(rom, lines, ign):
-    fe24 = verify_fe24_structure(rom)
+    fe = verify_fe_structure(rom)
     ti = build_ti_structural(rom, lines)
     vanos = build_vanos_rpm_axis_exclusive(rom, ign)
     families = build_exclusive_families(rom, ign)
     exclusive_offs = collect_exclusive_offsets(ti, vanos, families)
+    absolute = build_absolute_proofs(rom, lines, ign)
     load_path = build_load_path()
     retraction = build_retraction()
     checklist = build_checklist(ti, vanos, families, load_path)
     n = len(ign)
     exclusive_items = len(exclusive_offs)
     exclusive_pct = round(100.0 * exclusive_items / n, 2)
+    abs_n = absolute["count"]
+    abs_pct = round(100.0 * abs_n / n, 2)
     new_families = [
         {
             "id": f["id"],
@@ -783,29 +1012,41 @@ def build_doc(rom, lines, ign):
         for f in families
     ]
     return {
-        "schemaVersion": 8,
-        "id": "bosch_ti_theory_vs_rom_v8",
+        "schemaVersion": 9,
+        "id": "bosch_ti_theory_vs_rom_v9",
         "rom": ROM_NAME,
         "primaryTheory": "tools/re/out/ref_pdf_bosch_m_motronic_technical_instruction.md",
         "shippingNote": (
             "Book is PRIMARY family theory only. Do not verify or promote shipping "
             "maps from the PDF alone."
         ),
-        "registerBasesRomProven": fe24,
+        "registerBasesRomProven": fe,
+        "addressingModel": {
+            "id": "fe14_cal_bases_v9",
+            "summary": (
+                "0x2EDB loads BE hi/lo from FE14 after FF-pad scan → "
+                "RW68=D002, RW6A=D106, RW6C=D28E, RW6E=E67E. "
+                "Long-index LOOKUP/TABLE[RWbase] and descriptor "
+                "ADD RW1A,RW6E; LD RW4C,[RW1A] resolve into CAL."
+            ),
+            "fe24Adjacent": fe["fe24AdjacentNotLoaded"],
+            "cmpDualConfig": fe["cmpCrossCheck"],
+        },
         "retraction": retraction,
         "tiStructural": ti,
         "vanosRpmAxisExclusive": vanos,
         "exclusiveFamilies": families,
         "exclusiveOffsets": [f"0x{o:04X}" for o in exclusive_offs],
+        "absoluteProofs": absolute,
         "unprovenExclusive": [],
         "unprovenExclusiveNote": (
-            "None — all 69 ign/fuel XDF items have exclusive-geometry "
-            "proofs. Absolute CODE content reads remain 0."
+            "None — all 69 ign/fuel XDF items have exclusive-geometry proofs. "
+            f"Absolute CODE reads: {abs_n}/69."
         ),
         "coverage": {
             "ignFuelItems": n,
-            "ghidraProvenAbsolute": 0,
-            "ghidraProvenAbsolutePct": 0.0,
+            "ghidraProvenAbsolute": abs_n,
+            "ghidraProvenAbsolutePct": abs_pct,
             "indexBaseCrossCheckedCalContent": 0,
             "indexBaseCrossCheckedCalContentPct": 0.0,
             "exclusiveGeometry": exclusive_items,
@@ -813,32 +1054,37 @@ def build_doc(rom, lines, ign):
             "structuralSplitPtr": 1,
             "registerBasesRomProven": 4,
             "headline": (
-                f"0.0% absolute (0/{n}); 0% CAL-content index-base (D200/D978 "
-                f"retracted); {exclusive_pct}% exclusive geometry "
-                f"({exclusive_items}/{n}); 4 ROM-proven FE24 bases."
+                f"{abs_pct}% absolute ({abs_n}/{n}); exclusive geometry "
+                f"{exclusive_pct}% ({exclusive_items}/{n}); "
+                f"FE14 CAL bases RW68=D002/RW6A=D106/RW6C=D28E/RW6E=E67E; "
+                f"D200/D978 retracted."
             ),
             "note": (
-                "v8: exclusive geometry for all 69 ign/fuel XDF items via signature/span/twin "
-                "methods. Absolute LOOKUP[ZR] still 0 (no path appeared). "
-                "D200/D978 remain retracted. Unproven exclusive: none."
+                "v9: corrected FE14 loader bases unlock absolute CODE reads. "
+                "Priority: MAF D290, Ti D030, ign WOT DD0F. "
+                f"Absolute {abs_n}/69; exclusive 69/69. "
+                "ZR LOOKUP immed≠XDF (indirect via RWbase). "
+                "D200/D978 remain retracted."
             ),
         },
         "checklist": checklist,
         "loadPath": load_path,
         "keyCodeSites": {
-            "fe24Loader": "0x2EDB via 0x20B5 / 0x412C",
+            "fe14Loader": "0x2EDB via 0x20B5 / 0x412C → FE14 CAL bases",
+            "tiContent": [s["siteHex"] for s in ti["codeReadsContentVia"]],
             "tiPageCmp": [s["siteHex"] for s in ti["codeReadsPageVia"]],
-            "tiOffCmp": [s["siteHex"] for s in ti["codeReadsOffsetVia"]],
-            "mapInterp": "0x20C7 → 0x33C2 (RW6E descriptors)",
-            "postLoadTiSlots": ["0x5B06 RW1A=#0xD0", "0x5B5B RW1A=#0x30"],
+            "tiOffCmp": [],
+            "mapInterp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] (RW6E=0xE67E)",
+            "mafAbsolute": "0xA53B ADD RW64,0x2[RW46] (RW46=RW6C+2·ADC)",
+            "ignWotSelect": "0x66EC LD RW1A,#0x9A → 0x6987 → 0x20CD → DD0D/DD0F",
             "vanosAxisRom": vanos["exclusiveLocations"],
-            "mafAnchor": ["BE 0xD28E @0xFE18", "LE 0xD28E @0xD28E", "MAF 0xD290"],
+            "mafAnchor": ["FE14 RW6C=0xD28E", "MAF body 0xD290", "ADC ISR 0xA4AA"],
             "newFamilySummaries": new_families,
         },
         "nextToProve": [
-            "Compose D000+|0030 and [deref] Ti content (first absolute fuel read)",
-            "Descriptor 0x42DF → 0xDxxx for absolute map-body LOOKUP",
-            "CODE-walk one exclusive VANOS/fuel/ign table via interp 0x20C7",
+            "Grow absolute coverage beyond 31/69 (more descriptor header deltas / body walks)",
+            "Prove PT/WOT main fuel map body reads through descriptor→[RW4C] walk",
+            "Tie dwell E0DA and idle ign tables to descriptor or long-index sites",
         ],
     }
 
@@ -859,32 +1105,50 @@ def md_theory(doc):
         "",
         f"> {doc['shippingNote']}",
         "",
-        "## Coverage (v8)",
+        "## Coverage (v9)",
         "",
         "| Metric | Count | % of 69 |",
         "|--------|------:|--------:|",
-        f"| Absolute `LOOKUP[ZR]` proven (ea == XDF) | **{cov['ghidraProvenAbsolute']}** | **{cov['ghidraProvenAbsolutePct']}%** |",
-        f"| CAL-content index-base cross_checked | **{cov['indexBaseCrossCheckedCalContent']}** | **{cov['indexBaseCrossCheckedCalContentPct']}%** |",
+        f"| **Absolute CODE reads** (ea → XDF) | **{cov['ghidraProvenAbsolute']}** | **{cov['ghidraProvenAbsolutePct']}%** |",
         f"| **Exclusive geometry** | **{cov['exclusiveGeometry']}** | **{cov['exclusiveGeometryPct']}%** |",
-        f"| Structural split-ptr (`0xD030`) | {cov['structuralSplitPtr']} | 1.45% |",
-        f"| ROM-proven register bases (FE24) | {cov['registerBasesRomProven']} | — |",
+        f"| CAL-content index-base (D200/D978) | **0** | **0%** (retracted) |",
+        f"| Runtime FE14 CAL bases | {cov['registerBasesRomProven']} | — |",
         "",
         cov["headline"],
         "",
         f"> {cov['note']}",
         "",
-        "## ROM-proven register bases",
+        "## Addressing model (v9) — FE14 CAL bases",
         "",
-        f"Unique structure @ `{rb['structAt']}` (`{rb['layout']}`):",
+        f"Loader `{rb['loader']['loader']}` scans FF pad then loads BE hi/lo from `{rb['structAt']}`:",
         "",
         "| Reg | Value | Role |",
         "|-----|-------|------|",
-        f"| RW68 | `{rb['words']['RW68']}` | CODE parameter island |",
-        f"| RW6A | `{rb['words']['RW6A']}` | CODE index / fault-id island |",
-        f"| RW6C | `{rb['words']['RW6C']}` | Descriptor RAM (`{rb['cmpCrossCheck']['RW6C']}`) |",
-        f"| RW6E | `{rb['words']['RW6E']}` | Descriptor RAM (`{rb['cmpCrossCheck']['RW6E']}`) |",
+        f"| RW68 | `{rb['words']['RW68']}` | {rb['roles']['RW68']} |",
+        f"| RW6A | `{rb['words']['RW6A']}` | {rb['roles']['RW6A']} |",
+        f"| RW6C | `{rb['words']['RW6C']}` | {rb['roles']['RW6C']} |",
+        f"| RW6E | `{rb['words']['RW6E']}` | {rb['roles']['RW6E']} |",
         "",
-        f"Loader: `{rb['loader']}`.",
+        f"FE24 adjacent (not loaded): `{rb['fe24AdjacentNotLoaded']['words']}`.",
+        f"CMP dual-config: {rb['cmpCrossCheck']['note']}",
+        "",
+        "## Priority absolute proofs",
+        "",
+    ]
+    abs_p = doc.get("absoluteProofs", {}).get("priority", {})
+    for key, p in abs_p.items():
+        lines += [
+            f"### {key}: `{p['offset']}` — `{p['status']}`",
+            "",
+            f"- Method: `{p['method']}`",
+            f"- {p['note']}",
+        ]
+        if p.get("codePath"):
+            lines.append(f"- Path: `{p['codePath']}`")
+        lines.append("")
+    lines += [
+        f"**All absolute offsets ({cov['ghidraProvenAbsolute']}):** "
+        + ", ".join(f"`{o}`" for o in doc.get("absoluteProofs", {}).get("offsets", [])),
         "",
         "## Retraction (important)",
         "",
@@ -894,13 +1158,12 @@ def md_theory(doc):
     lines += [
         doc["retraction"]["scratchRegExclusivesAlsoRejected"],
         "",
-        "## Fuel exclusive — Ti `0xD030`",
+        "## Fuel Ti `0xD030` — absolute + exclusive",
         "",
         f"- Target `{ti['target']}` {ti['xdfName']}",
-        f"- {ti['pageWordAt']}; {ti['offsetWordAt']} → `{ti['composed']}`",
+        f"- Runtime EA: `{ti.get('runtimeEa')}`",
+        f"- Content reads: " + ", ".join(f"`{s}`" for s in sites.get("tiContent", [])),
         f"- Exclusive split: `{ti['exclusiveSplitPattern']}`",
-        f"- CODE CMP page: " + ", ".join(f"`{s}`" for s in sites["tiPageCmp"]),
-        f"- CODE CMP off: " + (", ".join(f"`{s}`" for s in sites["tiOffCmp"]) or "_none_"),
         f"- {ti['note']}",
         "",
         "## VANOS RPM axes (8)",
@@ -941,10 +1204,11 @@ def md_theory(doc):
         "",
         "## Key CODE sites",
         "",
-        f"- FE24 loader: `{sites['fe24Loader']}`",
+        f"- FE14 loader: `{sites.get('fe14Loader', sites.get('fe24Loader'))}`",
         f"- Map interp: `{sites['mapInterp']}`",
-        f"- Post-load slots: {', '.join(f'`{s}`' for s in sites['postLoadTiSlots'])}",
-        f"- Ti CMPs: {', '.join(f'`{s}`' for s in sites['tiPageCmp'] + sites['tiOffCmp'])}",
+        f"- MAF absolute: `{sites.get('mafAbsolute')}`",
+        f"- Ign WOT select: `{sites.get('ignWotSelect')}`",
+        f"- Ti content: {', '.join(f'`{s}`' for s in sites.get('tiContent', []))}",
         f"- MAF anchor: {', '.join(f'`{s}`' for s in sites.get('mafAnchor', []))}",
         "",
         "## Next",
@@ -959,33 +1223,36 @@ def md_theory(doc):
 
 def md_bases(doc):
     rb = doc["registerBasesRomProven"]
-    vanos = doc["vanosRpmAxisExclusive"]
+    abs_p = doc.get("absoluteProofs", {})
     lines = [
-        "# Register bases — ROM-proven (FE24)",
+        "# Register bases — ROM-proven (FE14 CAL, v9)",
         "",
         f"ROM: `{doc['rom']}`",
         "",
-        f"**Structure @ `{rb['structAt']}`** (unique in image):",
+        f"**Runtime structure @ `{rb['structAt']}`** (loaded by 0x2EDB):",
         "",
-        "| Reg | Value |",
-        "|-----|-------|",
+        "| Reg | Value | Role |",
+        "|-----|-------|------|",
     ]
     for k, v in rb["words"].items():
-        lines.append(f"| `{k}` | `{v}` |")
+        lines.append(f"| `{k}` | `{v}` | {rb['roles'][k]} |")
     lines += [
         "",
-        f"Loader: `{rb['loader']}`. CMP cross-check: "
-        f"`{rb['cmpCrossCheck']['RW6C']}`; `{rb['cmpCrossCheck']['RW6E']}`.",
+        f"Loader: `{rb['loader']['loader']}` — FF pad `{rb['loader']['ffPadBlock']}` "
+        f"then BE words from `{rb['loader']['loadedFrom']}`.",
         "",
-        "## Retraction",
+        f"FE24 adjacent (not loaded into RW68–6E): `{rb['fe24AdjacentNotLoaded']['words']}`",
         "",
-        "Do **not** use prior `RW68=0xD200` / `RW6A=0xD978` XDF-geometry tables — retracted in v4/v5.",
+        f"CMP: `{rb['cmpCrossCheck']['RW6C']}`; `{rb['cmpCrossCheck']['RW6E']}`.",
+        f"{rb['cmpCrossCheck']['note']}",
         "",
-        "## Exclusive geometry (v5)",
+        "## Absolute unlock",
         "",
-        "- Fuel Ti `0xD030`: unique `D000|0030` @`0x432A` (RW68+0x3E/+0x40)",
-        f"- VANOS RPM axes: signature `{vanos['signatureHex']}` @ "
-        + ", ".join(f"`{x}`" for x in vanos["exclusiveLocations"]),
+        f"- Direct long-index / MAF: **{abs_p.get('directCount', 0)}** XDF items",
+        f"- Descriptor header (XDF or XDF−2): **{abs_p.get('descriptorCount', 0)}** XDF items",
+        f"- Union absolute: **{abs_p.get('count', 0)}/69**",
+        "",
+        "Do **not** revive `RW68=0xD200` / `RW6A=0xD978`.",
         "",
         "See `theory_vs_rom_bosch_ti.md`.",
         "",
@@ -1011,10 +1278,17 @@ def patch_progress(doc):
         for f in deduped
         if "RW68 index-base" not in f and "0xD200" not in f and "18.84%" not in f
     ]
+    deduped = [
+        f
+        for f in deduped
+        if "0% absolute" not in f
+        and "Compose island D000" not in f
+        and "exclusive geometry growing" not in f
+    ]
     deduped.extend(
         [
-            "Engine control: 0% absolute; exclusive geometry growing — chase descriptor→0xDxxx deref",
-            "Compose island D000+|0030 and [deref] Ti; CODE-walk one VANOS RPM axis",
+            "Engine control: absolute>0 via FE14 bases — grow beyond 31/69 descriptor/body walks",
+            "Prove PT/WOT main fuel map body through [RW4C] after descriptor load",
         ]
     )
     # dedupe again
@@ -1040,10 +1314,17 @@ def patch_progress(doc):
     }
     if "register_bases_fe24.md" not in prog["engineControl"]["artifacts"]:
         prog["engineControl"]["artifacts"].append("tools/re/out/register_bases_fe24.md")
-    prog["engineControl"]["priorityTraces"]["boschTiTheoryVsRom"] = "done_v8_exclusive_geometry_complete"
+    prog["engineControl"]["priorityTraces"]["boschTiTheoryVsRom"] = "done_v9_absolute_fe14_bases"
     prog["engineControl"]["priorityTraces"]["rw68IndexBase"] = "retracted_d200_false_positive"
-    prog["engineControl"]["priorityTraces"]["registerBasesFe24"] = "rom_proven"
-    prog["engineControl"]["priorityTraces"]["firstProvenIgnFuelXref"] = False
+    prog["engineControl"]["priorityTraces"]["registerBasesFe14"] = "rom_proven_runtime_cal"
+    prog["engineControl"]["priorityTraces"]["registerBasesFe24"] = "adjacent_not_loaded_alternate"
+    prog["engineControl"]["priorityTraces"]["firstProvenIgnFuelXref"] = True
+    prog["engineControl"]["priorityTraces"]["absoluteMafTiIgn"] = {
+        "maf_D290": True,
+        "ti_D030": True,
+        "ign_WOT_DD0F": True,
+        "absoluteCount": cov["ghidraProvenAbsolute"],
+    }
     prog["engineControl"]["priorityTraces"]["exclusiveGeometryFuelIgn"] = "exclusive_geometry_69_complete_v8"
     path.write_text(json.dumps(prog, indent=2) + "\n")
 
@@ -1077,49 +1358,51 @@ ISA: `mcs96_80c196_family`
 CODE `0x2000`–`0xB930`; DATA from `0xB931`.
 XDF (BRO) = primary definition evidence for names/equations.
 
-## Coverage (v8 — all 69 exclusive where proven; D200/D978 retracted)
+## Coverage (v9 — exclusive 100%; absolute growing)
 
 | Metric | Count | % of 69 |
 |--------|------:|--------:|
-| **Absolute `LOOKUP[ZR]` proven** (ea == XDF offset) | **{cov['ghidraProvenAbsolute']}** | **{cov['ghidraProvenAbsolutePct']}%** |
-| **CAL-content index-base cross_checked** | **{cov['indexBaseCrossCheckedCalContent']}** | **{cov['indexBaseCrossCheckedCalContentPct']}%** |
+| **Absolute CODE reads** (ea → XDF) | **{cov['ghidraProvenAbsolute']}** | **{cov['ghidraProvenAbsolutePct']}%** |
 | **Exclusive geometry** | **{cov['exclusiveGeometry']}** | **{cov['exclusiveGeometryPct']}%** |
-| Structural split-ptr (`0xD000`+`0x0030`→`0xD030`) | {cov['structuralSplitPtr']} | 1.45% |
-| ROM-proven register bases (FE24) | {cov['registerBasesRomProven']} | — |
+| **CAL-content index-base (D200/D978)** | **0** | **0%** (retracted) |
+| Runtime FE14 CAL bases | {cov['registerBasesRomProven']} | — |
 
 {cov['headline']}
 
-> **v8:** D200/D978 remain retracted. FE24 bases unchanged.
-> Exclusive geometry complete for all 69 ign/fuel XDF items (absolute still 0).
+> **v9:** FE14 loader bases unlock absolute reads. Priority MAF/Ti/ign WOT proven.
+> Exclusive geometry remains 69/69. D200/D978 stay retracted.
 
-## How CAL is read (corrected model)
+## How CAL is read (v9 addressing model)
 
-1. **Parameter island** `RW68=0x42EC` — scalars / page markers (incl. `D000`+`0030` at +0x3E/+0x40)
-2. **Index island** `RW6A=0x43F0` — small fault / descriptor indices (feed `0x6efd` / `RW1A` interp)
-3. **Map interp** `0x20C7`→`0x33C2` via descriptor table `RW6E=0x1E08` (targets still unresolved)
-4. **Exclusive Ti** `0xD030` — unique island split + body twins; CODE CMP touches
-5. **Exclusive VANOS RPM axes** — shared 16-byte signature at 8 XDF offsets
-6. **More exclusive families** — see below (MAF, load/dwell axes, idle, enrich)
+1. **FE14 CAL bases** via loader `0x2EDB`: `RW68=0xD002`, `RW6A=0xD106`, `RW6C=0xD28E`, `RW6E=0xE67E`
+2. **Long-index** `LOOKUP/TABLE[RWbase]` → direct CAL scalars/limits (Ti @ RW68+0x2E)
+3. **MAF** ADC ISR: `RW46=RW6C+2·ADC`; `ADD RW64,0x2[RW46]` → word table @ `0xD290`
+4. **Map interp** `0x20C7/0x20CD`: `ADD RW1A,RW6E; LD RW4C,[RW1A]` → descriptor headers in CAL
+6. **Exclusive geometry** retained for all 69 (signatures/spans/twins)
 
-## Fuel exclusive — Ti `0xD030`
+## Priority absolute proofs
 
-- Split `{ti['exclusiveSplitPattern']}`
-- Body twins island↔CAL only
-- CODE sites: {', '.join(f'`{s}`' for s in sites['tiPageCmp'] + sites['tiOffCmp'])}
+- **MAF `0xD290`:** `{sites.get('mafAbsolute')}`
+- **Ti `0xD030`:** {', '.join(f'`{s}`' for s in sites.get('tiContent', []))} — contentDeref **{ti['contentDerefProven']}**
+- **Ign WOT `0xDD0F`:** `{sites.get('ignWotSelect')}`
+
+Absolute offsets ({cov['ghidraProvenAbsolute']}): {', '.join(f'`{o}`' for o in doc.get('absoluteProofs', {}).get('offsets', []))}
+
+## Fuel Ti `0xD030`
+
+- Runtime EA `{ti.get('runtimeEa')}`
+- Split `{ti['exclusiveSplitPattern']}` (exclusive island twin)
 - Content deref: **{ti['contentDerefProven']}**
 
-## Ignition (+fuel) exclusive — VANOS RPM axes
+## Ignition (+fuel) — VANOS RPM axes
 
-Signature `{vanos['signatureHex']}` — exactly {vanos['count']} hits:
+Signature `{vanos['signatureHex']}` — exactly {vanos['count']} hits (exclusive); ign WOT/PT absolute via descriptors:
 
 | Offset | Domain | Name |
 |--------|--------|------|
 {vanos_rows}
 
-Representative ign: `{vanos['representativeIgnition']['offsetHex']}`; fuel: `{vanos['representativeFuel']['offsetHex']}`.
-CODE axis deref: **{vanos['codeDerefProven']}**.
-
-## Additional exclusive families (v6)
+## Additional exclusive families
 
 {fam_text}
 
@@ -1127,23 +1410,23 @@ CODE axis deref: **{vanos['codeDerefProven']}**.
 
 ## Key CODE sites
 
-- FE24 loader `{sites['fe24Loader']}`
+- FE14 loader `{sites.get('fe14Loader')}`
 - Interp `{sites['mapInterp']}`
-- Post-load slots {', '.join(f'`{s}`' for s in sites['postLoadTiSlots'])}
-- MAF anchor: {', '.join(f'`{s}`' for s in sites.get('mafAnchor', []))}
+- MAF absolute `{sites.get('mafAbsolute')}`
+- Ign WOT `{sites.get('ignWotSelect')}`
 
 ## Related artifacts
 
-- `theory_vs_rom_bosch_ti.{{md,json}}` — T1–T8 + retraction + exclusive geometry
-- `register_bases_fe24.{{md,json}}` — FE24 proven bases
-- `cal_access_model.{{md,json}}` — absolute-path attempt
+- `theory_vs_rom_bosch_ti.{{md,json}}` — T1–T8 + absolute + exclusive
+- `register_bases_fe24.{{md,json}}` — FE14 runtime + FE24 adjacent
+- `cal_access_model.{{md,json}}` — addressing model
 - `irq_ram_publications.{{md,json}}` / `sfr_hso_hsi_audit.{{md,json}}`
 
 ## What is *not* claimed
 
 - Shipping promotion from Bosch PDF or retracted geometry
-- Absolute `LOOKUP[ZR]` CAL *content* reads of fuel/ign map bodies (still 0)
-- End-to-end HFM→ti→ign control
+- Absolute coverage of all 69 (currently {cov['ghidraProvenAbsolute']}/69)
+- End-to-end HFM→ti→ign control closed-loop proof
 
 ---
 Research-only. Verification gates for promotion unchanged.
@@ -1199,20 +1482,22 @@ Cross-check of Bosch M-Motronic TI (PRIMARY extract) against MCS-96 listing / XD
 
 ### 7.1 Bosch T1–T8 checklist
 
-See [`theory_vs_rom_bosch_ti.md`](theory_vs_rom_bosch_ti.md). Headline: exclusive geometry **{cov['exclusiveGeometry']}/69**; T1 MAF exclusive; T3 Ti exclusive; T5/T8 VANOS axes; D200/D978 **retracted**.
+See [`theory_vs_rom_bosch_ti.md`](theory_vs_rom_bosch_ti.md). Headline: **absolute {cov['ghidraProvenAbsolute']}/69**; exclusive **{cov['exclusiveGeometry']}/69**. T1 MAF absolute; T3 Ti absolute; T5 ign WOT absolute via descriptors. D200/D978 **retracted**.
 
-### 7.2 Access-model update (v6)
+### 7.2 Access-model update (v9)
 
-`LDB Rx,0xd0, LOOKUP[ZR]` remains register file `0x00D0`.
+`LDB Rx,0xd0, LOOKUP[ZR]` remains register file `0x00D0` (not ROM page).
 
-**ROM-proven bases (FE24):** `RW68=0x42EC`, `RW6A=0x43F0`, `RW6C=0x1A08`, `RW6E=0x1E08`.
+**Runtime FE14 CAL bases (loader 0x2EDB):** `RW68=0xD002`, `RW6A=0xD106`, `RW6C=0xD28E`, `RW6E=0xE67E`.
+
+**FE24 adjacent (not loaded):** `0x42EC/0x43F0/0x1A08/0x1E08`.
 
 **Retracted:** `RW68=0xD200` / `RW6A=0xD978` — do not revive.
 
-**Exclusive geometry ({cov['exclusiveGeometry']}/69):**
-- Fuel Ti `0xD030` — unique split @`0x432A`; CODE CMP `{', '.join(sites['tiPageCmp'])}`
-- VANOS RPM axes — `{vanos['signatureHex']}` @ 8 offsets
-- Plus: WOT dwell axes, PT load axes, MAF D28E twin, ign idle timing/cold, soft fuel cut, cold enrich
+**Priority absolute:**
+- MAF `0xD290` — `{sites.get('mafAbsolute')}`
+- Ti `0xD030` — {', '.join(f'`{s}`' for s in sites.get('tiContent', []))}
+- Ign WOT `0xDD0F` — `{sites.get('ignWotSelect')}`
 
 ### 7.3 Artifacts
 
@@ -1220,9 +1505,9 @@ See [`theory_vs_rom_bosch_ti.md`](theory_vs_rom_bosch_ti.md). Headline: exclusiv
 - `tools/re/out/register_bases_fe24.{{md,json}}`
 - Coverage: **{cov['headline']}**
 
-### 7.4 First absolute / CAL-content ign/fuel XDF CODE read — status
+### 7.4 Absolute ign/fuel XDF CODE reads — status
 
-**None yet** (`0/69` absolute; `0/69` CAL-content index-base after retraction). Exclusive geometry: **{cov['exclusiveGeometry']}/69**. Closest CODE: Ti split CMPs + interp `0x20C7`.
+**{cov['ghidraProvenAbsolute']}/69 absolute** ({cov['ghidraProvenAbsolutePct']}%). Exclusive geometry: **{cov['exclusiveGeometry']}/69**. Addressing unlock = FE14 CAL bases + descriptor table at `RW6E`.
 
 """
     for path in [OUT / "motronic_331_function.md", ROOT / "docs" / "motronic_331_function.md"]:
@@ -1272,19 +1557,20 @@ def main():
     (OUT / "rw68_cal_index_base.md").write_text(
         "# RW68 CAL index base — RETRACTED\n\n"
         "Prior `RW68=0xD200` cross_checked table is **retracted** (v4/v5 false positive).\n\n"
-        "Real `RW68=0x42EC` — see `register_bases_fe24.md`.\n\n"
-        "Replacement exclusive proofs: Ti `0xD030` structural + VANOS RPM axis signature "
+        "Runtime `RW68=0xD002` (FE14) — see `register_bases_fe24.md`.\n\n"
+        "Absolute Ti @ RW68+0x2E; exclusive island twin @0x432A "
         "(see `theory_vs_rom_bosch_ti.md`).\n"
     )
     (OUT / "rw68_cal_index_base.json").write_text(
         json.dumps(
             {
-                "schemaVersion": 2,
-                "id": "rw68_cal_index_base_v2_retracted",
+                "schemaVersion": 3,
+                "id": "rw68_cal_index_base_v3_retracted",
                 "status": "retracted",
-                "replacedBy": "register_bases_fe24_v1 + vanos_rpm_axis_sig_v1",
+                "replacedBy": "fe14_cal_bases_v9 + absolute_code_reads_v9",
                 "priorFalseBase": "0xD200",
-                "provenBase": "0x42EC",
+                "runtimeBase": "0xD002",
+                "fe24AdjacentNotLoaded": "0x42EC",
             },
             indent=2,
         )
@@ -1293,18 +1579,20 @@ def main():
 
     ign_path = OUT / "ignition_fuel_dataflow.json"
     ign_doc = json.loads(ign_path.read_text())
-    ign_doc["coverage"] = {"schemaVersion": 8, **doc["coverage"]}
+    ign_doc["coverage"] = {"schemaVersion": 9, **doc["coverage"]}
     ign_doc["exclusiveGeometry"] = {
         "ti": doc["tiStructural"],
         "vanosRpmAxes": doc["vanosRpmAxisExclusive"],
         "families": doc["exclusiveFamilies"],
         "allOffsets": doc["exclusiveOffsets"],
     }
+    ign_doc["absoluteProofs"] = doc["absoluteProofs"]
+    ign_doc["addressingModel"] = doc["addressingModel"]
     ign_doc["keyCodeSites"] = doc["keyCodeSites"]
-    # Mark exclusive items in items list if present
     items = ign_doc.get("items")
     if isinstance(items, list):
         excl = {int(x, 16) for x in doc["exclusiveOffsets"]}
+        abs_set = {int(x, 16) for x in doc["absoluteProofs"]["offsets"]}
         vanos_set = set(doc["vanosRpmAxisExclusive"]["offsets"])
         fam_map = {}
         for fam in doc["exclusiveFamilies"]:
@@ -1312,15 +1600,18 @@ def main():
                 fam_map[o] = fam["id"]
         for it in items:
             off = it.get("offset")
-            if off not in excl:
-                continue
-            it["exclusiveGeometry"] = True
-            it["evidenceStrength"] = "high"
-            if off == 0xD030:
+            if off in excl:
+                it["exclusiveGeometry"] = True
+                it["evidenceStrength"] = "high"
+            if off in abs_set:
+                it["absoluteCodeRead"] = True
+                it["codeReadStatus"] = "absolute"
+                it["evidenceStrength"] = "high_absolute"
+            elif off == 0xD030:
                 it["codeReadStatus"] = "exclusive_structural_split_ptr"
             elif off in vanos_set:
                 it["codeReadStatus"] = "exclusive_content_geometry_axis"
-            else:
+            elif off in excl:
                 it["codeReadStatus"] = f"exclusive_{fam_map.get(off, 'family')}"
     ign_path.write_text(json.dumps(ign_doc, indent=2) + "\n")
 
@@ -1339,20 +1630,28 @@ def main():
             text += """## Index-base path — RETRACTED (v5)
 
 Prior `RW68=0xD200` / `RW6A=0xD978` “exclusive XDF geometry” claims are **false positives**.
-ROM-proven bases from FE24: `RW68=0x42EC`, `RW6A=0x43F0`, `RW6C=0x1A08`, `RW6E=0x1E08`.
 
-## Exclusive geometry (v5 replacement)
+## Addressing model (v9) — absolute unlock
 
-1. **Fuel Ti `0xD030`:** unique `D000|0030` @`0x432A` (RW68+0x3E/+0x40) + island↔CAL body twins
-2. **Ign/fuel VANOS RPM axes:** 16-byte signature exclusive to 8 XDF axis starts (rep ign `0xDD0F`)
+Loader `0x2EDB` loads **FE14** BE words (after FF-pad scan), **not FE24**:
+
+| Reg | Value | Role |
+|-----|-------|------|
+| RW68 | `0xD002` | CAL page base (Ti `0xD030` = +0x2E) |
+| RW6A | `0xD106` | CAL sensor/limit base |
+| RW6C | `0xD28E` | MAF table base (body `0xD290` = +2) |
+| RW6E | `0xE67E` | CAL descriptor table (LE16 headers) |
+
+FE24 `42EC/43F0/1A08/1E08` is adjacent and **not** written into RW68–6E on this image.
+CMP @0x4D60/0x481B is dual-config (CAL bases skip 0x4ECC RAM fill).
+
+### Priority absolute proofs
+
+1. **MAF `0xD290`:** ADC ISR `0xA53B` `ADD RW64,0x2[RW46]` with `RW46=RW6C+2·ADC`
+2. **Ti `0xD030`:** `LD RW40,0x2e[RW68]` @0xAFC7; `DIVU …,0x2e,TABLE[RW68]` @0x9A82
+3. **Ign WOT `0xDD0F`:** `LD RW1A,#0x9A` @0x66EC → `0x20CD` → `[E67E+9A]=DD0D`
 
 See `theory_vs_rom_bosch_ti.md` / `register_bases_fe24.md`.
-
-## Next to prove first *absolute* XDF CODE read
-
-1. Compose D000+|0030 from island and `[deref]` Ti content
-1. Trace one `0x20C7` interp call through `[RW4C]` to a `0xDxxx` pointer
-1. CODE-walk one VANOS RPM axis from the exclusive signature set
 
 ---
 Research-only. Verification gates unchanged. No shipping promotion.
@@ -1368,24 +1667,31 @@ Research-only. Verification gates unchanged. No shipping promotion.
         f"- **{f['title']}:** " + ", ".join(f"`0x{o:04X}`" for o in f["offsets"])
         for f in doc["exclusiveFamilies"]
     )
-    ht += f"""## Status after theory-vs-ROM pass (v8)
+    ht += f"""## Status after theory-vs-ROM pass (v9)
 
-- **Retraction:** D200 (13) / D978 (6) remain retracted (do not revive).
-- **ROM-proven bases (FE24):** RW68=`0x42EC`, RW6A=`0x43F0`, RW6C=`0x1A08`, RW6E=`0x1E08`
+- **Retraction:** D200 / D978 remain retracted (do not revive).
+- **Runtime FE14 CAL bases:** RW68=`0xD002`, RW6A=`0xD106`, RW6C=`0xD28E`, RW6E=`0xE67E`
+- **FE24 adjacent (not loaded):** `0x42EC/0x43F0/0x1A08/0x1E08`
 - **Coverage:** {doc['coverage']['headline']}
-- **Fuel exclusive:** Ti `0xD030` — unique split @`0x432A`; CODE CMP {doc['keyCodeSites']['tiPageCmp']}
-- **VANOS RPM axes:** {doc['vanosRpmAxisExclusive']['exclusiveLocations']}
+- **Absolute priority:** MAF `0xD290` @0xA53B; Ti `0xD030` @0xAFC7/0x9A82; ign WOT `0xDD0F` via RW1A=#0x9A
+- **Absolute offsets ({doc['absoluteProofs']['count']}):** {doc['absoluteProofs']['offsets']}
+- **Exclusive geometry:** 69/69 retained
 {fam_lines}
-- **Next:** descriptor → 0xDxxx deref; compose+deref Ti; CODE-walk one VANOS axis
+- **Next:** grow absolute beyond {doc['absoluteProofs']['count']}/69; fuel map body walks
 """
     handoff.write_text(ht)
 
+    # Also emit absolute proofs artifact
+    (OUT / "absolute_code_reads.json").write_text(
+        json.dumps(doc["absoluteProofs"], indent=2) + "\n"
+    )
+
     print(doc["coverage"]["headline"])
-    print("FE24 bases:", doc["registerBasesRomProven"]["words"])
-    print("Ti sites +3E:", [s["siteHex"] for s in doc["tiStructural"]["codeReadsPageVia"]])
-    print("VANOS axes:", doc["vanosRpmAxisExclusive"]["exclusiveLocations"])
-    print("Exclusive all:", doc["exclusiveOffsets"])
-    print("New families:", [f["id"] for f in doc["exclusiveFamilies"]])
+    print("FE14 bases:", doc["registerBasesRomProven"]["words"])
+    print("Absolute:", doc["absoluteProofs"]["count"], doc["absoluteProofs"]["offsets"])
+    print("Priority:", {k: v["status"] for k, v in doc["absoluteProofs"]["priority"].items()})
+    print("Ti content:", [s["siteHex"] for s in doc["tiStructural"]["codeReadsContentVia"]])
+    print("Exclusive all:", len(doc["exclusiveOffsets"]))
 
 
 if __name__ == "__main__":

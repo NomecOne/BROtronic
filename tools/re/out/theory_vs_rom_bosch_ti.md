@@ -5,32 +5,52 @@ Theory: [`ref_pdf_bosch_m_motronic_technical_instruction.md`](ref_pdf_bosch_m_mo
 
 > Book is PRIMARY family theory only. Do not verify or promote shipping maps from the PDF alone.
 
-## Coverage (v8)
+## Coverage (v9)
 
 | Metric | Count | % of 69 |
 |--------|------:|--------:|
-| Absolute `LOOKUP[ZR]` proven (ea == XDF) | **0** | **0.0%** |
-| CAL-content index-base cross_checked | **0** | **0.0%** |
+| **Absolute CODE reads** (ea → XDF) | **31** | **44.93%** |
 | **Exclusive geometry** | **69** | **100.0%** |
-| Structural split-ptr (`0xD030`) | 1 | 1.45% |
-| ROM-proven register bases (FE24) | 4 | — |
+| CAL-content index-base (D200/D978) | **0** | **0%** (retracted) |
+| Runtime FE14 CAL bases | 4 | — |
 
-0.0% absolute (0/69); 0% CAL-content index-base (D200/D978 retracted); 100.0% exclusive geometry (69/69); 4 ROM-proven FE24 bases.
+44.93% absolute (31/69); exclusive geometry 100.0% (69/69); FE14 CAL bases RW68=D002/RW6A=D106/RW6C=D28E/RW6E=E67E; D200/D978 retracted.
 
-> v8: exclusive geometry for all 69 ign/fuel XDF items via signature/span/twin methods. Absolute LOOKUP[ZR] still 0 (no path appeared). D200/D978 remain retracted. Unproven exclusive: none.
+> v9: corrected FE14 loader bases unlock absolute CODE reads. Priority: MAF D290, Ti D030, ign WOT DD0F. Absolute 31/69; exclusive 69/69. ZR LOOKUP immed≠XDF (indirect via RWbase). D200/D978 remain retracted.
 
-## ROM-proven register bases
+## Addressing model (v9) — FE14 CAL bases
 
-Unique structure @ `0xFE24` (`LDB Rhi,-off-1[RW1C]; LDB Rlo,-off[RW1C] (hi byte at lower addr)`):
+Loader `0x2EDB via trampoline 0x20B5 / LCALL 0x412C` scans FF pad then loads BE hi/lo from `0xFE14`:
 
 | Reg | Value | Role |
 |-----|-------|------|
-| RW68 | `0x42EC` | CODE parameter island |
-| RW6A | `0x43F0` | CODE index / fault-id island |
-| RW6C | `0x1A08` | Descriptor RAM (`CMP RW6C,#0x1a08 @0x4D60`) |
-| RW6E | `0x1E08` | Descriptor RAM (`CMP RW6E,#0x1e08 @0x481B/0x4D66`) |
+| RW68 | `0xD002` | CAL page base (Ti 0xD030 = +0x2E) |
+| RW6A | `0xD106` | CAL sensor/limit base |
+| RW6C | `0xD28E` | MAF table base (body 0xD290 = +2) |
+| RW6E | `0xE67E` | CAL descriptor table (LE16 map headers) |
 
-Loader: `0x2EDB via trampoline 0x20B5 / LCALL 0x412C`.
+FE24 adjacent (not loaded): `{'RW68': '0x42EC', 'RW6A': '0x43F0', 'RW6C': '0x1A08', 'RW6E': '0x1E08'}`.
+CMP dual-config: With FE14 CAL bases, descriptor RAM fill @0x4ECC is skipped; interp uses ROM table at RW6E=0xE67E.
+
+## Priority absolute proofs
+
+### maf_D290: `0xD290` — `absolute`
+
+- Method: `maf_adc_word_table`
+- RW6C=0xD28E from FE14 loader; ADC ISR indexes word table at +2 (0xD290 + 2·ADC).
+
+### ti_D030: `0xD030` — `absolute`
+
+- Method: `long_index`
+- RW68=0xD002; LD RW40,0x2e[RW68] @0xAFC7 and DIVU RL1C,0x2e,TABLE[RW68] @0x9A82 read injector constant.
+
+### ign_WOT_DD0F: `0xDD0F` — `absolute`
+
+- Method: `descriptor_header`
+- Main ign WOT VANOS-retarded RPM axis via CAL descriptor table.
+- Path: `0x66EC LD RW1A,#0x9A → (VANOS select) 0x6723 SCALL 0x6987 → LCALL 0x20CD → 0x343C ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE67E+0x9A]=0xDD0D (header) / XDF axis 0xDD0F`
+
+**All absolute offsets (31):** `0xD030`, `0xD032`, `0xD06A`, `0xD093`, `0xD23E`, `0xD240`, `0xD244`, `0xD256`, `0xD257`, `0xD25A`, `0xD25B`, `0xD27B`, `0xD27D`, `0xD27E`, `0xD281`, `0xD288`, `0xD290`, `0xD5A6`, `0xD67C`, `0xD69E`, `0xD6E8`, `0xD6FA`, `0xD75E`, `0xD984`, `0xD9A6`, `0xD9C8`, `0xDAA8`, `0xDD0F`, `0xDD89`, `0xDE6D`, `0xDF4D`
 
 ## Retraction (important)
 
@@ -42,14 +62,13 @@ Loader: `0x2EDB via trampoline 0x20B5 / LCALL 0x412C`.
 
 RW24/RW20/RW38 ‘exclusive’ ign geometries rejected — those regs are scratch (e.g. ADD RW24,RW6A,#imm; LD RW38,RW6C).
 
-## Fuel exclusive — Ti `0xD030`
+## Fuel Ti `0xD030` — absolute + exclusive
 
 - Target `0xD030` Inj. Constant(Ti)
-- 0x432A (RW68+0x3E) = 0xD000; 0x432C (RW68+0x40) = 0x0030 → `0xD030`
+- Runtime EA: `RW68+0x2E = 0xD030 (RW68=0xD002)`
+- Content reads: `0x9A82`, `0xAFC7`
 - Exclusive split: `00D03000 unique @0x432A`
-- CODE CMP page: `0x8B13`, `0x8C17`, `0x8C2E`
-- CODE CMP off: `0x8BCC`
-- Exclusive structural geometry: unique D000|0030 split under FE24 RW68, plus Ti body fragments that exist only as island↔CAL twins. CODE CMP @RW68+0x3E/+0x40 touches the split words (as bounds), not a content deref of 0xD030.
+- Absolute: LD/DIVU at RW68+0x2E → 0xD030 (injector constant). Exclusive island D000|0030 @0x432A + body twins retained.
 
 ## VANOS RPM axes (8)
 
@@ -194,28 +213,29 @@ RW24/RW20/RW38 ‘exclusive’ ign geometries rejected — those regs are scratc
 
 | ID | Theory | Status | Evidence |
 |----|--------|--------|----------|
-| T1 | Primary load = air-mass kg/h (HFM) | `exclusive_geometry_maf` | ADC @0x427A hyp intact. MAF exclusive BE↔LE twin 0xD28E @FE18/D28E → D290. Prior D200 index claim remains retracted. |
+| T1 | Primary load = air-mass kg/h (HFM) | `absolute_maf` | Absolute: ADC ISR @0xA53B ADD RW64,0x2[RW46] with RW46=RW6C+2·ADC, RW6C=0xD28E → table @0xD290. Exclusive BE↔LE twin retained. |
 | T2 | Load = air mass per stroke from mass + speed | `partial_code` | 0x5AEB DIVU by 0x14CC → 0x1566; D5 axis link open. |
-| T3 | ti_base = f(load, injector_constant), λ≈1 | `exclusive_structural` | Exclusive structural geometry: unique D000|0030 split under FE24 RW68, plus Ti body fragments that exist only as island↔CAL twins. CODE CMP @RW68+0x3E/+0x40 touches the split words (as bounds), not a content deref of 0xD030. Also: soft-fuel-cut twin D032; cold-enrich chain D8EF/D8FD; PT load axes D9DA/DABA. |
+| T3 | ti_base = f(load, injector_constant), λ≈1 | `absolute_ti` | Absolute: LD/DIVU at RW68+0x2E → 0xD030 (injector constant). Exclusive island D000|0030 @0x432A + body twins retained. Also absolute soft-cut CMP D032; descriptor fuel axes. |
 | T4 | Correction stack + Vbat + lambda + overrun cut | `partial_exclusive` | Cold enrich Manual/AT exclusive chain; accel stack CODE TBD. |
-| T5 | zw_base = map(load, rpm) + corrections − knock | `exclusive_geometry_axes` | VANOS RPM axes @ 0xDD0F+sibs; PT load axes DE7F/DF5F; ign idle timing DCF3/DD05; idle cold DCCF/DCD9. |
+| T5 | zw_base = map(load, rpm) + corrections − knock | `absolute_descriptor_axes` | Absolute ign WOT axis 0xDD0F via RW1A=#0x9A→interp→[E67E+9A]=DD0D; also DD89/DE6D/DF4D. Exclusive geometry retained for siblings. |
 | T6 | Dwell = f(Vbat, rpm) | `exclusive_geometry` | VANOS WOT dwell axes D67C/D69E; PT dwell tables D5E6/D63A; main dwell E0DA via PT/WOT load-map span. CODE deref still open. |
 | T7 | TPS secondary / limp load | `exclusive_geometry` | Alpha-N DBC3 unique pre+header; fault-path CODE TBD. |
 | T8 | Camshaft control expander | `exclusive_geometry_axes` | PT/WOT fuel+ign VANOS RPM + PT load + WOT dwell axes exclusive. Selector CODE TBD. |
 
 ## Key CODE sites
 
-- FE24 loader: `0x2EDB via 0x20B5 / 0x412C`
-- Map interp: `0x20C7 → 0x33C2 (RW6E descriptors)`
-- Post-load slots: `0x5B06 RW1A=#0xD0`, `0x5B5B RW1A=#0x30`
-- Ti CMPs: `0x8B13`, `0x8C17`, `0x8C2E`, `0x8BCC`
-- MAF anchor: `BE 0xD28E @0xFE18`, `LE 0xD28E @0xD28E`, `MAF 0xD290`
+- FE14 loader: `0x2EDB via 0x20B5 / 0x412C → FE14 CAL bases`
+- Map interp: `0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] (RW6E=0xE67E)`
+- MAF absolute: `0xA53B ADD RW64,0x2[RW46] (RW46=RW6C+2·ADC)`
+- Ign WOT select: `0x66EC LD RW1A,#0x9A → 0x6987 → 0x20CD → DD0D/DD0F`
+- Ti content: `0x9A82`, `0xAFC7`
+- MAF anchor: `FE14 RW6C=0xD28E`, `MAF body 0xD290`, `ADC ISR 0xA4AA`
 
 ## Next
 
-1. Compose D000+|0030 and [deref] Ti content (first absolute fuel read)
-1. Descriptor 0x42DF → 0xDxxx for absolute map-body LOOKUP
-1. CODE-walk one exclusive VANOS/fuel/ign table via interp 0x20C7
+1. Grow absolute coverage beyond 31/69 (more descriptor header deltas / body walks)
+1. Prove PT/WOT main fuel map body reads through descriptor→[RW4C] walk
+1. Tie dwell E0DA and idle ign tables to descriptor or long-index sites
 
 ---
 Research-only. Verification gates unchanged.

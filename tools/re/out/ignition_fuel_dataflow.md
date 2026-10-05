@@ -5,40 +5,45 @@ ISA: `mcs96_80c196_family`
 CODE `0x2000`–`0xB930`; DATA from `0xB931`.
 XDF (BRO) = primary definition evidence for names/equations.
 
-## Coverage (v8 — all 69 exclusive where proven; D200/D978 retracted)
+## Coverage (v9 — exclusive 100%; absolute growing)
 
 | Metric | Count | % of 69 |
 |--------|------:|--------:|
-| **Absolute `LOOKUP[ZR]` proven** (ea == XDF offset) | **0** | **0.0%** |
-| **CAL-content index-base cross_checked** | **0** | **0.0%** |
+| **Absolute CODE reads** (ea → XDF) | **31** | **44.93%** |
 | **Exclusive geometry** | **69** | **100.0%** |
-| Structural split-ptr (`0xD000`+`0x0030`→`0xD030`) | 1 | 1.45% |
-| ROM-proven register bases (FE24) | 4 | — |
+| **CAL-content index-base (D200/D978)** | **0** | **0%** (retracted) |
+| Runtime FE14 CAL bases | 4 | — |
 
-0.0% absolute (0/69); 0% CAL-content index-base (D200/D978 retracted); 100.0% exclusive geometry (69/69); 4 ROM-proven FE24 bases.
+44.93% absolute (31/69); exclusive geometry 100.0% (69/69); FE14 CAL bases RW68=D002/RW6A=D106/RW6C=D28E/RW6E=E67E; D200/D978 retracted.
 
-> **v8:** D200/D978 remain retracted. FE24 bases unchanged.
-> Exclusive geometry complete for all 69 ign/fuel XDF items (absolute still 0).
+> **v9:** FE14 loader bases unlock absolute reads. Priority MAF/Ti/ign WOT proven.
+> Exclusive geometry remains 69/69. D200/D978 stay retracted.
 
-## How CAL is read (corrected model)
+## How CAL is read (v9 addressing model)
 
-1. **Parameter island** `RW68=0x42EC` — scalars / page markers (incl. `D000`+`0030` at +0x3E/+0x40)
-2. **Index island** `RW6A=0x43F0` — small fault / descriptor indices (feed `0x6efd` / `RW1A` interp)
-3. **Map interp** `0x20C7`→`0x33C2` via descriptor table `RW6E=0x1E08` (targets still unresolved)
-4. **Exclusive Ti** `0xD030` — unique island split + body twins; CODE CMP touches
-5. **Exclusive VANOS RPM axes** — shared 16-byte signature at 8 XDF offsets
-6. **More exclusive families** — see below (MAF, load/dwell axes, idle, enrich)
+1. **FE14 CAL bases** via loader `0x2EDB`: `RW68=0xD002`, `RW6A=0xD106`, `RW6C=0xD28E`, `RW6E=0xE67E`
+2. **Long-index** `LOOKUP/TABLE[RWbase]` → direct CAL scalars/limits (Ti @ RW68+0x2E)
+3. **MAF** ADC ISR: `RW46=RW6C+2·ADC`; `ADD RW64,0x2[RW46]` → word table @ `0xD290`
+4. **Map interp** `0x20C7/0x20CD`: `ADD RW1A,RW6E; LD RW4C,[RW1A]` → descriptor headers in CAL
+6. **Exclusive geometry** retained for all 69 (signatures/spans/twins)
 
-## Fuel exclusive — Ti `0xD030`
+## Priority absolute proofs
 
-- Split `00D03000 unique @0x432A`
-- Body twins island↔CAL only
-- CODE sites: `0x8B13`, `0x8C17`, `0x8C2E`, `0x8BCC`
-- Content deref: **False**
+- **MAF `0xD290`:** `0xA53B ADD RW64,0x2[RW46] (RW46=RW6C+2·ADC)`
+- **Ti `0xD030`:** `0x9A82`, `0xAFC7` — contentDeref **True**
+- **Ign WOT `0xDD0F`:** `0x66EC LD RW1A,#0x9A → 0x6987 → 0x20CD → DD0D/DD0F`
 
-## Ignition (+fuel) exclusive — VANOS RPM axes
+Absolute offsets (31): `0xD030`, `0xD032`, `0xD06A`, `0xD093`, `0xD23E`, `0xD240`, `0xD244`, `0xD256`, `0xD257`, `0xD25A`, `0xD25B`, `0xD27B`, `0xD27D`, `0xD27E`, `0xD281`, `0xD288`, `0xD290`, `0xD5A6`, `0xD67C`, `0xD69E`, `0xD6E8`, `0xD6FA`, `0xD75E`, `0xD984`, `0xD9A6`, `0xD9C8`, `0xDAA8`, `0xDD0F`, `0xDD89`, `0xDE6D`, `0xDF4D`
 
-Signature `050605070a05070b0909090f12130860` — exactly 8 hits:
+## Fuel Ti `0xD030`
+
+- Runtime EA `RW68+0x2E = 0xD030 (RW68=0xD002)`
+- Split `00D03000 unique @0x432A` (exclusive island twin)
+- Content deref: **True**
+
+## Ignition (+fuel) — VANOS RPM axes
+
+Signature `050605070a05070b0909090f12130860` — exactly 8 hits (exclusive); ign WOT/PT absolute via descriptors:
 
 | Offset | Domain | Name |
 |--------|--------|------|
@@ -51,10 +56,7 @@ Signature `050605070a05070b0909090f12130860` — exactly 8 hits:
 | `0xDE6D` | ign | 0xDE6D RPM axis for Ignition, PT, Vanos retarded |
 | `0xDF4D` | ign | 0xDF4D RPM axis for Ignition, PT, Vanos advanced |
 
-Representative ign: `0xDD0F`; fuel: `0xD984`.
-CODE axis deref: **False**.
-
-## Additional exclusive families (v6)
+## Additional exclusive families
 
 ### VANOS WOT dwell RPM axes
 
@@ -181,23 +183,23 @@ CODE axis deref: **False**.
 
 ## Key CODE sites
 
-- FE24 loader `0x2EDB via 0x20B5 / 0x412C`
-- Interp `0x20C7 → 0x33C2 (RW6E descriptors)`
-- Post-load slots `0x5B06 RW1A=#0xD0`, `0x5B5B RW1A=#0x30`
-- MAF anchor: `BE 0xD28E @0xFE18`, `LE 0xD28E @0xD28E`, `MAF 0xD290`
+- FE14 loader `0x2EDB via 0x20B5 / 0x412C → FE14 CAL bases`
+- Interp `0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] (RW6E=0xE67E)`
+- MAF absolute `0xA53B ADD RW64,0x2[RW46] (RW46=RW6C+2·ADC)`
+- Ign WOT `0x66EC LD RW1A,#0x9A → 0x6987 → 0x20CD → DD0D/DD0F`
 
 ## Related artifacts
 
-- `theory_vs_rom_bosch_ti.{md,json}` — T1–T8 + retraction + exclusive geometry
-- `register_bases_fe24.{md,json}` — FE24 proven bases
-- `cal_access_model.{md,json}` — absolute-path attempt
+- `theory_vs_rom_bosch_ti.{md,json}` — T1–T8 + absolute + exclusive
+- `register_bases_fe24.{md,json}` — FE14 runtime + FE24 adjacent
+- `cal_access_model.{md,json}` — addressing model
 - `irq_ram_publications.{md,json}` / `sfr_hso_hsi_audit.{md,json}`
 
 ## What is *not* claimed
 
 - Shipping promotion from Bosch PDF or retracted geometry
-- Absolute `LOOKUP[ZR]` CAL *content* reads of fuel/ign map bodies (still 0)
-- End-to-end HFM→ti→ign control
+- Absolute coverage of all 69 (currently 31/69)
+- End-to-end HFM→ti→ign control closed-loop proof
 
 ---
 Research-only. Verification gates for promotion unchanged.

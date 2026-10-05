@@ -1,8 +1,9 @@
 {
-  "schemaVersion": 2,
-  "id": "rw68_cal_index_base_v2_retracted",
+  "schemaVersion": 3,
+  "id": "rw68_cal_index_base_v3_retracted",
   "status": "retracted",
-  "replacedBy": "register_bases_fe24_v1 + vanos_rpm_axis_sig_v1",
+  "replacedBy": "fe14_cal_bases_v9 + absolute_code_reads_v9",
   "priorFalseBase": "0xD200",
-  "provenBase": "0x42EC"
+  "runtimeBase": "0xD002",
+  "fe24AdjacentNotLoaded": "0x42EC"
 }

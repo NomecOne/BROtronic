@@ -147,16 +147,16 @@ Use this PDF as **expected structure**; prove or refute in MCS-96 CODE:
 
 | # | Theory (this PDF) | ROM / XDF target | Status |
 |---|-------------------|------------------|--------|
-| T1 | Primary load = air-mass kg/h (HFM) | MAF 0xD290; ADC→lookup | `exclusive_geometry_maf` — ADC @0x427A hyp intact. MAF exclusive BE↔LE twin 0xD28E @FE18/D28E → D290. Prior D200 index claim remains retracted. |
+| T1 | Primary load = air-mass kg/h (HFM) | MAF 0xD290; ADC→lookup | `absolute_maf` — Absolute: ADC ISR @0xA53B ADD RW64,0x2[RW46] with RW46=RW6C+2·ADC, RW6C=0xD28E → table @0xD290. Exclusive BE↔LE twin retained. |
 | T2 | Load = air mass per stroke from mass + speed | D5 filtered load | `partial_code` — 0x5AEB DIVU by 0x14CC → 0x1566; D5 axis link open. |
-| T3 | ti_base = f(load, injector_constant), λ≈1 | Ti 0xD030 + fuel maps | `exclusive_structural` — Exclusive structural geometry: unique D000|0030 split under FE24 RW68, plus Ti body fragments that exist only as island↔CAL twins. CODE CMP @RW68+0x3E/+0x40 touches the split words (as bounds), not a content deref of 0xD030. Also: soft-fuel-cut twin D032; cold-enrich chain D8EF/D8FD; PT load axes D9DA/DABA. |
+| T3 | ti_base = f(load, injector_constant), λ≈1 | Ti 0xD030 + fuel maps | `absolute_ti` — Absolute: LD/DIVU at RW68+0x2E → 0xD030 (injector constant). Exclusive island D000|0030 @0x432A + body twins retained. Also absolute soft-cut CMP D032; descriptor fuel axes. |
 | T4 | Correction stack + Vbat + lambda + overrun cut | Enrich / O2 / voltage / cut | `partial_exclusive` — Cold enrich Manual/AT exclusive chain; accel stack CODE TBD. |
-| T5 | zw_base = map(load, rpm) + corrections − knock | PT/WOT ign VANOS; knock | `exclusive_geometry_axes` — VANOS RPM axes @ 0xDD0F+sibs; PT load axes DE7F/DF5F; ign idle timing DCF3/DD05; idle cold DCCF/DCD9. |
+| T5 | zw_base = map(load, rpm) + corrections − knock | PT/WOT ign VANOS; knock | `absolute_descriptor_axes` — Absolute ign WOT axis 0xDD0F via RW1A=#0x9A→interp→[E67E+9A]=DD0D; also DD89/DE6D/DF4D. Exclusive geometry retained for siblings. |
 | T6 | Dwell = f(Vbat, rpm) | 0xE0DA + VANOS dwell | `exclusive_geometry` — VANOS WOT dwell axes D67C/D69E; PT dwell tables D5E6/D63A; main dwell E0DA via PT/WOT load-map span. CODE deref still open. |
 | T7 | TPS secondary / limp load | Alpha-N 0xDBC3 | `exclusive_geometry` — Alpha-N DBC3 unique pre+header; fault-path CODE TBD. |
 | T8 | Camshaft control expander | VANOS dual maps | `exclusive_geometry_axes` — PT/WOT fuel+ign VANOS RPM + PT load + WOT dwell axes exclusive. Selector CODE TBD. |
 
-**Coverage (CODE×XDF, not book):** 0.0% absolute (0/69); 0% CAL-content index-base (D200/D978 retracted); 100.0% exclusive geometry (69/69); 4 ROM-proven FE24 bases.
+**Coverage (CODE×XDF, not book):** 44.93% absolute (31/69); exclusive geometry 100.0% (69/69); FE14 CAL bases RW68=D002/RW6A=D106/RW6C=D28E/RW6E=E67E; D200/D978 retracted.
 
 **Do not** promote shipping maps from this PDF alone.
 
