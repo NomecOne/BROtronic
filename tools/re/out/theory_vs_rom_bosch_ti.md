@@ -5,19 +5,19 @@ Theory: [`ref_pdf_bosch_m_motronic_technical_instruction.md`](ref_pdf_bosch_m_mo
 
 > Book is PRIMARY family theory only. Do not verify or promote shipping maps from the PDF alone.
 
-## Coverage (v6)
+## Coverage (v7)
 
 | Metric | Count | % of 69 |
 |--------|------:|--------:|
 | Absolute `LOOKUP[ZR]` proven (ea == XDF) | **0** | **0.0%** |
 | CAL-content index-base cross_checked | **0** | **0.0%** |
-| **Exclusive geometry** | **23** | **33.33%** |
+| **Exclusive geometry** | **46** | **66.67%** |
 | Structural split-ptr (`0xD030`) | 1 | 1.45% |
 | ROM-proven register bases (FE24) | 4 | — |
 
-0.0% absolute (0/69); 0% CAL-content index-base (D200/D978 retracted); 33.33% exclusive geometry (23/69); 4 ROM-proven FE24 bases.
+0.0% absolute (0/69); 0% CAL-content index-base (D200/D978 retracted); 66.67% exclusive geometry (46/69); 4 ROM-proven FE24 bases.
 
-> v6: grew exclusive geometry via signature axes, island↔CAL twins, BE/LE unique immediates, and unique span chains. D200/D978 remain retracted. Absolute CODE content reads still 0.
+> v7: prioritized main fuel PT/WOT + main ign tables — WOT load axes, PT dwell, WOT control block, PT/WOT load maps+dwell, idle base, accel stack, Alpha-N. D200/D978 remain retracted. Absolute CODE content reads still 0.
 
 ## ROM-proven register bases
 
@@ -110,7 +110,55 @@ RW24/RW20/RW38 ‘exclusive’ ign geometries rejected — those regs are scratc
 - Offsets: `0xD8EF`, `0xD8FD`
 - Unique contiguous span D8EF..D8FD+4 chains both cold-enrich tables.
 
-**All exclusive offsets (23):** `0xD030`, `0xD032`, `0xD290`, `0xD67C`, `0xD69E`, `0xD8EF`, `0xD8FD`, `0xD984`, `0xD9A6`, `0xD9C8`, `0xD9DA`, `0xDAA8`, `0xDABA`, `0xDCCF`, `0xDCD9`, `0xDCF3`, `0xDD05`, `0xDD0F`, `0xDD89`, `0xDE6D`, `0xDE7F`, `0xDF4D`, `0xDF5F`
+### Ignition WOT VANOS load axes
+
+- Method: `signature_axis`
+- Offsets: `0xDD21`, `0xDD9B`
+- Exclusive d506||0e0e0c10105c tag immediately before both Ign WOT Vanos load axes (ret/adv).
+
+### Fuel cranking axis + VANOS PT dwell tables
+
+- Method: `unique_span_chain`
+- Offsets: `0xD5A6`, `0xD5E6`, `0xD63A`
+- Unique span covers cranking RPM axis and both VANOS PT dwell 8x8 tables (retarded/advanced).
+
+### VANOS WOT dwell/control block
+
+- Method: `unique_span_chain`
+- Offsets: `0xD6AE`, `0xD6C6`, `0xD6E8`, `0xD6FA`, `0xD722`, `0xD734`
+- Unique span: WOT dwell advanced table, TMOT fak, load MIN/MAX axes, DK min/max override tables.
+
+### Fuel voltage axis (after VANOS DK)
+
+- Method: `unique_span_chain`
+- Offsets: `0xD75E`
+- Unique span from DK tables through Fuel Voltage axis D75E.
+
+### PT/WOT load maps + ign coil dwell
+
+- Method: `unique_span_chain`
+- Offsets: `0xE065`, `0xE0B3`, `0xE0DA`
+- Unique span chains XDF PT/WOT load map blocks into main ignition coil voltage/dwell table E0DA.
+
+### Fuel idle base + cold lambda correction
+
+- Method: `unique_span_chain`
+- Offsets: `0xD91F`, `0xD970`
+- Unique span: Idle Cold Lambda Correction → Fuel Idle Base 6x3.
+
+### Fuel accel enrich stack
+
+- Method: `unique_span_chain`
+- Offsets: `0xDC21`, `0xDC37`, `0xDC47`, `0xDC63`, `0xDC79`
+- Unique contiguous accel-enrich stack (lambda, TMOT, fade, delta-load, overrun-related).
+
+### Alpha-N limp load map
+
+- Method: `unique_immediate_twin`
+- Offsets: `0xDBC3`
+- Unique 4-byte pre + 8-byte header immediately before Alpha-N DBC3.
+
+**All exclusive offsets (46):** `0xD030`, `0xD032`, `0xD290`, `0xD5A6`, `0xD5E6`, `0xD63A`, `0xD67C`, `0xD69E`, `0xD6AE`, `0xD6C6`, `0xD6E8`, `0xD6FA`, `0xD722`, `0xD734`, `0xD75E`, `0xD8EF`, `0xD8FD`, `0xD91F`, `0xD970`, `0xD984`, `0xD9A6`, `0xD9C8`, `0xD9DA`, `0xDAA8`, `0xDABA`, `0xDBC3`, `0xDC21`, `0xDC37`, `0xDC47`, `0xDC63`, `0xDC79`, `0xDCCF`, `0xDCD9`, `0xDCF3`, `0xDD05`, `0xDD0F`, `0xDD21`, `0xDD89`, `0xDD9B`, `0xDE6D`, `0xDE7F`, `0xDF4D`, `0xDF5F`, `0xE065`, `0xE0B3`, `0xE0DA`
 
 ## T1–T8 checklist
 
@@ -121,8 +169,8 @@ RW24/RW20/RW38 ‘exclusive’ ign geometries rejected — those regs are scratc
 | T3 | ti_base = f(load, injector_constant), λ≈1 | `exclusive_structural` | Exclusive structural geometry: unique D000|0030 split under FE24 RW68, plus Ti body fragments that exist only as island↔CAL twins. CODE CMP @RW68+0x3E/+0x40 touches the split words (as bounds), not a content deref of 0xD030. Also: soft-fuel-cut twin D032; cold-enrich chain D8EF/D8FD; PT load axes D9DA/DABA. |
 | T4 | Correction stack + Vbat + lambda + overrun cut | `partial_exclusive` | Cold enrich Manual/AT exclusive chain; accel stack CODE TBD. |
 | T5 | zw_base = map(load, rpm) + corrections − knock | `exclusive_geometry_axes` | VANOS RPM axes @ 0xDD0F+sibs; PT load axes DE7F/DF5F; ign idle timing DCF3/DD05; idle cold DCCF/DCD9. |
-| T6 | Dwell = f(Vbat, rpm) | `partial_exclusive` | VANOS WOT dwell axes D67C/D69E exclusive sig; main dwell 0xE0DA body CODE read still open. |
-| T7 | TPS secondary / limp load | `xdf_only` | Strong XDF; fault path CODE TBD. |
+| T6 | Dwell = f(Vbat, rpm) | `exclusive_geometry` | VANOS WOT dwell axes D67C/D69E; PT dwell tables D5E6/D63A; main dwell E0DA via PT/WOT load-map span. CODE deref still open. |
+| T7 | TPS secondary / limp load | `exclusive_geometry` | Alpha-N DBC3 unique pre+header; fault-path CODE TBD. |
 | T8 | Camshaft control expander | `exclusive_geometry_axes` | PT/WOT fuel+ign VANOS RPM + PT load + WOT dwell axes exclusive. Selector CODE TBD. |
 
 ## Key CODE sites
@@ -136,8 +184,7 @@ RW24/RW20/RW38 ‘exclusive’ ign geometries rejected — those regs are scratc
 ## Next
 
 1. Compose D000+|0030 and [deref] Ti; CODE-walk one VANOS RPM/load axis
-1. Descriptor patches 0x42DF → 0xDxxx for main fuel/ign map bodies
-1. Exclusive geometry for Alpha-N 0xDBC3, dwell 0xE0DA, accel stack
+1. Descriptor patches 0x42DF → 0xDxxx for remaining unproven scalars
 1. Absolute LOOKUP[ZR] for one fuel map body and one ign map body
 
 ---

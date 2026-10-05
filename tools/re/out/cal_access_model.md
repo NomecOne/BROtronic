@@ -58,7 +58,7 @@ ROM-proven bases from FE24: `RW68=0x42EC`, `RW6A=0x43F0`, `RW6C=0x1A08`, `RW6E=0
 5. **MAF `0xD290`:** unique BE↔LE twin of `0xD28E` (@FE18 / @D28E)
 6. **Ign idle timing/cold + fuel cold enrich + soft fuel cut** — signature/span/twin methods
 
-**Count: 23/69 exclusive geometry.** Absolute CODE reads still 0. D200/D978 remain retracted.
+**Count: 46/69 exclusive geometry.** Absolute CODE reads still 0. D200/D978 remain retracted.
 
 See `theory_vs_rom_bosch_ti.md` / `register_bases_fe24.md`.
 

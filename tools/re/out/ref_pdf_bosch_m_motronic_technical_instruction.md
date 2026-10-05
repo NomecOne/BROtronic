@@ -152,11 +152,11 @@ Use this PDF as **expected structure**; prove or refute in MCS-96 CODE:
 | T3 | ti_base = f(load, injector_constant), λ≈1 | Ti 0xD030 + fuel maps | `exclusive_structural` — Exclusive structural geometry: unique D000|0030 split under FE24 RW68, plus Ti body fragments that exist only as island↔CAL twins. CODE CMP @RW68+0x3E/+0x40 touches the split words (as bounds), not a content deref of 0xD030. Also: soft-fuel-cut twin D032; cold-enrich chain D8EF/D8FD; PT load axes D9DA/DABA. |
 | T4 | Correction stack + Vbat + lambda + overrun cut | Enrich / O2 / voltage / cut | `partial_exclusive` — Cold enrich Manual/AT exclusive chain; accel stack CODE TBD. |
 | T5 | zw_base = map(load, rpm) + corrections − knock | PT/WOT ign VANOS; knock | `exclusive_geometry_axes` — VANOS RPM axes @ 0xDD0F+sibs; PT load axes DE7F/DF5F; ign idle timing DCF3/DD05; idle cold DCCF/DCD9. |
-| T6 | Dwell = f(Vbat, rpm) | 0xE0DA + VANOS dwell | `partial_exclusive` — VANOS WOT dwell axes D67C/D69E exclusive sig; main dwell 0xE0DA body CODE read still open. |
-| T7 | TPS secondary / limp load | Alpha-N 0xDBC3 | `xdf_only` — Strong XDF; fault path CODE TBD. |
+| T6 | Dwell = f(Vbat, rpm) | 0xE0DA + VANOS dwell | `exclusive_geometry` — VANOS WOT dwell axes D67C/D69E; PT dwell tables D5E6/D63A; main dwell E0DA via PT/WOT load-map span. CODE deref still open. |
+| T7 | TPS secondary / limp load | Alpha-N 0xDBC3 | `exclusive_geometry` — Alpha-N DBC3 unique pre+header; fault-path CODE TBD. |
 | T8 | Camshaft control expander | VANOS dual maps | `exclusive_geometry_axes` — PT/WOT fuel+ign VANOS RPM + PT load + WOT dwell axes exclusive. Selector CODE TBD. |
 
-**Coverage (CODE×XDF, not book):** 0.0% absolute (0/69); 0% CAL-content index-base (D200/D978 retracted); 33.33% exclusive geometry (23/69); 4 ROM-proven FE24 bases.
+**Coverage (CODE×XDF, not book):** 0.0% absolute (0/69); 0% CAL-content index-base (D200/D978 retracted); 66.67% exclusive geometry (46/69); 4 ROM-proven FE24 bases.
 
 **Do not** promote shipping maps from this PDF alone.
 

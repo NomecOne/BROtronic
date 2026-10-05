@@ -295,31 +295,125 @@
         "0xD8EF",
         "0xD8FD"
       ]
+    },
+    {
+      "id": "ign_wot_load_axis_tag_v1",
+      "title": "Ignition WOT VANOS load axes",
+      "offsets": [
+        "0xDD21",
+        "0xDD9B"
+      ]
+    },
+    {
+      "id": "fuel_crank_vanos_pt_dwell_v1",
+      "title": "Fuel cranking axis + VANOS PT dwell tables",
+      "offsets": [
+        "0xD5A6",
+        "0xD5E6",
+        "0xD63A"
+      ]
+    },
+    {
+      "id": "vanos_wot_control_block_v1",
+      "title": "VANOS WOT dwell/control block",
+      "offsets": [
+        "0xD6AE",
+        "0xD6C6",
+        "0xD6E8",
+        "0xD6FA",
+        "0xD722",
+        "0xD734"
+      ]
+    },
+    {
+      "id": "fuel_voltage_axis_chain_v1",
+      "title": "Fuel voltage axis (after VANOS DK)",
+      "offsets": [
+        "0xD75E"
+      ]
+    },
+    {
+      "id": "pt_wot_load_maps_dwell_v1",
+      "title": "PT/WOT load maps + ign coil dwell",
+      "offsets": [
+        "0xE065",
+        "0xE0B3",
+        "0xE0DA"
+      ]
+    },
+    {
+      "id": "fuel_idle_base_chain_v1",
+      "title": "Fuel idle base + cold lambda correction",
+      "offsets": [
+        "0xD91F",
+        "0xD970"
+      ]
+    },
+    {
+      "id": "fuel_accel_enrich_stack_v1",
+      "title": "Fuel accel enrich stack",
+      "offsets": [
+        "0xDC21",
+        "0xDC37",
+        "0xDC47",
+        "0xDC63",
+        "0xDC79"
+      ]
+    },
+    {
+      "id": "alpha_n_unique_prehead_v1",
+      "title": "Alpha-N limp load map",
+      "offsets": [
+        "0xDBC3"
+      ]
     }
   ],
   "exclusiveOffsets": [
     "0xD030",
     "0xD032",
     "0xD290",
+    "0xD5A6",
+    "0xD5E6",
+    "0xD63A",
     "0xD67C",
     "0xD69E",
+    "0xD6AE",
+    "0xD6C6",
+    "0xD6E8",
+    "0xD6FA",
+    "0xD722",
+    "0xD734",
+    "0xD75E",
     "0xD8EF",
     "0xD8FD",
+    "0xD91F",
+    "0xD970",
     "0xD984",
     "0xD9A6",
     "0xD9C8",
     "0xD9DA",
     "0xDAA8",
     "0xDABA",
+    "0xDBC3",
+    "0xDC21",
+    "0xDC37",
+    "0xDC47",
+    "0xDC63",
+    "0xDC79",
     "0xDCCF",
     "0xDCD9",
     "0xDCF3",
     "0xDD05",
     "0xDD0F",
+    "0xDD21",
     "0xDD89",
+    "0xDD9B",
     "0xDE6D",
     "0xDE7F",
     "0xDF4D",
-    "0xDF5F"
+    "0xDF5F",
+    "0xE065",
+    "0xE0B3",
+    "0xE0DA"
   ]
 }

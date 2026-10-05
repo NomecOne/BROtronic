@@ -57,6 +57,8 @@
       "tools/re/out/rw68_cal_index_base.md",
       "tools/re/out/ref_pdf_bosch_m_motronic_technical_instruction.md",
       "tools/re/out/register_bases_fe24.md",
+      "tools/re/out/register_bases_fe24.md",
+      "tools/re/out/register_bases_fe24.md",
       "tools/re/out/register_bases_fe24.md"
     ],
     "ignitionFuelCoverage": {
@@ -65,22 +67,22 @@
       "ghidraProvenPct": 0.0,
       "indexBaseCrossCheckedCalContent": 0,
       "indexBaseCrossCheckedCalContentPct": 0.0,
-      "exclusiveGeometry": 23,
-      "exclusiveGeometryPct": 33.33,
+      "exclusiveGeometry": 46,
+      "exclusiveGeometryPct": 66.67,
       "structuralSplitPtr": 1,
       "registerBasesRomProven": 4,
-      "headline": "0.0% absolute (0/69); 0% CAL-content index-base (D200/D978 retracted); 33.33% exclusive geometry (23/69); 4 ROM-proven FE24 bases.",
-      "note": "v6: grew exclusive geometry via signature axes, island\u2194CAL twins, BE/LE unique immediates, and unique span chains. D200/D978 remain retracted. Absolute CODE content reads still 0."
+      "headline": "0.0% absolute (0/69); 0% CAL-content index-base (D200/D978 retracted); 66.67% exclusive geometry (46/69); 4 ROM-proven FE24 bases.",
+      "note": "v7: prioritized main fuel PT/WOT + main ign tables \u2014 WOT load axes, PT dwell, WOT control block, PT/WOT load maps+dwell, idle base, accel stack, Alpha-N. D200/D978 remain retracted. Absolute CODE content reads still 0."
     },
     "priorityTraces": {
       "irqRamPublications": "done_v1",
       "sfrHsoHsiAudit": "cross_checked",
       "calAccessModel": "corrected_v2",
       "firstProvenIgnFuelXref": false,
-      "boschTiTheoryVsRom": "done_v6_exclusive_geometry",
+      "boschTiTheoryVsRom": "done_v7_exclusive_geometry",
       "rw68IndexBase": "retracted_d200_false_positive",
       "registerBasesFe24": "rom_proven",
-      "exclusiveGeometryFuelIgn": "ti_vanos_maf_idle_enrich_v6"
+      "exclusiveGeometryFuelIgn": "ti_vanos_main_fuel_ign_v7"
     }
   }
 }

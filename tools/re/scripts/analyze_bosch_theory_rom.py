@@ -366,6 +366,153 @@ def build_exclusive_families(rom: bytes, ign: dict):
         }
     )
 
+    # --- v7: main fuel PT/WOT + main ignition tables ---
+
+    # Ign WOT load axes — exclusive tagged signature at -2
+    tag = bytes.fromhex("d5060e0e0c10105c")
+    tag_locs = _find_all(rom, tag)
+    assert tag_locs == [0xDD1F, 0xDD99], tag_locs
+    offs = [0xDD21, 0xDD9B]
+    families.append(
+        {
+            "id": "ign_wot_load_axis_tag_v1",
+            "method": "signature_axis",
+            "title": "Ignition WOT VANOS load axes",
+            "signatureHex": tag.hex(),
+            "signatureAt": ["0xDD1F", "0xDD99"],
+            "offsets": offs,
+            "items": _entries(ign, offs),
+            "note": (
+                "Exclusive d506||0e0e0c10105c tag immediately before both "
+                "Ign WOT Vanos load axes (ret/adv)."
+            ),
+        }
+    )
+
+    # Fuel cranking RPM axis + VANOS PT dwell tables (main PT dwell)
+    span = rom[0xD5A6 : 0xD63A + 1]
+    assert _find_all(rom, span) == [0xD5A6]
+    offs = [0xD5A6, 0xD5E6, 0xD63A]
+    families.append(
+        {
+            "id": "fuel_crank_vanos_pt_dwell_v1",
+            "method": "unique_span_chain",
+            "title": "Fuel cranking axis + VANOS PT dwell tables",
+            "signatureHex": span.hex()[:32] + "…",
+            "span": "0xD5A6..0xD63A",
+            "offsets": offs,
+            "items": _entries(ign, offs),
+            "note": (
+                "Unique span covers cranking RPM axis and both VANOS PT "
+                "dwell 8x8 tables (retarded/advanced)."
+            ),
+        }
+    )
+
+    # VANOS WOT dwell table + TMOT + load MIN/MAX + DK tables
+    span = rom[0xD6AE : 0xD734 + 8]
+    assert _find_all(rom, span) == [0xD6AE]
+    offs = [0xD6AE, 0xD6C6, 0xD6E8, 0xD6FA, 0xD722, 0xD734]
+    families.append(
+        {
+            "id": "vanos_wot_control_block_v1",
+            "method": "unique_span_chain",
+            "title": "VANOS WOT dwell/control block",
+            "span": "0xD6AE..0xD734+8",
+            "offsets": offs,
+            "items": _entries(ign, offs),
+            "note": (
+                "Unique span: WOT dwell advanced table, TMOT fak, load "
+                "MIN/MAX axes, DK min/max override tables."
+            ),
+        }
+    )
+
+    # Fuel voltage axis chained after DK
+    span = rom[0xD722 : 0xD75E + 8]
+    assert _find_all(rom, span) == [0xD722]
+    # D722/D734 already counted; add D75E only as new via this family
+    families.append(
+        {
+            "id": "fuel_voltage_axis_chain_v1",
+            "method": "unique_span_chain",
+            "title": "Fuel voltage axis (after VANOS DK)",
+            "span": "0xD722..0xD75E+8",
+            "offsets": [0xD75E],
+            "items": _entries(ign, [0xD75E]),
+            "note": "Unique span from DK tables through Fuel Voltage axis D75E.",
+        }
+    )
+
+    # PT/WOT load map suspects + main coil dwell
+    span = rom[0xE065 : 0xE0DA + 12]
+    assert _find_all(rom, span) == [0xE065]
+    offs = [0xE065, 0xE0B3, 0xE0DA]
+    families.append(
+        {
+            "id": "pt_wot_load_maps_dwell_v1",
+            "method": "unique_span_chain",
+            "title": "PT/WOT load maps + ign coil dwell",
+            "span": "0xE065..0xE0DA+12",
+            "offsets": offs,
+            "items": _entries(ign, offs),
+            "note": (
+                "Unique span chains XDF PT/WOT load map blocks into main "
+                "ignition coil voltage/dwell table E0DA."
+            ),
+        }
+    )
+
+    # Fuel idle base + preceding cold lambda correction
+    span = rom[0xD91F : 0xD970 + 8]
+    assert _find_all(rom, span) == [0xD91F]
+    offs = [0xD91F, 0xD970]
+    families.append(
+        {
+            "id": "fuel_idle_base_chain_v1",
+            "method": "unique_span_chain",
+            "title": "Fuel idle base + cold lambda correction",
+            "span": "0xD91F..0xD970+8",
+            "offsets": offs,
+            "items": _entries(ign, offs),
+            "note": "Unique span: Idle Cold Lambda Correction → Fuel Idle Base 6x3.",
+        }
+    )
+
+    # Fuel accel enrich stack (main transient fuel)
+    span = rom[0xDC21 : 0xDC79 + 8]
+    assert _find_all(rom, span) == [0xDC21]
+    offs = [0xDC21, 0xDC37, 0xDC47, 0xDC63, 0xDC79]
+    families.append(
+        {
+            "id": "fuel_accel_enrich_stack_v1",
+            "method": "unique_span_chain",
+            "title": "Fuel accel enrich stack",
+            "span": "0xDC21..0xDC79+8",
+            "offsets": offs,
+            "items": _entries(ign, offs),
+            "note": (
+                "Unique contiguous accel-enrich stack (lambda, TMOT, fade, "
+                "delta-load, overrun-related)."
+            ),
+        }
+    )
+
+    # Alpha-N limp load — unique pre+header immediate twin style
+    prehead = rom[0xDBBF : 0xDBCB]
+    assert _find_all(rom, prehead) == [0xDBBF]
+    families.append(
+        {
+            "id": "alpha_n_unique_prehead_v1",
+            "method": "unique_immediate_twin",
+            "title": "Alpha-N limp load map",
+            "signatureHex": prehead.hex(),
+            "offsets": [0xDBC3],
+            "items": _entries(ign, [0xDBC3]),
+            "note": "Unique 4-byte pre + 8-byte header immediately before Alpha-N DBC3.",
+        }
+    )
+
     return families
 
 
@@ -489,18 +636,18 @@ def build_checklist(ti, vanos, families, load_path):
             "id": "T6",
             "theory": "Dwell = f(Vbat, rpm)",
             "romTarget": "0xE0DA + VANOS dwell",
-            "status": "partial_exclusive",
+            "status": "exclusive_geometry",
             "evidence": (
-                "VANOS WOT dwell axes D67C/D69E exclusive sig; main dwell "
-                "0xE0DA body CODE read still open."
+                "VANOS WOT dwell axes D67C/D69E; PT dwell tables D5E6/D63A; "
+                "main dwell E0DA via PT/WOT load-map span. CODE deref still open."
             ),
         },
         {
             "id": "T7",
             "theory": "TPS secondary / limp load",
             "romTarget": "Alpha-N 0xDBC3",
-            "status": "xdf_only",
-            "evidence": "Strong XDF; fault path CODE TBD.",
+            "status": "exclusive_geometry",
+            "evidence": "Alpha-N DBC3 unique pre+header; fault-path CODE TBD.",
         },
         {
             "id": "T8",
@@ -538,8 +685,8 @@ def build_doc(rom, lines, ign):
         for f in families
     ]
     return {
-        "schemaVersion": 6,
-        "id": "bosch_ti_theory_vs_rom_v6",
+        "schemaVersion": 7,
+        "id": "bosch_ti_theory_vs_rom_v7",
         "rom": ROM_NAME,
         "primaryTheory": "tools/re/out/ref_pdf_bosch_m_motronic_technical_instruction.md",
         "shippingNote": (
@@ -568,9 +715,10 @@ def build_doc(rom, lines, ign):
                 f"({exclusive_items}/{n}); 4 ROM-proven FE24 bases."
             ),
             "note": (
-                "v6: grew exclusive geometry via signature axes, island↔CAL "
-                "twins, BE/LE unique immediates, and unique span chains. "
-                "D200/D978 remain retracted. Absolute CODE content reads still 0."
+                "v7: prioritized main fuel PT/WOT + main ign tables — WOT load "
+                "axes, PT dwell, WOT control block, PT/WOT load maps+dwell, "
+                "idle base, accel stack, Alpha-N. D200/D978 remain retracted. "
+                "Absolute CODE content reads still 0."
             ),
         },
         "checklist": checklist,
@@ -587,8 +735,7 @@ def build_doc(rom, lines, ign):
         },
         "nextToProve": [
             "Compose D000+|0030 and [deref] Ti; CODE-walk one VANOS RPM/load axis",
-            "Descriptor patches 0x42DF → 0xDxxx for main fuel/ign map bodies",
-            "Exclusive geometry for Alpha-N 0xDBC3, dwell 0xE0DA, accel stack",
+            "Descriptor patches 0x42DF → 0xDxxx for remaining unproven scalars",
             "Absolute LOOKUP[ZR] for one fuel map body and one ign map body",
         ],
     }
@@ -610,7 +757,7 @@ def md_theory(doc):
         "",
         f"> {doc['shippingNote']}",
         "",
-        "## Coverage (v6)",
+        "## Coverage (v7)",
         "",
         "| Metric | Count | % of 69 |",
         "|--------|------:|--------:|",
@@ -791,11 +938,11 @@ def patch_progress(doc):
     }
     if "register_bases_fe24.md" not in prog["engineControl"]["artifacts"]:
         prog["engineControl"]["artifacts"].append("tools/re/out/register_bases_fe24.md")
-    prog["engineControl"]["priorityTraces"]["boschTiTheoryVsRom"] = "done_v6_exclusive_geometry"
+    prog["engineControl"]["priorityTraces"]["boschTiTheoryVsRom"] = "done_v7_exclusive_geometry"
     prog["engineControl"]["priorityTraces"]["rw68IndexBase"] = "retracted_d200_false_positive"
     prog["engineControl"]["priorityTraces"]["registerBasesFe24"] = "rom_proven"
     prog["engineControl"]["priorityTraces"]["firstProvenIgnFuelXref"] = False
-    prog["engineControl"]["priorityTraces"]["exclusiveGeometryFuelIgn"] = "ti_vanos_maf_idle_enrich_v6"
+    prog["engineControl"]["priorityTraces"]["exclusiveGeometryFuelIgn"] = "ti_vanos_main_fuel_ign_v7"
     path.write_text(json.dumps(prog, indent=2) + "\n")
 
 
@@ -828,7 +975,7 @@ ISA: `mcs96_80c196_family`
 CODE `0x2000`–`0xB930`; DATA from `0xB931`.
 XDF (BRO) = primary definition evidence for names/equations.
 
-## Coverage (v6 — exclusive geometry grown; D200/D978 retracted)
+## Coverage (v7 — main fuel/ign tables; D200/D978 retracted)
 
 | Metric | Count | % of 69 |
 |--------|------:|--------:|
@@ -840,9 +987,8 @@ XDF (BRO) = primary definition evidence for names/equations.
 
 {cov['headline']}
 
-> **v6:** D200/D978 remain retracted. FE24 bases unchanged.
-> Exclusive geometry grown: Ti, VANOS RPM/load/dwell axes, MAF, ign idle,
-> cold enrich, soft fuel cut.
+> **v7:** D200/D978 remain retracted. FE24 bases unchanged.
+> Exclusive geometry: main fuel/ign PT/WOT tables, dwell, idle, accel, Alpha-N.
 
 ## How CAL is read (corrected model)
 
@@ -1045,7 +1191,7 @@ def main():
 
     ign_path = OUT / "ignition_fuel_dataflow.json"
     ign_doc = json.loads(ign_path.read_text())
-    ign_doc["coverage"] = {"schemaVersion": 6, **doc["coverage"]}
+    ign_doc["coverage"] = {"schemaVersion": 7, **doc["coverage"]}
     ign_doc["exclusiveGeometry"] = {
         "ti": doc["tiStructural"],
         "vanosRpmAxes": doc["vanosRpmAxisExclusive"],
@@ -1120,7 +1266,7 @@ Research-only. Verification gates unchanged. No shipping promotion.
         f"- **{f['title']}:** " + ", ".join(f"`0x{o:04X}`" for o in f["offsets"])
         for f in doc["exclusiveFamilies"]
     )
-    ht += f"""## Status after theory-vs-ROM pass (v6)
+    ht += f"""## Status after theory-vs-ROM pass (v7)
 
 - **Retraction:** D200 (13) / D978 (6) remain retracted (do not revive).
 - **ROM-proven bases (FE24):** RW68=`0x42EC`, RW6A=`0x43F0`, RW6C=`0x1A08`, RW6E=`0x1E08`

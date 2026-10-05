@@ -5,21 +5,20 @@ ISA: `mcs96_80c196_family`
 CODE `0x2000`–`0xB930`; DATA from `0xB931`.
 XDF (BRO) = primary definition evidence for names/equations.
 
-## Coverage (v6 — exclusive geometry grown; D200/D978 retracted)
+## Coverage (v7 — main fuel/ign tables; D200/D978 retracted)
 
 | Metric | Count | % of 69 |
 |--------|------:|--------:|
 | **Absolute `LOOKUP[ZR]` proven** (ea == XDF offset) | **0** | **0.0%** |
 | **CAL-content index-base cross_checked** | **0** | **0.0%** |
-| **Exclusive geometry** | **23** | **33.33%** |
+| **Exclusive geometry** | **46** | **66.67%** |
 | Structural split-ptr (`0xD000`+`0x0030`→`0xD030`) | 1 | 1.45% |
 | ROM-proven register bases (FE24) | 4 | — |
 
-0.0% absolute (0/69); 0% CAL-content index-base (D200/D978 retracted); 33.33% exclusive geometry (23/69); 4 ROM-proven FE24 bases.
+0.0% absolute (0/69); 0% CAL-content index-base (D200/D978 retracted); 66.67% exclusive geometry (46/69); 4 ROM-proven FE24 bases.
 
-> **v6:** D200/D978 remain retracted. FE24 bases unchanged.
-> Exclusive geometry grown: Ti, VANOS RPM/load/dwell axes, MAF, ign idle,
-> cold enrich, soft fuel cut.
+> **v7:** D200/D978 remain retracted. FE24 bases unchanged.
+> Exclusive geometry: main fuel/ign PT/WOT tables, dwell, idle, accel, Alpha-N.
 
 ## How CAL is read (corrected model)
 
@@ -99,8 +98,56 @@ CODE axis deref: **False**.
 - Offsets: `0xD8EF`, `0xD8FD`
 - Unique contiguous span D8EF..D8FD+4 chains both cold-enrich tables.
 
+### Ignition WOT VANOS load axes
 
-**All exclusive offsets (23):** `0xD030`, `0xD032`, `0xD290`, `0xD67C`, `0xD69E`, `0xD8EF`, `0xD8FD`, `0xD984`, `0xD9A6`, `0xD9C8`, `0xD9DA`, `0xDAA8`, `0xDABA`, `0xDCCF`, `0xDCD9`, `0xDCF3`, `0xDD05`, `0xDD0F`, `0xDD89`, `0xDE6D`, `0xDE7F`, `0xDF4D`, `0xDF5F`
+- Method: `signature_axis`
+- Offsets: `0xDD21`, `0xDD9B`
+- Exclusive d506||0e0e0c10105c tag immediately before both Ign WOT Vanos load axes (ret/adv).
+
+### Fuel cranking axis + VANOS PT dwell tables
+
+- Method: `unique_span_chain`
+- Offsets: `0xD5A6`, `0xD5E6`, `0xD63A`
+- Unique span covers cranking RPM axis and both VANOS PT dwell 8x8 tables (retarded/advanced).
+
+### VANOS WOT dwell/control block
+
+- Method: `unique_span_chain`
+- Offsets: `0xD6AE`, `0xD6C6`, `0xD6E8`, `0xD6FA`, `0xD722`, `0xD734`
+- Unique span: WOT dwell advanced table, TMOT fak, load MIN/MAX axes, DK min/max override tables.
+
+### Fuel voltage axis (after VANOS DK)
+
+- Method: `unique_span_chain`
+- Offsets: `0xD75E`
+- Unique span from DK tables through Fuel Voltage axis D75E.
+
+### PT/WOT load maps + ign coil dwell
+
+- Method: `unique_span_chain`
+- Offsets: `0xE065`, `0xE0B3`, `0xE0DA`
+- Unique span chains XDF PT/WOT load map blocks into main ignition coil voltage/dwell table E0DA.
+
+### Fuel idle base + cold lambda correction
+
+- Method: `unique_span_chain`
+- Offsets: `0xD91F`, `0xD970`
+- Unique span: Idle Cold Lambda Correction → Fuel Idle Base 6x3.
+
+### Fuel accel enrich stack
+
+- Method: `unique_span_chain`
+- Offsets: `0xDC21`, `0xDC37`, `0xDC47`, `0xDC63`, `0xDC79`
+- Unique contiguous accel-enrich stack (lambda, TMOT, fade, delta-load, overrun-related).
+
+### Alpha-N limp load map
+
+- Method: `unique_immediate_twin`
+- Offsets: `0xDBC3`
+- Unique 4-byte pre + 8-byte header immediately before Alpha-N DBC3.
+
+
+**All exclusive offsets (46):** `0xD030`, `0xD032`, `0xD290`, `0xD5A6`, `0xD5E6`, `0xD63A`, `0xD67C`, `0xD69E`, `0xD6AE`, `0xD6C6`, `0xD6E8`, `0xD6FA`, `0xD722`, `0xD734`, `0xD75E`, `0xD8EF`, `0xD8FD`, `0xD91F`, `0xD970`, `0xD984`, `0xD9A6`, `0xD9C8`, `0xD9DA`, `0xDAA8`, `0xDABA`, `0xDBC3`, `0xDC21`, `0xDC37`, `0xDC47`, `0xDC63`, `0xDC79`, `0xDCCF`, `0xDCD9`, `0xDCF3`, `0xDD05`, `0xDD0F`, `0xDD21`, `0xDD89`, `0xDD9B`, `0xDE6D`, `0xDE7F`, `0xDF4D`, `0xDF5F`, `0xE065`, `0xE0B3`, `0xE0DA`
 
 ## Key CODE sites
 
