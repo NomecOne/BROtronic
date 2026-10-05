@@ -37,5 +37,9 @@ XDF (BRO) = primary definition evidence for names/equations.
 - Proven per-map CODE xrefs (still 0 ghidraProven on XDF ign/fuel offsets)
 - Shipping definition updates
 
+## Theory reference (Bosch M-Motronic TI)
+
+Expected fuel/ign math (HFM load → base ti + corrections; zw map(load,rpm); dwell vs Vbat/rpm) is page-cited in [`ref_pdf_bosch_m_motronic_technical_instruction.md`](ref_pdf_bosch_m_motronic_technical_instruction.md). Control-concept framing: [`motronic_331_function.md`](motronic_331_function.md). This dataflow file remains XDF→CODE evidence only.
+
 ---
 Research-only. Verification gates for promotion unchanged.

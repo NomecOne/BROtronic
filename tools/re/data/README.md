@@ -42,6 +42,11 @@ curl -fsSL -o tools/re/data/cal_sheet.csv \
   "https://docs.google.com/spreadsheets/d/1VseRUjv0rCux27Zhj9VFZbR-7iODh_PXcO4c1uwBE7c/export?format=csv&gid=408706323"
 ```
 
+## Reference PDFs (local-only)
+
+Bosch / BMW PDFs live under `tools/re/docs/` (gitignored). Pointers + policy: **`tools/re/data/refs/README.md`**.  
+Structured extract: `tools/re/out/ref_pdf_bosch_m_motronic_technical_instruction.md`.
+
 ## Memory map reminder
 
 - CODE ISA: MCS-96 (`MCS96:LE:16:default`)

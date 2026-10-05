@@ -24,13 +24,14 @@ Richard’s note that Bosch published short “how it works / what is calculated
 
 | Item | Specificity | Access / URL |
 |------|-------------|--------------|
+| **LOCAL (Richard):** Robert Bosch GmbH, *M-Motronic Engine Management* — Gasoline-engine management **Technical Instruction**, 4th ed. Feb 2000 (68 pp.). File: `tools/re/docs/Bosch-M-Motronic-Technical-Instruction.pdf` (dup: `Bosch M-Motronic Engine Management 89403362.pdf`). | **PRIMARY M-Motronic family** (load/HFM → ti/zw) — not 3.3.1 CODE | Local-only; extract: [`tools/re/out/ref_pdf_bosch_m_motronic_technical_instruction.md`](ref_pdf_bosch_m_motronic_technical_instruction.md); pointer: `tools/re/data/refs/README.md` |
 | Robert Bosch GmbH, *Gasoline-engine management* (1999). Foreword states it **combines manuals from the Bosch “Technical instruction” range** for gasoline-engine management. Cover callout: “New: ME-Motronic.” | **General Motronic / ME-era** (not 3.3.1-specific) | https://archive.org/details/gasolineenginema0000unse_u1b4 — metadata: https://archive.org/metadata/gasolineenginema0000unse_u1b4 |
 | Robert Bosch GmbH, *Gasoline-engine management* (2006 ed.; Wiley). Cover: “New: bifuel-motronic” / “Systems and components.” | **General** (later than M3.3.1) | https://archive.org/details/gasolineenginema0000unse_d2u9 |
 | Robert Bosch GmbH, *Gasoline-engine management : basics and components* (2001), ~87 pp. Short “basics” booklet in the same family. | **General** short book | https://archive.org/details/gasolineenginema0000unse (ISBN 3934584489) |
 | Robert Bosch GmbH, *ME-Motronic engine management* (1999), Technical Instruction-style booklet. | **ME-Motronic** (successor architecture; useful for control *concepts*, not RedLabel CODE) | https://archive.org/details/isbn_3934584349 |
 | Open Library work records for the same titles | Bibliographic cross-check | https://openlibrary.org/works/OL18345832W |
 
-**Access note (research session):** Archive.org items above are **print-disabled / borrow-restricted**; full OCR download returned HTTP 401/403 from this environment. Citations below for *calculation equations inside those books* are therefore marked **HYPOTHESIS / book-family** unless a freely readable Bosch page is quoted.
+**Access note:** The **local M-Motronic Technical Instruction PDF** is now the preferred PRIMARY page-cited source for family load → injection/ignition math (see extract). Archive.org items remain useful for ME-era / combined handbooks but are often borrow-restricted.
 
 ### 1.2 Freely readable Bosch corporate text
 
@@ -116,19 +117,19 @@ From **PRIMARY** Bosch 2004 history text (explicit):
 2. **Ignition moment** (spark advance timing)
 3. Continuous recomputation from **sensor inputs vs stored program/data** (many discrete ignition possibilities stored)
 
-From **Bosch Technical Instruction / Gasoline-engine management book family** (standard Motronic teaching; treat equations as **HYPOTHESIS** until a page quote is attached, but these are the usual calculated intermediates):
+From **local Bosch M-Motronic Technical Instruction** (page-cited; still **family-level**, not RedLabel CODE-proven) — full extract: [`ref_pdf_bosch_m_motronic_technical_instruction.md`](ref_pdf_bosch_m_motronic_technical_instruction.md):
 
-| Quantity | Typical role | Notes |
-|----------|--------------|-------|
-| Air mass flow \(\dot{m}_L\) | From HFM transfer | Voltage → kg/h (or mg/stroke after /n) |
-| Relative load / air charge | Air per combustion cycle | Often normalized; RedLabel XDF presents load as **injection-time-scaled** |
-| Basic injection time \(t_i\) | Stoichiometric fuel for measured air | Scaled by injector constant |
-| Correction factors | Warm-up, accel, WOT, lambda, etc. | Multiplicative and/or additive |
-| Battery voltage correction | Injector opening delay | Additive time |
-| Ignition angle | Base map + corrections − knock | Degrees relative to TDC |
-| Dwell / coil charge time | Energy for spark | Voltage & RPM dependent |
-| Idle air setpoint / duty | Closed-loop idle | IAC / ZWD style actuator |
-| Lambda controller output | Closed-loop AFR | Enabled only in defined windows |
+| Quantity | Typical role | Notes / booklet cite |
+|----------|--------------|----------------------|
+| Air mass flow \(\dot{m}_L\) | From HFM / hot-wire / hot-film | kg/h; density-compensating thermal meters (pp. 28–30) |
+| Relative load / air charge | Air mass **per stroke** from load + speed | Addresses fuel duration + ign maps (p. 38); RedLabel XDF load is **injection-time-scaled** |
+| Basic injection time \(t_i\) | From load signal × **injector constant** | Base at λ=1 (p. 39) |
+| Correction factors | Warm-up, accel, WOT, lambda, transition, overrun cut, … | Stack in p. 38 Fig. 1 |
+| Battery voltage correction | Injector opening/closing time | p. 39 |
+| Ignition angle | Base map(load,rpm) + corrections − knock | p. 41 Fig. 4 |
+| Dwell / coil charge time | Energy for spark | f(Vbat, rpm) (p. 40) |
+| Idle air setpoint / duty | Closed-loop idle | Auxiliary function (pp. 18–19) |
+| Lambda controller output | Closed-loop AFR | Correction stage when active (p. 38) |
 
 **REPO alignment (RedLabel XDF):** “Inj. Constant Factor (Ti)” is described as a multiplication factor for **theoretical pulsewidth** when changing injectors/MAF; **all LOAD-axis tables must be rescaled** with it — strong evidence that this ECU’s “load” is **injection-time-referred**, consistent with air-mass Motronic practice.
 
@@ -275,16 +276,17 @@ Use these as search targets in MCS-96 listing / CFG (`tools/re/out/ghidra/`, `mc
 | H4 | Alpha-N map is MAF-fail limp load generator | **Strong REPO**; confirm fault path |
 | H5 | Full ME-Motronic / torque-structure features exist here | **Unlikely / do not assume** (ME books are later) |
 | H6 | EWS fuel lock present in this binary | **Unknown** |
-| H7 | Exact Bosch book equation \(t_i = \frac{m_L}{n}\cdot c_{\mathrm{inj}}\cdot\prod k_i + t_{\mathrm{bat}}\) | **Family HYPOTHESIS** — attach page cite when OCR available |
+| H7 | Base \(t_i\) from load signal + injector constant (λ=1), then correction stack + \(t_{\mathrm{bat}}\) | **PRIMARY cite** Bosch TI booklet pp. 38–39 — still **CODE-unproven** for RedLabel algebra |
 
 ---
 
 ## 7. Practical reading order for offline RE
 
-1. Bosch 2004 Motronic history page (intuition: sensors → injection + ignition).  
-2. Bibliographic Bosch Technical Instruction / *Gasoline-engine management* (family calculations — borrow locally if needed).  
+1. **Local** Bosch *M-Motronic* Technical Instruction PDF + [`ref_pdf_bosch_m_motronic_technical_instruction.md`](ref_pdf_bosch_m_motronic_technical_instruction.md) (load/HFM → ti/zw).  
+2. Bosch 2004 Motronic history page (short intuition: sensors → injection + ignition).  
 3. This repo XDF (`seed.xdf`) for **what tables exist on RedLabel**.  
-4. Ghidra MCS-96: prove CODE chains for MAF→load→ti and load→zw.
+4. Ghidra MCS-96: prove CODE chains for MAF→load→ti and load→zw.  
+5. Optional: local BMW VANOS product-info PDF under `tools/re/docs/` for application/cam context.
 
 ---
 
@@ -329,10 +331,9 @@ Prior ign/fuel “page-indexed” candidates are **retracted**. Real CAL reads l
 
 ## 8. Research session notes
 
-- Web search tool was unavailable in this subagent turn; discovery used Wikipedia API, Archive.org metadata/search, Crossref DOIs, Wayback Bosch history page, and local XDF/ingest.
-- Temporary fetch artifacts under `tools/re/out/_*` (if present) are scratch only and should not be treated as sources of truth.
-- **Best freely readable primary link found:** Bosch “25 years of Motronic” history text (Wayback URL in §1.2).  
-- **Best book-family primary targets:** Archive.org *Gasoline-engine management* (1999 combined Technical Instruction) + short *basics and components* (2001) + *ME-Motronic engine management* (1999).  
+- **Best local PRIMARY book:** `tools/re/docs/Bosch-M-Motronic-Technical-Instruction.pdf` (Richard drop; structured notes in `ref_pdf_*`).
+- Temporary OCR under `tools/re/out/_pdf_extract/` is scratch only (gitignored).
+- **Best freely readable web primary:** Bosch “25 years of Motronic” history text (Wayback URL in §1.2).  
 - **Best ECU-specific def evidence:** BRO XDF from NomecOne/BMW-DME-M3.3.1.
 
 ---

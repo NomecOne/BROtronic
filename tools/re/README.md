@@ -109,6 +109,7 @@ npm aliases: `npm run re:ingest`, `npm run re:annotate`, `npm run re:ghidra:dete
 | `tools/re/out/sfr_hso_hsi_audit.{json,md}` | HSO_COMMAND/HSO_TIME vs HSI_* R/W alias (cross_checked) |
 | `tools/re/out/cal_access_model.{json,md}` | CAL access model correction + proven-xref attempt |
 | `tools/re/out/motronic_331_function.md` | Motronic 3.3.1 MAF theory + §7 theory-vs-ROM |
+| `tools/re/out/ref_pdf_bosch_m_motronic_technical_instruction.md` | Page-cited extract from local Bosch M-Motronic TI PDF |
 | `tools/re/out/code_verification_progress.json` | CODE verification + engine-control coverage framing |
 | `tools/re/out/ghidra/*` | Canonical MCS-96 listing / functions / symbols |
 | `tools/re/out/ghidra/compare_x86_real/*` | Historical x86 reject only |

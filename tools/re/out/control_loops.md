@@ -110,6 +110,10 @@ Status: `partial_hypothesis` — **not** complete control.
 - `0x4D60` FUN_4d60 size=818
 - `0x6684` FUN_6684 size=753
 
+## Theory reference (Bosch M-Motronic TI)
+
+Family expected loops (load → ti / zw / dwell / lambda / idle) from local PDF — see [`ref_pdf_bosch_m_motronic_technical_instruction.md`](ref_pdf_bosch_m_motronic_technical_instruction.md) and [`motronic_331_function.md`](motronic_331_function.md). Use as theory-vs-ROM targets only; IRQ roles above remain CODE hypotheses.
+
 ## Open questions
 
 - Identify spark vs injector HSO/PORT bit assignments
