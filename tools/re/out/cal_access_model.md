@@ -25,11 +25,12 @@ Examples:
 
 | Metric | Count | % |
 |--------|------:|--:|
-| **Absolute CODE reads (ea → XDF)** | **31** | **44.93%** |
+| **Absolute CODE reads (ea → XDF)** | **68** | **98.55%** |
 | **Exclusive geometry** | **69** | **100.0%** |
+| Unproven absolute | **1** (`0xD23D`) | — |
 | Structural split-ptr in data island | 1 | 1.45% |
 
-44.93% absolute (31/69); exclusive 100% (69/69); FE14 CAL bases.
+98.55% absolute (68/69); exclusive 100% (69/69); leftover `0xD23D` (byte vs adjacent word).
 
 ## Proven absolute DATA reads (any DATA, not necessarily ign/fuel XDF)
 
@@ -68,7 +69,7 @@ CMP @0x4D60/0x481B is dual-config (CAL bases skip 0x4ECC RAM fill).
 2. **Ti `0xD030`:** `LD RW40,0x2e[RW68]` @0xAFC7; `DIVU …,0x2e,TABLE[RW68]` @0x9A82
 3. **Ign WOT `0xDD0F`:** `LD RW1A,#0x9A` @0x66EC → `0x20CD` → `[E67E+9A]=DD0D`
 
-**Coverage:** absolute **31/69** (44.93%); exclusive **69/69** (100%). D200/D978 remain retracted.
+**Coverage:** absolute **68/69** (98.55%); exclusive **69/69** (100%). Unproven absolute: `0xD23D` (no byte LOOKUP; adjacent word @`0xD23C`). D200/D978 remain retracted.
 
 See `theory_vs_rom_bosch_ti.md` / `register_bases_fe24.md` / `absolute_code_reads.json`.
 
