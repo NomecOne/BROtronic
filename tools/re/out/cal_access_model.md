@@ -25,11 +25,11 @@ Examples:
 
 | Metric | Count | % |
 |--------|------:|--:|
-| **Absolute CODE reads (ea → XDF)** | **31** | **44.93%** |
-| **Exclusive geometry** | **69** | **100.0%** |
+| **Ghidra-proven CODE read of XDF offset** | **0** | **0.0%** |
 | Structural split-ptr in data island | 1 | 1.45% |
+| Access path unresolved | 68 | — |
 
-44.93% absolute (31/69); exclusive 100% (69/69); FE14 CAL bases.
+0.0% proven CODE reads (0/69); 1 structural split-ptr (0xD030); page-index candidates retracted.
 
 ## Proven absolute DATA reads (any DATA, not necessarily ign/fuel XDF)
 
@@ -47,26 +47,30 @@ Examples:
 ## Index-base path — RETRACTED (v5)
 
 Prior `RW68=0xD200` / `RW6A=0xD978` “exclusive XDF geometry” claims are **false positives**.
-ROM-proven bases from FE24: `RW68=0x42EC`, `RW6A=0x43F0`, `RW6C=0x1A08`, `RW6E=0x1E08`.
 
-## Exclusive geometry (v6)
+## Addressing model (v9) — absolute unlock
 
-1. **Fuel Ti `0xD030`:** unique `D000|0030` @`0x432A` (RW68+0x3E/+0x40) + island↔CAL body twins
-2. **VANOS RPM axes (8):** signature `05060507…0860`
-3. **VANOS WOT dwell axes:** `0xD67C`/`0xD69E`
-4. **PT load axes (4):** fuel+ign `0xD9DA`/`DABA`/`DE7F`/`DF5F`
-5. **MAF `0xD290`:** unique BE↔LE twin of `0xD28E` (@FE18 / @D28E)
-6. **Ign idle timing/cold + fuel cold enrich + soft fuel cut** — signature/span/twin methods
+Loader `0x2EDB` loads **FE14** BE words (after FF-pad scan), **not FE24**:
 
-**Count: 46/69 exclusive geometry.** Absolute CODE reads still 0. D200/D978 remain retracted.
+| Reg | Value | Role |
+|-----|-------|------|
+| RW68 | `0xD002` | CAL page base (Ti `0xD030` = +0x2E) |
+| RW6A | `0xD106` | CAL sensor/limit base |
+| RW6C | `0xD28E` | MAF table base (body `0xD290` = +2) |
+| RW6E | `0xE67E` | CAL descriptor table (LE16 headers) |
 
-See `theory_vs_rom_bosch_ti.md` / `register_bases_fe24.md`.
+FE24 `42EC/43F0/1A08/1E08` is adjacent and **not** written into RW68–6E on this image.
+CMP @0x4D60/0x481B is dual-config (CAL bases skip 0x4ECC RAM fill).
 
-## Next to prove first *absolute* XDF CODE read
+### Priority absolute proofs
 
-1. Compose D000+|0030 from island and `[deref]` Ti content
-1. Trace one `0x20C7` interp call through `[RW4C]` to a `0xDxxx` pointer
-1. CODE-walk one VANOS RPM/load axis from the exclusive signature set
+1. **MAF `0xD290`:** ADC ISR `0xA53B` `ADD RW64,0x2[RW46]` with `RW46=RW6C+2·ADC`
+2. **Ti `0xD030`:** `LD RW40,0x2e[RW68]` @0xAFC7; `DIVU …,0x2e,TABLE[RW68]` @0x9A82
+3. **Ign WOT `0xDD0F`:** `LD RW1A,#0x9A` @0x66EC → `0x20CD` → `[E67E+9A]=DD0D`
+
+**Coverage:** absolute **31/69** (44.93%); exclusive **69/69** (100%). D200/D978 remain retracted.
+
+See `theory_vs_rom_bosch_ti.md` / `register_bases_fe24.md` / `absolute_code_reads.json`.
 
 ---
 Research-only. Verification gates unchanged. No shipping promotion.
