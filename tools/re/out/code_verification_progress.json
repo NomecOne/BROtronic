@@ -33,8 +33,9 @@
       "Trace descriptor slot 0xD0/0x30 after load (0x1566) to Ti/fuel map pointers",
       "Prove PT/WOT main fuel map body through [RW4C] after descriptor load",
       "Optional: deeper [RW4C] body walks for dwell/Alpha-N semantics",
-      "Engine control: absolute 69/69 (incl. D23D XDF-mislabel reconcile) \u2014 synthesize control-loop dataflow",
-      "Optional: retarget seed.xdf 0xD23D \u2192 0xD23C[16bit] before shipping promote"
+      "Optional: retarget seed.xdf 0xD23D \u2192 0xD23C[16bit] before shipping promote",
+      "Engine control: absolute 69/69 complete \u2014 deepen [RW4C] dwell/Alpha-N body walks",
+      "Optional: HSO/PORT bit assignment for spark vs injector"
     ]
   },
   "artifacts": [
@@ -65,6 +66,8 @@
       "tools/re/out/register_bases_fe24.md",
       "tools/re/out/register_bases_fe24.md",
       "tools/re/out/register_bases_fe24.md",
+      "tools/re/out/register_bases_fe24.md",
+      "tools/re/out/engine_control_dataflow_summary.md",
       "tools/re/out/register_bases_fe24.md",
       "tools/re/out/engine_control_dataflow_summary.md",
       "tools/re/out/register_bases_fe24.md",

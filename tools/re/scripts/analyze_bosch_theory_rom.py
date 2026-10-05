@@ -1520,6 +1520,7 @@ def patch_progress(doc):
         and "absolute>0 via FE14" not in f
         and "resolve leftover unprovenAbsolute" not in f
         and "absolute nearly complete" not in f
+        and "synthesize control-loop dataflow" not in f
     ]
     deduped.extend(
         [
