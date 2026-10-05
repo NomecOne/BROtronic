@@ -4,9 +4,11 @@
  * Naming: "C16x900A" in the ROM filename is the checksum fingerprint (0x900A),
  * not Siemens/Infineon C16x CPU evidence.
  *
- * Working policy (Richard): prefer user-stated 8086 analysis path unless binary/docs
- * evidence is stronger for another ISA — and always report conflicts with proof.
+ * Working policy: MCS-96 / 80C196-class is the locked CODE ISA.
+ * LJMP/LCALL use PC-relative disp16. Baseline CODE ends at 0xB930 inclusive.
  */
+
+import { MEM } from './romPaths.mjs';
 
 function countByte(buf, start, end, value) {
   let n = 0;
@@ -39,7 +41,7 @@ function scoreMcs96Ljmp(buf, start, end) {
     if (buf[i] !== 0xe7) continue;
     hits++;
     const tgt = le16(buf, i + 1);
-    if (tgt >= 0x2000 && tgt < 0x8000) inRange++;
+    if (tgt >= MEM.CODE_START && tgt <= MEM.CODE_END) inRange++;
   }
   return { hits, inRange };
 }
@@ -53,14 +55,14 @@ function score8086NearCall(buf, start, end) {
     hits++;
     const rel = (le16(buf, i + 1) << 16) >> 16; // sign-extend
     const tgt = (i + 3 + rel) & 0xffff;
-    if (tgt >= 0x2000 && tgt < 0x8000) inRange++;
+    if (tgt >= MEM.CODE_START && tgt <= MEM.CODE_END) inRange++;
   }
   return { hits, inRange };
 }
 
 export function probeIsa(buf) {
-  const codeStart = 0x2000;
-  const codeEnd = 0x8000;
+  const codeStart = MEM.CODE_START;
+  const codeEnd = MEM.CODE_END_EXCLUSIVE; // probe loops use exclusive end
   const firstNonFf = (() => {
     for (let i = 0; i < buf.length; i++) if (buf[i] !== 0xff) return i;
     return -1;
@@ -93,8 +95,8 @@ export function probeIsa(buf) {
     },
     {
       kind: 'memory_layout',
-      detail: `First non-0xFF byte at 0x${firstNonFf.toString(16).toUpperCase()}; shipping pack maps CODE 0x0000-0x7FFF / DATA 0x8000-0xFFFD. Bytes 0x0000-0x1FFF are erased (0xFF) in this external image.`,
-      sources: ['re_pipeline', 'brotronic_legacy'],
+      detail: `First non-0xFF byte at 0x${firstNonFf.toString(16).toUpperCase()}; baseline CODE 0x2000–0xB930 inclusive (Richard); DATA_CAL from 0xB931. Bytes 0x0000-0x1FFF erased in external image. Legacy shipping pack CODE≤0x7FFF is superseded for region labeling.`,
+      sources: ['re_pipeline', 'sheet'],
     },
     {
       kind: 'sheet_ida_note',
@@ -111,8 +113,8 @@ export function probeIsa(buf) {
     },
     {
       kind: 'mcs96_opcode_pattern',
-      detail: `In CODE window: opcode 0xE7 (MCS-96 LJMP) count=${ljmp.hits}, targets in 0x2000-0x7FFF=${ljmp.inRange}. Pad byte 0xFD count=${fdPad}; community sheet states 0xFD~=NOP and 0xFF~=reset - matches MCS-96 (NOP=0xFD, unimplemented/RST often 0xFF), not classic 8086 (NOP=0x90).`,
-      sources: ['re_pipeline', 'sheet'],
+      detail: `In CODE window: opcode 0xE7 (MCS-96 LJMP, PC-rel disp16) count=${ljmp.hits}; naive abs-in-window count=${ljmp.inRange} (use PC-rel CFG, not abs). Pad byte 0xFD count=${fdPad}; sheet: 0xFD~=NOP / 0xFF~=reset — matches MCS-96.`,
+      sources: ['re_pipeline', 'sheet', 'ghidra'],
     },
     {
       kind: '8086_opcode_pattern',
@@ -132,27 +134,26 @@ export function probeIsa(buf) {
     (pushBpFrame > 5 ? 2 : 0) +
     (nop90 > fdPad ? 1 : 0);
 
+  // Historical note only: early probe contrasted MCS-96 vs 8086. ISA is now locked.
   if (mcs96Score > i8086Score) {
     conflicts.push({
-      kind: 'isa_conflict',
+      kind: 'isa_locked',
       detail:
-        'Binary+sheet patterns currently favor Intel MCS-96 / 80C196-class markers (LJMP-like E7 abs16, FD pad~=NOP per sheet) over classic 8086 (no 55 8B EC prologues; 0x90 NOP rarer than 0xFD). Keep user-stated 8086 as first Ghidra language (x86:LE:16:Real Mode); confirm or reject via listing sanity - do not pick C16x from filename.',
+        'MCS-96 / 80C196-class is the locked CODE ISA (Richard confirmation + Ghidra MCS96:LE:16:default). x86 Real Mode remains historical reject only. LJMP/LCALL are PC-relative disp16 (see blocker1_ljmp_lcall.md). Do not pick C16x from filename.',
       preferredByEvidence: 'mcs96_80c196_family',
-      userStated: '8086',
+      lockedIsa: 'mcs96_80c196_family',
       scores: { mcs96Score, i8086Score },
     });
   }
 
   return {
-    verificationStatus: 'plausible',
-    userStatedIsa: '8086',
-    /**
-     * Analysis default for this offline pass: follow Richard's stated 8086 path for tooling,
-     * but do not treat it as verified — evidence currently leans MCS-96-class.
-     */
-    workingHypothesis: '8086',
-    evidencePreferredIsa: mcs96Score > i8086Score ? 'mcs96_80c196_family' : '8086',
-    confidence: mcs96Score > i8086Score ? 0.35 : 0.45,
+    verificationStatus: 'cross_checked',
+    userStatedIsa: 'mcs96_80c196_family',
+    workingHypothesis: 'mcs96_80c196_family',
+    evidencePreferredIsa: 'mcs96_80c196_family',
+    ghidraLanguageCanonical: 'MCS96:LE:16:default',
+    ghidraLanguageHistoricalReject: 'x86:LE:16:Real Mode',
+    confidence: 0.9,
     scores: { mcs96Score, i8086Score, ljmp, nearCall, fdPad, ffPad, nop90, pushBpFrame },
     firstNonFf,
     vectors,
@@ -160,8 +161,9 @@ export function probeIsa(buf) {
     conflicts,
     notes: [
       'Do not infer CPU from "C16x####" ROM naming — that is checksum16.',
-      'No IDA .i64/.idb checked into this repo; sheet references IDA views as external evidence. Canonical CODE path is now Ghidra (tools/re/ghidra).',
-      'Headless full disassembly requires Ghidra + JDK; default language attempt x86:LE:16:Real Mode — validate vs MCS-96 markers before trusting.',
+      'CODE ISA locked: MCS-96 / 80C196-class. Default Ghidra language MCS96:LE:16:default.',
+      'LJMP (E7) / LCALL (EF) use PC-relative disp16 per Intel MCS-96; Ghidra SLEIGH matches. CFG edges: tools/re/out/mcs96_cfg_edges.*',
+      'x86 Real Mode compare tree is historical only — do not re-evaluate as ISA candidate.',
     ],
   };
 }

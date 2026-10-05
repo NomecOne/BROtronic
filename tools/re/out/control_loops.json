@@ -1,0 +1,661 @@
+{
+  "schemaVersion": 1,
+  "id": "control_loops_v1",
+  "rom": "BMW DME413 SW623 D466.29 C16x900A 94 RedLabel.bin",
+  "isa": "mcs96_80c196_family",
+  "ghidraLanguage": "MCS96:LE:16:default",
+  "codeBounds": {
+    "start": 8192,
+    "endInclusive": 47408,
+    "dataStart": 47409
+  },
+  "disclaimer": "Loop roles are hypotheses grounded in Ghidra listing + PC-rel CFG. IRQ stub targets are cross_checked; semantic labels are not proven. Do not claim full engine control yet.",
+  "loops": [
+    {
+      "id": "boot_reset",
+      "kind": "boot",
+      "entryHex": "0x2080",
+      "path": [
+        "VECTOR_Reset @0x2080: TIMER1lo watchdog kick",
+        "spin until [0x4000]==0x5AA5",
+        "LJMP 0x4120 \u2192 LJMP 0x476B HW init (SP, IOS0/1, AD, HSI_*, PORT1/2)",
+        "LJMP 0x2097 \u2192 FUN_3679 RAM copy / integrity",
+        "eventually FUN_4815 \u2192 EI @0x491F"
+      ],
+      "evidenceStrength": "high",
+      "status": "hypothesized_with_strong_listing",
+      "openQuestions": [
+        "Exact order of post-EI foreground vs IRQ-driven work",
+        "Which RAM flags gate idle vs run"
+      ]
+    },
+    {
+      "id": "watchdog_kick",
+      "kind": "timed_safety",
+      "pattern": "LDB TIMER1lo,#0x1e ; LDB TIMER1lo,#-0x1f",
+      "sitesSample": [
+        "0x2080",
+        "0x36AE",
+        "0x4815",
+        "0x528B",
+        "0x916C"
+      ],
+      "evidenceStrength": "high",
+      "status": "proven_pattern",
+      "note": "Repeated across large functions; MCS-96 WDT service via TIMER1 lo writes."
+    },
+    {
+      "id": "trampoline_dispatch",
+      "kind": "foreground_dispatch",
+      "entryHex": "0x2094-0x20D3",
+      "note": "Dense LJMP trampoline table. 0x20C7 (fan-in 93 LCALLs) \u2192 0x33C2 table/interp helper; 0x20CD fan-in 31. Likely shared map-interp / service calls used by fuel+ign math.",
+      "hotTargets": [
+        {
+          "addr": 8391,
+          "addrHex": "0x20C7",
+          "fanIn": 93,
+          "listing": "LJMP 0x33c2"
+        },
+        {
+          "addr": 28521,
+          "addrHex": "0x6F69",
+          "fanIn": 38,
+          "listing": "LD RW58,#0x1038"
+        },
+        {
+          "addr": 28413,
+          "addrHex": "0x6EFD",
+          "fanIn": 36,
+          "listing": "LD RW58,#0x1038"
+        },
+        {
+          "addr": 8397,
+          "addrHex": "0x20CD",
+          "fanIn": 31,
+          "listing": "LJMP 0x343c"
+        },
+        {
+          "addr": 37228,
+          "addrHex": "0x916C",
+          "fanIn": 13,
+          "listing": "LDB TIMER1lo,#0x1e"
+        },
+        {
+          "addr": 11905,
+          "addrHex": "0x2E81",
+          "fanIn": 6,
+          "listing": "LDB R1C,#0x3"
+        }
+      ],
+      "evidenceStrength": "medium",
+      "status": "hypothesis"
+    },
+    {
+      "id": "foreground_run_init",
+      "kind": "foreground",
+      "entryHex": "0x4815",
+      "path": [
+        "FUN_4815: watchdog, PORT1/2 mirror, HSI_time sync loop (JBS IOS1.7)",
+        "INT_MASK load, clear INT_PEND, schedule HSI_status/HSI_time channels",
+        "EI @0x491F then RAM clear / state init (continues in FUN_4815 body)"
+      ],
+      "evidenceStrength": "medium",
+      "status": "hypothesis",
+      "openQuestions": [
+        "Locate tight idle spin vs cooperative task schedule after 0x4Axx",
+        "Map LCALL 0x20C7 sites in this function to which cal pages"
+      ]
+    },
+    {
+      "id": "irq_vector_bank",
+      "kind": "interrupt",
+      "entryHex": "0x2000 vectors \u2192 0x4178 stubs",
+      "siteCount": 8,
+      "sitesInsideCode": 8,
+      "handlers": [
+        {
+          "id": "vec0_stub",
+          "vectorIndex": 0,
+          "vectorAddrHex": "0x2000",
+          "stubAddrHex": "0x4178",
+          "stubPrologue": "PUSHF",
+          "landingAddrHex": "0xA479",
+          "landingInsns": [
+            {
+              "addr": 42105,
+              "addrHex": "0xA479",
+              "insn": "LDB R5C,R9E"
+            },
+            {
+              "addr": 42108,
+              "addrHex": "0xA47C",
+              "insn": "XORB R5C,IOS0"
+            },
+            {
+              "addr": 42111,
+              "addrHex": "0xA47F",
+              "insn": "JBC RA8,0x3,0xa48a"
+            },
+            {
+              "addr": 42114,
+              "addrHex": "0xA482",
+              "insn": "JBC R5C,0x0,0xa48a"
+            },
+            {
+              "addr": 42117,
+              "addrHex": "0xA485",
+              "insn": "ORB INT_PEND,#0x1"
+            },
+            {
+              "addr": 42120,
+              "addrHex": "0xA488",
+              "insn": "SJMP 0xa49c"
+            }
+          ],
+          "verificationStatus": "cross_checked",
+          "hypothesis": "ios0_edge_timer_tick",
+          "evidenceStrength": "medium",
+          "hypothesisSummary": "IOS0 XOR edge; may set INT_PEND bit0 / bump RW7A; POPF+RET. Candidate timer/port edge ISR."
+        },
+        {
+          "id": "vec1_stub",
+          "vectorIndex": 1,
+          "vectorAddrHex": "0x2002",
+          "stubAddrHex": "0x417C",
+          "stubPrologue": "NOP",
+          "landingAddrHex": "0xA4A9",
+          "landingInsns": [
+            {
+              "addr": 42153,
+              "addrHex": "0xA4A9",
+              "insn": "RET"
+            },
+            {
+              "addr": 42154,
+              "addrHex": "0xA4AA",
+              "insn": "ORB R9F,IOS1"
+            },
+            {
+              "addr": 42157,
+              "addrHex": "0xA4AD",
+              "insn": "JBS R9F,0x0,0xa4b2"
+            },
+            {
+              "addr": 42160,
+              "addrHex": "0xA4B0",
+              "insn": "SJMP 0xa55a"
+            },
+            {
+              "addr": 42162,
+              "addrHex": "0xA4B2",
+              "insn": "LDB AD_resultlo,#0x8"
+            },
+            {
+              "addr": 42165,
+              "addrHex": "0xA4B5",
+              "insn": "LDB HSI_status,#0x18"
+            }
+          ],
+          "verificationStatus": "cross_checked",
+          "hypothesis": "unused_or_spurious_ret",
+          "evidenceStrength": "high",
+          "hypothesisSummary": "Landing is bare RET @0xA4A9 (same as vec4). Likely unused vector."
+        },
+        {
+          "id": "vec2_stub",
+          "vectorIndex": 2,
+          "vectorAddrHex": "0x2004",
+          "stubAddrHex": "0x4180",
+          "stubPrologue": "PUSHF",
+          "landingAddrHex": "0xA88E",
+          "landingInsns": [
+            {
+              "addr": 43150,
+              "addrHex": "0xA88E",
+              "insn": "ORB R9F,IOS1"
+            },
+            {
+              "addr": 43153,
+              "addrHex": "0xA891",
+              "insn": "JBC R9F,0x7,0xa8cb"
+            },
+            {
+              "addr": 43156,
+              "addrHex": "0xA894",
+              "insn": "JBS RA8,0x3,0xa8cd"
+            },
+            {
+              "addr": 43159,
+              "addrHex": "0xA897",
+              "insn": "JBS RBF,0x1,0xa8cb"
+            },
+            {
+              "addr": 43162,
+              "addrHex": "0xA89A",
+              "insn": "LD RW92,HSI_time"
+            },
+            {
+              "addr": 43165,
+              "addrHex": "0xA89D",
+              "insn": "ANDB R9F,#0x3f"
+            }
+          ],
+          "verificationStatus": "cross_checked",
+          "hypothesis": "hsi_capture_crank_cam",
+          "evidenceStrength": "high",
+          "hypothesisSummary": "FUN_a88e: ORB IOS1, read HSI_time repeatedly, TIMER2 store, period math into RAM. Strong candidate crank/cam HSI ISR."
+        },
+        {
+          "id": "vec3_stub",
+          "vectorIndex": 3,
+          "vectorAddrHex": "0x2006",
+          "stubAddrHex": "0x4184",
+          "stubPrologue": "PUSHF",
+          "landingAddrHex": "0xA640",
+          "landingInsns": [
+            {
+              "addr": 42560,
+              "addrHex": "0xA640",
+              "insn": "LDB RA1,R9E"
+            },
+            {
+              "addr": 42563,
+              "addrHex": "0xA643",
+              "insn": "LDB R9E,IOS0"
+            },
+            {
+              "addr": 42566,
+              "addrHex": "0xA646",
+              "insn": "XORB RA1,R9E"
+            },
+            {
+              "addr": 42569,
+              "addrHex": "0xA649",
+              "insn": "JBC RA1,0x0,0xa654"
+            },
+            {
+              "addr": 42572,
+              "addrHex": "0xA64C",
+              "insn": "STB ZRlo,0x18a6, LOOKUP[ZR]"
+            },
+            {
+              "addr": 42577,
+              "addrHex": "0xA651",
+              "insn": "LJMP 0x4145"
+            }
+          ],
+          "verificationStatus": "cross_checked",
+          "hypothesis": "ios0_state_machine",
+          "evidenceStrength": "medium",
+          "hypothesisSummary": "XOR IOS0 into RA1; conditional STB + LJMP into trampoline table (0x4145\u2026). Candidate I/O edge / synch state ISR."
+        },
+        {
+          "id": "vec4_stub",
+          "vectorIndex": 4,
+          "vectorAddrHex": "0x2008",
+          "stubAddrHex": "0x4188",
+          "stubPrologue": "NOP",
+          "landingAddrHex": "0xA4A9",
+          "landingInsns": [
+            {
+              "addr": 42153,
+              "addrHex": "0xA4A9",
+              "insn": "RET"
+            },
+            {
+              "addr": 42154,
+              "addrHex": "0xA4AA",
+              "insn": "ORB R9F,IOS1"
+            },
+            {
+              "addr": 42157,
+              "addrHex": "0xA4AD",
+              "insn": "JBS R9F,0x0,0xa4b2"
+            },
+            {
+              "addr": 42160,
+              "addrHex": "0xA4B0",
+              "insn": "SJMP 0xa55a"
+            },
+            {
+              "addr": 42162,
+              "addrHex": "0xA4B2",
+              "insn": "LDB AD_resultlo,#0x8"
+            },
+            {
+              "addr": 42165,
+              "addrHex": "0xA4B5",
+              "insn": "LDB HSI_status,#0x18"
+            }
+          ],
+          "verificationStatus": "cross_checked",
+          "hypothesis": "unused_or_spurious_ret",
+          "evidenceStrength": "high",
+          "hypothesisSummary": "Same bare RET @0xA4A9 as vec1."
+        },
+        {
+          "id": "vec5_stub",
+          "vectorIndex": 5,
+          "vectorAddrHex": "0x200A",
+          "stubAddrHex": "0x418C",
+          "stubPrologue": "PUSHF",
+          "landingAddrHex": "0xA4AA",
+          "landingInsns": [
+            {
+              "addr": 42154,
+              "addrHex": "0xA4AA",
+              "insn": "ORB R9F,IOS1"
+            },
+            {
+              "addr": 42157,
+              "addrHex": "0xA4AD",
+              "insn": "JBS R9F,0x0,0xa4b2"
+            },
+            {
+              "addr": 42160,
+              "addrHex": "0xA4B0",
+              "insn": "SJMP 0xa55a"
+            },
+            {
+              "addr": 42162,
+              "addrHex": "0xA4B2",
+              "insn": "LDB AD_resultlo,#0x8"
+            },
+            {
+              "addr": 42165,
+              "addrHex": "0xA4B5",
+              "insn": "LDB HSI_status,#0x18"
+            },
+            {
+              "addr": 42168,
+              "addrHex": "0xA4B8",
+              "insn": "ADD RW86,#0x1f4"
+            }
+          ],
+          "verificationStatus": "cross_checked",
+          "hypothesis": "adc_hsi_schedule",
+          "evidenceStrength": "medium",
+          "hypothesisSummary": "ORB IOS1; AD_resultlo write; HSI_status/HSI_time schedule (+0x1F4). Candidate ADC-complete / timed sample ISR."
+        },
+        {
+          "id": "vec6_stub",
+          "vectorIndex": 6,
+          "vectorAddrHex": "0x200C",
+          "stubAddrHex": "0x4190",
+          "stubPrologue": "PUSHF",
+          "landingAddrHex": "0x20AF",
+          "landingInsns": [
+            {
+              "addr": 8367,
+              "addrHex": "0x20AF",
+              "insn": "LJMP 0x2eaa"
+            },
+            {
+              "addr": 8370,
+              "addrHex": "0x20B2",
+              "insn": "LJMP 0x2269"
+            },
+            {
+              "addr": 8373,
+              "addrHex": "0x20B5",
+              "insn": "LJMP 0x2edb"
+            },
+            {
+              "addr": 8376,
+              "addrHex": "0x20B8",
+              "insn": "LJMP 0x2f38"
+            },
+            {
+              "addr": 8379,
+              "addrHex": "0x20BB",
+              "insn": "LJMP 0x35a8"
+            },
+            {
+              "addr": 8382,
+              "addrHex": "0x20BE",
+              "insn": "LJMP 0x3aae"
+            }
+          ],
+          "verificationStatus": "cross_checked",
+          "hypothesis": "serial_sbuf",
+          "evidenceStrength": "medium",
+          "hypothesisSummary": "Stub \u2192 0x20AF \u2192 FUN_2eaa: SBUF/SP_STAT path with POPF+RET. Candidate SCI/diagnostic IRQ."
+        },
+        {
+          "id": "vec7_stub",
+          "vectorIndex": 7,
+          "vectorAddrHex": "0x200E",
+          "stubAddrHex": "0x4194",
+          "stubPrologue": "PUSHF",
+          "landingAddrHex": "0xA49E",
+          "landingInsns": [
+            {
+              "addr": 42142,
+              "addrHex": "0xA49E",
+              "insn": "INCB RDB"
+            },
+            {
+              "addr": 42144,
+              "addrHex": "0xA4A0",
+              "insn": "JC 0xa4a4"
+            },
+            {
+              "addr": 42146,
+              "addrHex": "0xA4A2",
+              "insn": "POPF"
+            },
+            {
+              "addr": 42147,
+              "addrHex": "0xA4A3",
+              "insn": "RET"
+            },
+            {
+              "addr": 42148,
+              "addrHex": "0xA4A4",
+              "insn": "LDB RDB,#-0x1"
+            },
+            {
+              "addr": 42151,
+              "addrHex": "0xA4A7",
+              "insn": "POPF"
+            }
+          ],
+          "verificationStatus": "cross_checked",
+          "hypothesis": "counter_overflow_helper",
+          "evidenceStrength": "medium",
+          "hypothesisSummary": "INCB RDB with saturate; POPF+RET. Small helper ISR / soft counter."
+        }
+      ],
+      "evidenceStrength": "high",
+      "status": "cross_checked_targets_hypothesized_roles"
+    },
+    {
+      "id": "hso_schedule_outputs",
+      "kind": "output_path",
+      "note": "Listing shows many LDB HSI_status,#imm + LD/ADD HSI_time sequences and PORT1/PORT2 stores. On 80C196, spark/injector pulses are often HSO-scheduled; Ghidra may be naming HSO command/time as HSI_*. Treat as output-scheduling hypothesis until SFR map is confirmed.",
+      "counts": {
+        "HSI_statusRefs": 37,
+        "HSI_timeRefs": 49,
+        "PORT1Refs": 53,
+        "PORT2Refs": 26
+      },
+      "evidenceStrength": "low",
+      "status": "hypothesis",
+      "openQuestions": [
+        "Confirm SFR addresses for HSO_COMMAND / HSO_TIME vs HSI_* in this Ghidra language",
+        "Which channel bits fire coil vs injectors"
+      ]
+    },
+    {
+      "id": "map_interp_helper",
+      "kind": "shared_runtime",
+      "entryHex": "0x33C2",
+      "note": "Reached via trampoline 0x20C7. Body does pointer chase + DJNZ accumulate \u2014 classic axis/map interpolate. Not ignition/fuel specific; shared by many LCALL sites.",
+      "evidenceStrength": "medium",
+      "status": "hypothesis"
+    }
+  ],
+  "cfgSummary": {
+    "pcRelEdgeCount": 483,
+    "topFanInTargets": [
+      {
+        "addr": 8391,
+        "addrHex": "0x20C7",
+        "fanIn": 93,
+        "listing": "LJMP 0x33c2"
+      },
+      {
+        "addr": 28521,
+        "addrHex": "0x6F69",
+        "fanIn": 38,
+        "listing": "LD RW58,#0x1038"
+      },
+      {
+        "addr": 28413,
+        "addrHex": "0x6EFD",
+        "fanIn": 36,
+        "listing": "LD RW58,#0x1038"
+      },
+      {
+        "addr": 8397,
+        "addrHex": "0x20CD",
+        "fanIn": 31,
+        "listing": "LJMP 0x343c"
+      },
+      {
+        "addr": 37228,
+        "addrHex": "0x916C",
+        "fanIn": 13,
+        "listing": "LDB TIMER1lo,#0x1e"
+      },
+      {
+        "addr": 11905,
+        "addrHex": "0x2E81",
+        "fanIn": 6,
+        "listing": "LDB R1C,#0x3"
+      },
+      {
+        "addr": 16684,
+        "addrHex": "0x412C",
+        "fanIn": 6,
+        "listing": "LJMP 0x20b5"
+      },
+      {
+        "addr": 26741,
+        "addrHex": "0x6875",
+        "fanIn": 6,
+        "listing": "JBS RB6,0x2,0x6895"
+      },
+      {
+        "addr": 30203,
+        "addrHex": "0x75FB",
+        "fanIn": 6,
+        "listing": "ST RW1C,0x15f6, TABLE[ZR]"
+      },
+      {
+        "addr": 37025,
+        "addrHex": "0x90A1",
+        "fanIn": 6,
+        "listing": "STB R1D,0x1447, LOOKUP[ZR]"
+      },
+      {
+        "addr": 16757,
+        "addrHex": "0x4175",
+        "fanIn": 5,
+        "listing": "LJMP 0x6efd"
+      },
+      {
+        "addr": 20459,
+        "addrHex": "0x4FEB",
+        "fanIn": 5,
+        "listing": "LD RW1C,#0xffff"
+      }
+    ]
+  },
+  "largestFunctions": [
+    {
+      "entryHex": "0xAB11",
+      "name": "FUN_ab11",
+      "bodySize": 3626
+    },
+    {
+      "entryHex": "0x528B",
+      "name": "FUN_528b",
+      "bodySize": 1924
+    },
+    {
+      "entryHex": "0x916C",
+      "name": "FUN_916c",
+      "bodySize": 1417
+    },
+    {
+      "entryHex": "0x4815",
+      "name": "FUN_4815",
+      "bodySize": 1355
+    },
+    {
+      "entryHex": "0x7A5B",
+      "name": "FUN_7a5b",
+      "bodySize": 1206
+    },
+    {
+      "entryHex": "0x7387",
+      "name": "FUN_7387",
+      "bodySize": 1148
+    },
+    {
+      "entryHex": "0x612B",
+      "name": "FUN_612b",
+      "bodySize": 1141
+    },
+    {
+      "entryHex": "0x96F5",
+      "name": "FUN_96f5",
+      "bodySize": 1137
+    },
+    {
+      "entryHex": "0x5C46",
+      "name": "FUN_5c46",
+      "bodySize": 1120
+    },
+    {
+      "entryHex": "0xA0F6",
+      "name": "FUN_a0f6",
+      "bodySize": 899
+    },
+    {
+      "entryHex": "0x4D60",
+      "name": "FUN_4d60",
+      "bodySize": 818
+    },
+    {
+      "entryHex": "0x6684",
+      "name": "FUN_6684",
+      "bodySize": 753
+    }
+  ],
+  "endToEndControlSketch": {
+    "status": "partial_hypothesis",
+    "steps": [
+      "Sensors/IRQ: HSI capture (vec2) + ADC schedule (vec5) + IOS edges update RAM timestamps/flags",
+      "Foreground: FUN_4815+ tasks LCALL trampolines (0x20C7 interp) using page-indexed CAL in 0xDxxx\u20130xExxx",
+      "Outputs: HSI_*/PORT1/PORT2 writes schedule or drive actuators (spark/fuel unproven which bits)",
+      "Safety: TIMER1lo watchdog kicks throughout; soft/hard fuel cut scalars in XDF (CODE path TBD)"
+    ]
+  },
+  "openQuestions": [
+    "Identify spark vs injector HSO/PORT bit assignments",
+    "Trace MAF table 0xD290 through page 0xD2 loads into final Ti / inj pulse",
+    "Trace ign WOT/PT maps 0xDD27/0xDDA1/0xDE8B/0xDF6B to dwell/advance output",
+    "Idle vs run mode flag(s) in RAM (candidates near 0x13ea test in FUN_4815)",
+    "Promote any item to ghidraProven only after full address operand or proven index base"
+  ],
+  "nextSteps": [
+    "Deep-trace IRQ vec2 (0xA88E) and vec5 (0xA4AA) to RAM variables they publish",
+    "Build page-index resolver: when CODE loads 0xD0/D7/\u2026, follow ZR/RW until table base lands on XDF offset",
+    "SFR audit: dump Ghidra MCS96 register map for HSO vs HSI naming at used addresses",
+    "From FUN_4815 post-EI, enumerate LCALL 0x20C7 call sites and preceding page loads",
+    "For each ignition timing + fueling XDF table, find exclusive page+index path (not just page hit)"
+  ],
+  "shippingNote": "Research-only. Verification gates for promotion unchanged."
+}

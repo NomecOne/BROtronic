@@ -11,7 +11,11 @@ import { DATA_DIR, OUT_DIR, ROM_NAME, ROM_PATH, EXPECTED_SUM16, ensureOutDirs, r
 import { probeIsa } from './lib/isaProbe.mjs';
 import { classifyRom } from './lib/byteClassifier.mjs';
 import { structuralCodePass } from './lib/structuralPass.mjs';
-import { ghidraStatusSummary, loadGhidraFunctions } from './lib/ghidraImport.mjs';
+import {
+  ghidraStatusSummary,
+  loadGhidraFunctions,
+  loadGhidraInstructionAddresses,
+} from './lib/ghidraImport.mjs';
 
 function writeJson(filePath, obj) {
   fs.writeFileSync(filePath, JSON.stringify(obj, null, 2) + '\n', 'utf8');
@@ -89,7 +93,8 @@ function buildGapReport({ isa, classification, structural, sum16, romName, ghidr
   } else {
     lines.push(`- ${ghidra?.detail ?? 'Run tools/re/ghidra/run_headless.ps1 after installing Ghidra+JDK'}`);
   }
-  lines.push('- Default language attempt: `x86:LE:16:Real Mode` (user-stated 8086 interest).');
+  lines.push('- Locked language: `MCS96:LE:16:default` (MCS-96 / 80C196-class).');
+  lines.push('- LJMP/LCALL: PC-relative `disp16` — see `blocker1_ljmp_lcall.md` / `mcs96_cfg_edges.*`.');
   lines.push('- Filename `C16x900A` is **CS16=0x900A only** — never select a C166/C167 language from it.');
   lines.push('');
   lines.push('## Gap list (coarse CODE + UNKNOWN)');
@@ -105,9 +110,9 @@ function buildGapReport({ isa, classification, structural, sum16, romName, ghidr
   lines.push('');
   lines.push('## Blockers');
   lines.push('');
-  lines.push('- ISA not locked: binary+sheet markers lean MCS-96/80C196-class vs user-stated 8086 — confirm with Ghidra listing sanity + MCU docs.');
-  lines.push('- Ghidra+JDK must be installed and `GHIDRA_INSTALL_DIR` set before headless CODE export.');
-  lines.push('- CODE bytes are region-labeled but not instruction-verified until Ghidra exports land under `tools/re/out/ghidra/`; do not promote CODE-derived maps to shipping.');
+  lines.push('- Blocker 1 (LJMP/LCALL addressing) **resolved**: PC-relative; Ghidra SLEIGH correct (`blocker1_ljmp_lcall.md`).');
+  lines.push('- Baseline CODE ends at **0xB930 inclusive**; DATA_CAL starts at 0xB931. IRQ `0xAxxx` landings are inside CODE.');
+  lines.push('- Mid-CODE data islands (XDF claims / pads) still need separation; do not promote CODE-derived maps to shipping.');
   lines.push('');
   return lines.join('\n');
 }
@@ -126,11 +131,16 @@ function main() {
   const xdfText = fs.existsSync(xdfPath) ? fs.readFileSync(xdfPath, 'utf8') : '';
 
   const isa = probeIsa(buf);
-  const classification = classifyRom(buf, { xdfText });
-  const structural = structuralCodePass(buf);
   const ghidraOut = path.join(OUT_DIR, 'ghidra');
   const ghidra = ghidraStatusSummary(ghidraOut);
   const ghidraFns = loadGhidraFunctions(ghidraOut);
+  const ghidraInsns = loadGhidraInstructionAddresses(ghidraOut);
+  const classification = classifyRom(buf, {
+    xdfText,
+    ghidraInsnAddrs: ghidraInsns?.addresses ?? [],
+    ghidraLanguage: ghidra?.language ?? null,
+  });
+  const structural = structuralCodePass(buf);
 
   const artifact = {
     schemaVersion: 1,
@@ -144,17 +154,54 @@ function main() {
     generatedAt: new Date().toISOString(),
     isa,
     memoryMapHypothesis: [
-      { name: 'LOW_PAD_OR_INTERNAL_HOLE', start: 0, end: 0x1fff, kind: 'PAD', confidence: 0.9 },
-      { name: 'VECTOR_0x2000', start: 0x2000, end: 0x200f, kind: 'VECTOR', confidence: 0.7 },
-      { name: 'CODE_WINDOW', start: 0x2000, end: 0x7fff, kind: 'CODE', confidence: 0.55 },
-      { name: 'DATA_CAL', start: 0x8000, end: 0xfffd, kind: 'DATA', confidence: 0.85 },
-      { name: 'CS16_TRAIL', start: 0xfffe, end: 0xffff, kind: 'OTHER', confidence: 0.95 },
+      {
+        name: 'LOW_PAD_OR_INTERNAL_HOLE',
+        start: 0,
+        end: 0x1fff,
+        kind: 'PAD',
+        confidence: 0.9,
+        endInclusive: true,
+      },
+      {
+        name: 'VECTOR_0x2000',
+        start: 0x2000,
+        end: 0x200f,
+        kind: 'VECTOR',
+        confidence: 0.7,
+        endInclusive: true,
+      },
+      {
+        name: 'CODE_WINDOW',
+        start: 0x2000,
+        end: 0xb930,
+        kind: 'CODE',
+        confidence: 0.75,
+        endInclusive: true,
+        note: 'Baseline CODE through 0xB930 inclusive (Richard RedLabel 413/623).',
+      },
+      {
+        name: 'DATA_CAL',
+        start: 0xb931,
+        end: 0xfffd,
+        kind: 'DATA',
+        confidence: 0.85,
+        endInclusive: true,
+      },
+      {
+        name: 'CS16_TRAIL',
+        start: 0xfffe,
+        end: 0xffff,
+        kind: 'OTHER',
+        confidence: 0.95,
+        endInclusive: true,
+      },
     ],
     coverage: {
       classifiedBytes: classification.classifiedBytes,
       unknownBytes: classification.unknownBytes,
       classifiedPct: classification.classifiedPct,
       byRegion: classification.byRegion,
+      memoryMap: classification.memoryMap,
     },
     runs: classification.runs,
     gaps: classification.gaps,

@@ -1,0 +1,542 @@
+{
+  "schemaVersion": 1,
+  "id": "register_bases_fe24_v1",
+  "rom": "BMW DME413 SW623 D466.29 C16x900A 94 RedLabel.bin",
+  "structAt": "0xFE14",
+  "layout": "LDB Rhi,-off-1[RW1C]; LDB Rlo,-off[RW1C] (hi byte at lower addr)",
+  "words": {
+    "RW68": "0xD002",
+    "RW6A": "0xD106",
+    "RW6C": "0xD28E",
+    "RW6E": "0xE67E"
+  },
+  "roles": {
+    "RW68": "CAL page base (Ti 0xD030 = +0x2E)",
+    "RW6A": "CAL sensor/limit base",
+    "RW6C": "MAF table base (body 0xD290 = +2)",
+    "RW6E": "CAL descriptor table (LE16 map headers)"
+  },
+  "loader": {
+    "loader": "0x2EDB via trampoline 0x20B5 / LCALL 0x412C",
+    "scanStart": "0xFE33 from TABLE[ZR]@0x40B4",
+    "ffPadBlock": "0xFE04..0xFE13",
+    "loadedFrom": "0xFE14",
+    "basePtrAfterAdd": "0xFE23",
+    "words": {
+      "RW68": "0xD002",
+      "RW6A": "0xD106",
+      "RW6C": "0xD28E",
+      "RW6E": "0xE67E"
+    },
+    "roles": {
+      "RW68": "CAL page base (Ti 0xD030 = +0x2E)",
+      "RW6A": "CAL sensor/limit base",
+      "RW6C": "MAF table base (body 0xD290 = +2)",
+      "RW6E": "CAL descriptor table (LE16 map headers)"
+    }
+  },
+  "fe24AdjacentNotLoaded": {
+    "structAt": "0xFE24",
+    "words": {
+      "RW68": "0x42EC",
+      "RW6A": "0x43F0",
+      "RW6C": "0x1A08",
+      "RW6E": "0x1E08"
+    },
+    "note": "Adjacent BE quadruplet after FE14 CAL bases. Not written into RW68\u2013RW6E by 0x2EDB on this image. 0x1A08/0x1E08 are also hardcoded RAM clear/fill targets at 0x4ECC when RW6E==0x1E08."
+  },
+  "cmpCrossCheck": {
+    "RW6C": "CMP RW6C,#0x1a08 @0x4D60 (dual-config: CAL\u22601A08 continues)",
+    "RW6E": "CMP RW6E,#0x1e08 @0x481B/0x4D66 (skip 0x4ECC fill when \u2260)",
+    "note": "With FE14 CAL bases, descriptor RAM fill @0x4ECC is skipped; interp uses ROM table at RW6E=0xE67E."
+  },
+  "uniqueInRom": true,
+  "retraction": {
+    "retractedClaims": [
+      {
+        "claim": "RW68=0xD200 index-base cross_checked for 13 MAF/sensor XDF items",
+        "reason": "False positive: offsets under RW68 land in CODE island 0x42EC+, not CAL 0xD200+. CMP RW24,0x3e[RW68] reads island word 0xD000, not MAF high limit at 0xD23E."
+      },
+      {
+        "claim": "RW6A=0xD978 exclusive geometry for 6 fuel PT/WOT axis XDF items",
+        "reason": "False positive: RW6A=0x43F0 island holds small fault/descriptor indices (e.g. +0x2E \u2192 0x0006), not CAL addresses. Same sites feed LCALL 0x6efd/0x6f69 fault packaging."
+      }
+    ],
+    "scratchRegExclusivesAlsoRejected": "RW24/RW20/RW38 \u2018exclusive\u2019 ign geometries rejected \u2014 those regs are scratch (e.g. ADD RW24,RW6A,#imm; LD RW38,RW6C)."
+  },
+  "tiStructural": {
+    "target": "0xD030",
+    "xdfName": "Inj. Constant(Ti)",
+    "domain": "fuel",
+    "runtimeEa": "RW68+0x2E = 0xD030 (RW68=0xD002)",
+    "pageWordAt": "0xD040 (RW68+0x3E) = 0xD000",
+    "offsetWordAt": "island 0x432C = 0x0030 (exclusive twin; not runtime +0x40)",
+    "composed": "0xD030",
+    "exclusiveSplitPattern": "00D03000 unique @0x432A",
+    "exclusiveBodyTwins": {
+      "90655046": [
+        "0x431C (island)",
+        "0xD032 (CAL)"
+      ],
+      "0080c05d00000020": [
+        "0x4322 (island)",
+        "0xD038 (CAL)"
+      ]
+    },
+    "codeReadsContentVia": [
+      {
+        "siteHex": "0x9A82",
+        "insn": "DIVU RL1C,0x2e, TABLE[RW68]",
+        "reads": "0xD030",
+        "absolute": true
+      },
+      {
+        "siteHex": "0xAFC7",
+        "insn": "LD RW40,0x2e[RW68]",
+        "reads": "0xD030",
+        "absolute": true
+      }
+    ],
+    "codeReadsPageVia": [
+      {
+        "siteHex": "0x8B13",
+        "insn": "CMP RW24,0x3e, TABLE[RW68]",
+        "reads": "0xD000@D040",
+        "absolute": false
+      },
+      {
+        "siteHex": "0x8C17",
+        "insn": "CMP RW1C,0x3e, TABLE[RW68]",
+        "reads": "0xD000@D040",
+        "absolute": false
+      },
+      {
+        "siteHex": "0x8C2E",
+        "insn": "CMP RW1C,0x3e, TABLE[RW68]",
+        "reads": "0xD000@D040",
+        "absolute": false
+      }
+    ],
+    "codeReadsOffsetVia": [],
+    "contentDerefProven": true,
+    "exclusiveGeometry": true,
+    "note": "Absolute: LD/DIVU at RW68+0x2E \u2192 0xD030 (injector constant). Exclusive island D000|0030 @0x432A + body twins retained.",
+    "evidenceStrength": "high_absolute_plus_exclusive"
+  },
+  "vanosRpmAxisExclusive": {
+    "id": "vanos_rpm_axis_sig_v1",
+    "method": "signature_axis",
+    "signatureHex": "050605070a05070b0909090f12130860",
+    "signatureLen": 16,
+    "exclusiveLocations": [
+      "0xD984",
+      "0xD9A6",
+      "0xD9C8",
+      "0xDAA8",
+      "0xDD0F",
+      "0xDD89",
+      "0xDE6D",
+      "0xDF4D"
+    ],
+    "offsets": [
+      55684,
+      55718,
+      55752,
+      55976,
+      56591,
+      56713,
+      56941,
+      57165
+    ],
+    "count": 8,
+    "fuelAxes": [
+      {
+        "offset": 55684,
+        "offsetHex": "0xD984",
+        "name": "0xD984 RPM axis for Fuel, WOT, Vanos retarded",
+        "category": null,
+        "domain": "fuel"
+      },
+      {
+        "offset": 55718,
+        "offsetHex": "0xD9A6",
+        "name": "0xD9A6 RPM axis for Fuel, WOT, Vanos advanced",
+        "category": null,
+        "domain": "fuel"
+      },
+      {
+        "offset": 55752,
+        "offsetHex": "0xD9C8",
+        "name": "0xD9C8 RPM axis for Fuel, PT, Vanos retarded",
+        "category": null,
+        "domain": "fuel"
+      },
+      {
+        "offset": 55976,
+        "offsetHex": "0xDAA8",
+        "name": "0xDAA8 RPM axis for Fuel, PT, Vanos advanced",
+        "category": null,
+        "domain": "fuel"
+      }
+    ],
+    "ignitionAxes": [
+      {
+        "offset": 56591,
+        "offsetHex": "0xDD0F",
+        "name": "0xDD0F RPM axis for Ignition, WOT, Vanos retarded",
+        "category": null,
+        "domain": "ignition"
+      },
+      {
+        "offset": 56713,
+        "offsetHex": "0xDD89",
+        "name": "0xDD89 RPM axis for Ignition, WOT, Vanos advanced",
+        "category": null,
+        "domain": "ignition"
+      },
+      {
+        "offset": 56941,
+        "offsetHex": "0xDE6D",
+        "name": "0xDE6D RPM axis for Ignition, PT, Vanos retarded",
+        "category": null,
+        "domain": "ignition"
+      },
+      {
+        "offset": 57165,
+        "offsetHex": "0xDF4D",
+        "name": "0xDF4D RPM axis for Ignition, PT, Vanos advanced",
+        "category": null,
+        "domain": "ignition"
+      }
+    ],
+    "items": [
+      {
+        "offset": 55684,
+        "offsetHex": "0xD984",
+        "name": "0xD984 RPM axis for Fuel, WOT, Vanos retarded",
+        "category": null,
+        "domain": "fuel"
+      },
+      {
+        "offset": 55718,
+        "offsetHex": "0xD9A6",
+        "name": "0xD9A6 RPM axis for Fuel, WOT, Vanos advanced",
+        "category": null,
+        "domain": "fuel"
+      },
+      {
+        "offset": 55752,
+        "offsetHex": "0xD9C8",
+        "name": "0xD9C8 RPM axis for Fuel, PT, Vanos retarded",
+        "category": null,
+        "domain": "fuel"
+      },
+      {
+        "offset": 55976,
+        "offsetHex": "0xDAA8",
+        "name": "0xDAA8 RPM axis for Fuel, PT, Vanos advanced",
+        "category": null,
+        "domain": "fuel"
+      },
+      {
+        "offset": 56591,
+        "offsetHex": "0xDD0F",
+        "name": "0xDD0F RPM axis for Ignition, WOT, Vanos retarded",
+        "category": null,
+        "domain": "ignition"
+      },
+      {
+        "offset": 56713,
+        "offsetHex": "0xDD89",
+        "name": "0xDD89 RPM axis for Ignition, WOT, Vanos advanced",
+        "category": null,
+        "domain": "ignition"
+      },
+      {
+        "offset": 56941,
+        "offsetHex": "0xDE6D",
+        "name": "0xDE6D RPM axis for Ignition, PT, Vanos retarded",
+        "category": null,
+        "domain": "ignition"
+      },
+      {
+        "offset": 57165,
+        "offsetHex": "0xDF4D",
+        "name": "0xDF4D RPM axis for Ignition, PT, Vanos advanced",
+        "category": null,
+        "domain": "ignition"
+      }
+    ],
+    "representativeIgnition": {
+      "offset": 56591,
+      "offsetHex": "0xDD0F",
+      "name": "0xDD0F RPM axis for Ignition, WOT, Vanos retarded",
+      "category": null,
+      "domain": "ignition"
+    },
+    "representativeFuel": {
+      "offset": 55684,
+      "offsetHex": "0xD984",
+      "name": "0xD984 RPM axis for Fuel, WOT, Vanos retarded",
+      "category": null,
+      "domain": "fuel"
+    },
+    "exclusiveGeometry": true,
+    "codeDerefProven": false,
+    "note": "Exclusive content geometry: 16-byte RPM-axis preamble appears exactly 8 times \u2014 XDF Fuel/Ign PT|WOT VANOS RPM axes.",
+    "evidenceStrength": "high_content_exclusive"
+  },
+  "exclusiveFamilies": [
+    {
+      "id": "vanos_wot_dwell_axis_sig_v1",
+      "title": "VANOS WOT dwell RPM axes",
+      "offsets": [
+        "0xD67C",
+        "0xD69E"
+      ]
+    },
+    {
+      "id": "vanos_pt_load_axis_sig_v1",
+      "title": "VANOS PT load axes (fuel+ign)",
+      "offsets": [
+        "0xD9DA",
+        "0xDABA",
+        "0xDE7F",
+        "0xDF5F"
+      ]
+    },
+    {
+      "id": "ign_idle_timing_sig_v1",
+      "title": "Ign idle timing (Manual / A/T)",
+      "offsets": [
+        "0xDCF3",
+        "0xDD05"
+      ]
+    },
+    {
+      "id": "soft_fuel_cut_island_twin_v1",
+      "title": "Soft fuel cut (Ti neighborhood twin)",
+      "offsets": [
+        "0xD032"
+      ]
+    },
+    {
+      "id": "maf_d28e_be_le_twin_v1",
+      "title": "MAF transfer anchor (D28E BE\u2194LE)",
+      "offsets": [
+        "0xD290"
+      ]
+    },
+    {
+      "id": "ign_idle_cold_chain_v1",
+      "title": "Ign idle cold timing corrections",
+      "offsets": [
+        "0xDCCF",
+        "0xDCD9"
+      ]
+    },
+    {
+      "id": "fuel_cold_enrich_chain_v1",
+      "title": "Fuel cold engine enrich (Manual / A/T)",
+      "offsets": [
+        "0xD8EF",
+        "0xD8FD"
+      ]
+    },
+    {
+      "id": "ign_wot_load_axis_tag_v1",
+      "title": "Ignition WOT VANOS load axes",
+      "offsets": [
+        "0xDD21",
+        "0xDD9B"
+      ]
+    },
+    {
+      "id": "fuel_crank_vanos_pt_dwell_v1",
+      "title": "Fuel cranking axis + VANOS PT dwell tables",
+      "offsets": [
+        "0xD5A6",
+        "0xD5E6",
+        "0xD63A"
+      ]
+    },
+    {
+      "id": "vanos_wot_control_block_v1",
+      "title": "VANOS WOT dwell/control block",
+      "offsets": [
+        "0xD6AE",
+        "0xD6C6",
+        "0xD6E8",
+        "0xD6FA",
+        "0xD722",
+        "0xD734"
+      ]
+    },
+    {
+      "id": "fuel_voltage_axis_chain_v1",
+      "title": "Fuel voltage axis (after VANOS DK)",
+      "offsets": [
+        "0xD75E"
+      ]
+    },
+    {
+      "id": "pt_wot_load_maps_dwell_v1",
+      "title": "PT/WOT load maps + ign coil dwell",
+      "offsets": [
+        "0xE065",
+        "0xE0B3",
+        "0xE0DA"
+      ]
+    },
+    {
+      "id": "fuel_idle_base_chain_v1",
+      "title": "Fuel idle base + cold lambda correction",
+      "offsets": [
+        "0xD91F",
+        "0xD970"
+      ]
+    },
+    {
+      "id": "fuel_accel_enrich_stack_v1",
+      "title": "Fuel accel enrich stack",
+      "offsets": [
+        "0xDC21",
+        "0xDC37",
+        "0xDC47",
+        "0xDC63",
+        "0xDC79"
+      ]
+    },
+    {
+      "id": "alpha_n_unique_prehead_v1",
+      "title": "Alpha-N limp load map",
+      "offsets": [
+        "0xDBC3"
+      ]
+    },
+    {
+      "id": "early_fuel_ign_scalars_v1",
+      "title": "Early fuel/ign scalars (AFR, limiter \u0394zw, cyl trim)",
+      "offsets": [
+        "0xD06A",
+        "0xD093",
+        "0xD0FA"
+      ]
+    },
+    {
+      "id": "maf_sensor_limit_block_v1",
+      "title": "MAF/sensor/speed/spark limit scalar block",
+      "offsets": [
+        "0xD23D",
+        "0xD23E",
+        "0xD240",
+        "0xD244",
+        "0xD256",
+        "0xD257",
+        "0xD25A",
+        "0xD25B",
+        "0xD27B",
+        "0xD27D",
+        "0xD27E",
+        "0xD281",
+        "0xD288"
+      ]
+    },
+    {
+      "id": "warmup_knock_tables_v1",
+      "title": "Warm-up enrich + knock sensitivity tables",
+      "offsets": [
+        "0xD815",
+        "0xD8B1"
+      ]
+    },
+    {
+      "id": "knock_block_e044_v1",
+      "title": "Knock-related block E044",
+      "offsets": [
+        "0xE044"
+      ]
+    },
+    {
+      "id": "lambda_off_rpm_v1",
+      "title": "Lambda OFF RPM tables 1\u20134",
+      "offsets": [
+        "0xE364",
+        "0xE372",
+        "0xE37E",
+        "0xE388"
+      ]
+    }
+  ],
+  "exclusiveOffsets": [
+    "0xD030",
+    "0xD032",
+    "0xD06A",
+    "0xD093",
+    "0xD0FA",
+    "0xD23D",
+    "0xD23E",
+    "0xD240",
+    "0xD244",
+    "0xD256",
+    "0xD257",
+    "0xD25A",
+    "0xD25B",
+    "0xD27B",
+    "0xD27D",
+    "0xD27E",
+    "0xD281",
+    "0xD288",
+    "0xD290",
+    "0xD5A6",
+    "0xD5E6",
+    "0xD63A",
+    "0xD67C",
+    "0xD69E",
+    "0xD6AE",
+    "0xD6C6",
+    "0xD6E8",
+    "0xD6FA",
+    "0xD722",
+    "0xD734",
+    "0xD75E",
+    "0xD815",
+    "0xD8B1",
+    "0xD8EF",
+    "0xD8FD",
+    "0xD91F",
+    "0xD970",
+    "0xD984",
+    "0xD9A6",
+    "0xD9C8",
+    "0xD9DA",
+    "0xDAA8",
+    "0xDABA",
+    "0xDBC3",
+    "0xDC21",
+    "0xDC37",
+    "0xDC47",
+    "0xDC63",
+    "0xDC79",
+    "0xDCCF",
+    "0xDCD9",
+    "0xDCF3",
+    "0xDD05",
+    "0xDD0F",
+    "0xDD21",
+    "0xDD89",
+    "0xDD9B",
+    "0xDE6D",
+    "0xDE7F",
+    "0xDF4D",
+    "0xDF5F",
+    "0xE044",
+    "0xE065",
+    "0xE0B3",
+    "0xE0DA",
+    "0xE364",
+    "0xE372",
+    "0xE37E",
+    "0xE388"
+  ]
+}

@@ -7,20 +7,16 @@
   Canonical CODE analysis path. Does not use "C16x900A" as a processor hint
   (that token is checksum16=0x900A only).
 
-  Default language: x86:LE:16:Real Mode (user-stated 8086 interest).
-  If the listing fails sanity checks, re-run with -Language for an alternate
-  (or install an MCS-96/80C196 Ghidra module — see README).
+  Default language: MCS96:LE:16:default (locked CODE ISA — MCS-96 / 80C196-class).
+  x86 Real Mode is historical reject only.
 
 .EXAMPLE
-  $env:GHIDRA_INSTALL_DIR = 'C:\Tools\ghidra_11.2_PUBLIC'
+  $env:GHIDRA_INSTALL_DIR = 'C:\Tools\ghidra_11.3.2_PUBLIC'
   powershell -NoProfile -ExecutionPolicy Bypass -File tools/re/ghidra/run_headless.ps1
-
-.EXAMPLE
-  powershell -NoProfile -ExecutionPolicy Bypass -File tools/re/ghidra/run_headless.ps1 -Language 'x86:LE:16:Real Mode'
 #>
 param(
   [string]$GhidraInstallDir = $env:GHIDRA_INSTALL_DIR,
-  [string]$Language = 'x86:LE:16:Real Mode',
+  [string]$Language = 'MCS96:LE:16:default',
   [string]$Compiler = 'default',
   [string]$ProjectName = 'RedLabel_M331',
   [switch]$SkipAnalysis,
@@ -115,7 +111,11 @@ $loaderArgs = @(
   '-overwrite',
   '-processor', $Language,
   '-cspec', $Compiler,
+  '-loader', 'BinaryLoader',
+  '-loader-baseAddr', '0x0000',
+  '-loader-blockName', 'ROM',
   '-scriptPath', $PSScriptRoot,
+  '-preScript', 'ForceDisassembleRedLabel.java',
   '-postScript', 'ExportRedLabel.java', $GhidraOut
 )
 

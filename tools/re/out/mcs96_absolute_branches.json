@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 2,
+  "deprecated": true,
+  "verificationStatus": "rejected",
+  "note": "REJECTED hypothesis. LJMP/LCALL are PC-relative per Intel MCS-96. See mcs96_cfg_edges.json / mcs96_branch_resolve.json / blocker1_ljmp_lcall.md.",
+  "correctAddressing": "pc_relative_disp16",
+  "incorrectAddressing": "absolute_le16",
+  "counts": {
+    "scannedE7EfInCodeWindow": 573,
+    "ljmp": 169,
+    "lcall": 404,
+    "ghidraAlignedLjLm": 483,
+    "ghidraMatchesPcRel": 483,
+    "ghidraMismatch": 0,
+    "pcRelTargetRegions": {
+      "CODE": 483
+    },
+    "rejectedAbsTargetRegions": {
+      "CODE": 103,
+      "PAD": 191,
+      "DATA": 189
+    }
+  }
+}

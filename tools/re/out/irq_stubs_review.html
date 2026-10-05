@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>IRQ stubs review — RedLabel MCS-96</title>
+<style>
+:root {
+  --bg: #141414;
+  --panel: #1c1c1c;
+  --text: #e8e8e8;
+  --muted: #9a9a9a;
+  --border: #333;
+  --accent: #6cb6ff;
+  --warn: #d4a017;
+  --ok: #3d9a6a;
+  --stub: #2a4a6a;
+  --landing: #4a3a1a;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: "Segoe UI", system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 24px; font-family: var(--sans);
+  background: var(--bg); color: var(--text); line-height: 1.45;
+}
+h1 { font-size: 22px; font-weight: 600; margin: 0 0 8px; }
+h2 { font-size: 16px; font-weight: 600; margin: 28px 0 10px; }
+p, li { color: var(--muted); font-size: 14px; }
+code { font-family: var(--mono); font-size: 12px; color: var(--text); }
+.banner {
+  border: 1px solid var(--border); background: var(--panel);
+  padding: 12px 14px; margin: 16px 0 20px; border-left: 3px solid var(--accent);
+}
+.stats { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.stat {
+  border: 1px solid var(--border); background: var(--panel);
+  padding: 10px 14px; min-width: 110px;
+}
+.stat b { display: block; font-size: 20px; color: var(--text); }
+.stat span { font-size: 12px; color: var(--muted); }
+.toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0 18px; }
+button {
+  background: var(--panel); color: var(--text); border: 1px solid var(--border);
+  padding: 6px 10px; cursor: pointer; font-size: 13px;
+}
+button.active { border-color: var(--accent); color: var(--accent); }
+table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 8px; }
+th, td { border-bottom: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
+th { color: var(--muted); font-weight: 500; }
+tr:hover td { background: #222; cursor: pointer; }
+.tag {
+  display: inline-block; font-size: 11px; padding: 2px 6px;
+  border: 1px solid var(--border); color: var(--muted);
+}
+.tag.data { color: var(--warn); border-color: #6a5410; }
+.tag.code { color: var(--ok); border-color: #2a5a40; }
+.site {
+  border: 1px solid var(--border); background: var(--panel);
+  padding: 14px 16px; margin: 14px 0; scroll-margin-top: 16px;
+}
+.site h3 { margin: 0 0 8px; font-size: 15px; }
+.meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; margin: 10px 0; }
+.meta div { font-size: 12px; color: var(--muted); }
+.hex {
+  font-family: var(--mono); font-size: 12px; display: flex; flex-wrap: wrap; gap: 4px;
+  padding: 10px; background: #111; border: 1px solid var(--border); margin: 6px 0 12px;
+}
+.hex .b { padding: 2px 4px; color: var(--muted); }
+.hex .b.focus { background: var(--stub); color: #fff; }
+.hex .b.land { background: var(--landing); color: #fff; }
+.explain { font-size: 13px; color: var(--text); margin: 8px 0; }
+.decide { font-size: 13px; color: var(--accent); margin-top: 8px; }
+.caption { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+footer { margin-top: 32px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--border); padding-top: 12px; }
+</style>
+</head>
+<body>
+  <h1>IRQ stubs review — RedLabel / MCS-96</h1>
+  <p>Offline RE only. Blocker 1 (LJMP/LCALL PC-rel) is closed. Confirmed baseline:
+    <strong style="color:var(--text)">CODE 0x2000–0xB930 inclusive</strong>
+    (<code>endExclusive=0xB931</code>; DATA from <code>0xB931</code>).
+    All eight IRQ stub landings (including high <code>0xAxxx</code>) are inside CODE.</p>
+  <div class="banner" id="banner"></div>
+  <div class="stats" id="stats"></div>
+  <div class="toolbar">
+    <button type="button" class="active" data-filter="all">All sites</button>
+    <button type="button" data-filter="axxx">0xAxxx landings</button>
+    <button type="button" data-filter="low">Low CODE landing</button>
+  </div>
+  <h2>Index</h2>
+  <table>
+    <thead>
+      <tr><th>Vec</th><th>Stub</th><th>Prologue</th><th>Ghidra LJMP</th><th>Landing</th><th>Baseline</th></tr>
+    </thead>
+    <tbody id="index"></tbody>
+  </table>
+  <h2>Sites (hex + explanation)</h2>
+  <div id="sites"></div>
+  <footer id="footer"></footer>
+<script>
+const DATA = {"schemaVersion":2,"id":"irq_stubs_review_v2","purpose":"Human visual review of IRQ stub PC-rel landings under baseline CODE≤0xB930","rom":"BMW DME413 SW623 D466.29 C16x900A 94 RedLabel.bin","isa":"mcs96_80c196_family","ghidraLanguage":"MCS96:LE:16:default","codeBounds":{"start":8192,"endInclusive":47408,"endExclusive":47409,"dataStart":47409,"note":"CODE ends at 0xB930 inclusive (Richard). 0xAxxx landings are inside CODE."},"addressingNote":"LJMP/LCALL are PC-relative disp16; Ghidra SLEIGH correct.","siteCount":8,"sitesInsideCodeToB930":8,"axxxLandingCount":7,"sites":[{"id":"vec0_stub","vectorIndex":0,"addr":16761,"addrHex":"0x4179","vectorAddr":8192,"vectorAddrHex":"0x2000","stubAddr":16760,"stubAddrHex":"0x4178","stubPrologue":"PUSHF","bytes":{"start":16757,"endExclusive":16777,"hex":"e7852df2e7fd62fde72963f2e70a67f2e7b864fd","focusOffset":4},"stubBytes":{"start":16760,"endExclusive":16768,"hex":"f2e7fd62fde72963","focusOffset":0},"ghidra_insn":"LJMP 0xa479","ghidra_insn_at_stub":"PUSHF","region_label":"CODE","cfg_edge_from":{"from":16761,"fromHex":"0x4179","op":"LJMP","bytesHex":"e7fd62","dispHex":"0x62FD","to":42105,"toHex":"0xA479","toRegion":"CODE","toInsideBaselineCode":true,"verificationStatus":"cross_checked"},"landing":{"addr":42105,"addrHex":"0xA479","region_label":"CODE","insideBaselineCode":true,"inHighAxxx":true,"bytes":{"start":42105,"endExclusive":42129,"hex":"b09e5c94155c33a808305c059101092012077ae0dc0db105","focusOffset":0},"ghidra_insns_nearby":[{"addr":42105,"addrHex":"0xA479","insn":"LDB R5C,R9E"},{"addr":42108,"addrHex":"0xA47C","insn":"XORB R5C,IOS0"},{"addr":42111,"addrHex":"0xA47F","insn":"JBC RA8,0x3,0xa48a"},{"addr":42114,"addrHex":"0xA482","insn":"JBC R5C,0x0,0xa48a"},{"addr":42117,"addrHex":"0xA485","insn":"ORB INT_PEND,#0x1"},{"addr":42120,"addrHex":"0xA488","insn":"SJMP 0xa49c"},{"addr":42122,"addrHex":"0xA48A","insn":"INC RW7A"},{"addr":42124,"addrHex":"0xA48C","insn":"DJNZ RDC,0xa49c"}]},"explanation":"Vector[0] @0x2000 -> stub 0x4178 (PUSHF + LJMP @0x4179) PC-rel CFG: LJMP disp 0x62FD -> 0xA479 (region CODE). Landing is inside baseline CODE (≤0xB930 inclusive). Prior DATA label at 0xAxxx was a classifier boundary error; remaining question is mid-CODE executable vs data-island."},{"id":"vec1_stub","vectorIndex":1,"addr":16765,"addrHex":"0x417D","vectorAddr":8194,"vectorAddrHex":"0x2002","stubAddr":16764,"stubAddrHex":"0x417C","stubPrologue":"NOP","bytes":{"start":16761,"endExclusive":16781,"hex":"e7fd62fde72963f2e70a67f2e7b864fde71d63f2","focusOffset":4},"stubBytes":{"start":16764,"endExclusive":16772,"hex":"fde72963f2e70a67","focusOffset":0},"ghidra_insn":"LJMP 0xa4a9","ghidra_insn_at_stub":"NOP","region_label":"CODE","cfg_edge_from":{"from":16765,"fromHex":"0x417D","op":"LJMP","bytesHex":"e72963","dispHex":"0x6329","to":42153,"toHex":"0xA4A9","toRegion":"CODE","toInsideBaselineCode":true,"verificationStatus":"cross_checked"},"landing":{"addr":42153,"addrHex":"0xA4A9","region_label":"CODE","insideBaselineCode":true,"inHighAxxx":true,"bytes":{"start":42153,"endExclusive":42177,"hex":"f090169f389f0220a8b10802b1180665f40186a086040146","focusOffset":0},"ghidra_insns_nearby":[{"addr":42153,"addrHex":"0xA4A9","insn":"RET"},{"addr":42154,"addrHex":"0xA4AA","insn":"ORB R9F,IOS1"},{"addr":42157,"addrHex":"0xA4AD","insn":"JBS R9F,0x0,0xa4b2"},{"addr":42160,"addrHex":"0xA4B0","insn":"SJMP 0xa55a"},{"addr":42162,"addrHex":"0xA4B2","insn":"LDB AD_resultlo,#0x8"},{"addr":42165,"addrHex":"0xA4B5","insn":"LDB HSI_status,#0x18"},{"addr":42168,"addrHex":"0xA4B8","insn":"ADD RW86,#0x1f4"},{"addr":42172,"addrHex":"0xA4BC","insn":"LD HSI_time,RW86"}]},"explanation":"Vector[1] @0x2002 -> stub 0x417C (NOP + LJMP @0x417D) PC-rel CFG: LJMP disp 0x6329 -> 0xA4A9 (region CODE). Landing is inside baseline CODE (≤0xB930 inclusive). Prior DATA label at 0xAxxx was a classifier boundary error; remaining question is mid-CODE executable vs data-island."},{"id":"vec2_stub","vectorIndex":2,"addr":16769,"addrHex":"0x4181","vectorAddr":8196,"vectorAddrHex":"0x2004","stubAddr":16768,"stubAddrHex":"0x4180","stubPrologue":"PUSHF","bytes":{"start":16765,"endExclusive":16785,"hex":"e72963f2e70a67f2e7b864fde71d63f2e71a63f2","focusOffset":4},"stubBytes":{"start":16768,"endExclusive":16776,"hex":"f2e70a67f2e7b864","focusOffset":0},"ghidra_insn":"LJMP 0xa88e","ghidra_insn_at_stub":"PUSHF","region_label":"CODE","cfg_edge_from":{"from":16769,"fromHex":"0x4181","op":"LJMP","bytesHex":"e70a67","dispHex":"0x670A","to":43150,"toHex":"0xA88E","toRegion":"CODE","toInsideBaselineCode":true,"verificationStatus":"cross_checked"},"landing":{"addr":43150,"addrHex":"0xA88E","region_label":"CODE","insideBaselineCode":true,"inHighAxxx":true,"bytes":{"start":43150,"endExclusive":43174,"hex":"90169f379f373ba83639bf31a00492713f9fa00492713f9f","focusOffset":0},"ghidra_insns_nearby":[{"addr":43150,"addrHex":"0xA88E","insn":"ORB R9F,IOS1"},{"addr":43153,"addrHex":"0xA891","insn":"JBC R9F,0x7,0xa8cb"},{"addr":43156,"addrHex":"0xA894","insn":"JBS RA8,0x3,0xa8cd"},{"addr":43159,"addrHex":"0xA897","insn":"JBS RBF,0x1,0xa8cb"},{"addr":43162,"addrHex":"0xA89A","insn":"LD RW92,HSI_time"},{"addr":43165,"addrHex":"0xA89D","insn":"ANDB R9F,#0x3f"},{"addr":43168,"addrHex":"0xA8A0","insn":"LD RW92,HSI_time"},{"addr":43171,"addrHex":"0xA8A3","insn":"ANDB R9F,#0x3f"}]},"explanation":"Vector[2] @0x2004 -> stub 0x4180 (PUSHF + LJMP @0x4181) PC-rel CFG: LJMP disp 0x670A -> 0xA88E (region CODE). Landing is inside baseline CODE (≤0xB930 inclusive). Prior DATA label at 0xAxxx was a classifier boundary error; remaining question is mid-CODE executable vs data-island."},{"id":"vec3_stub","vectorIndex":3,"addr":16773,"addrHex":"0x4185","vectorAddr":8198,"vectorAddrHex":"0x2006","stubAddr":16772,"stubAddrHex":"0x4184","stubPrologue":"PUSHF","bytes":{"start":16769,"endExclusive":16789,"hex":"e70a67f2e7b864fde71d63f2e71a63f2e71bdff2","focusOffset":4},"stubBytes":{"start":16772,"endExclusive":16780,"hex":"f2e7b864fde71d63","focusOffset":0},"ghidra_insn":"LJMP 0xa640","ghidra_insn_at_stub":"PUSHF","region_label":"CODE","cfg_edge_from":{"from":16773,"fromHex":"0x4185","op":"LJMP","bytesHex":"e7b864","dispHex":"0x64B8","to":42560,"toHex":"0xA640","toRegion":"CODE","toInsideBaselineCode":true,"verificationStatus":"cross_checked"},"landing":{"addr":42560,"addrHex":"0xA640","region_label":"CODE","insideBaselineCode":true,"inHighAxxx":true,"bytes":{"start":42560,"endExclusive":42584,"hex":"b09ea1b0159e949ea130a108c701a61800e7f19a3ca10220","focusOffset":0},"ghidra_insns_nearby":[{"addr":42560,"addrHex":"0xA640","insn":"LDB RA1,R9E"},{"addr":42563,"addrHex":"0xA643","insn":"LDB R9E,IOS0"},{"addr":42566,"addrHex":"0xA646","insn":"XORB RA1,R9E"},{"addr":42569,"addrHex":"0xA649","insn":"JBC RA1,0x0,0xa654"},{"addr":42572,"addrHex":"0xA64C","insn":"STB ZRlo,0x18a6, LOOKUP[ZR]"},{"addr":42577,"addrHex":"0xA651","insn":"LJMP 0x4145"},{"addr":42580,"addrHex":"0xA654","insn":"JBS RA1,0x4,0xa659"},{"addr":42583,"addrHex":"0xA657","insn":"SJMP 0xa73b"}]},"explanation":"Vector[3] @0x2006 -> stub 0x4184 (PUSHF + LJMP @0x4185) PC-rel CFG: LJMP disp 0x64B8 -> 0xA640 (region CODE). Landing is inside baseline CODE (≤0xB930 inclusive). Prior DATA label at 0xAxxx was a classifier boundary error; remaining question is mid-CODE executable vs data-island."},{"id":"vec4_stub","vectorIndex":4,"addr":16777,"addrHex":"0x4189","vectorAddr":8200,"vectorAddrHex":"0x2008","stubAddr":16776,"stubAddrHex":"0x4188","stubPrologue":"NOP","bytes":{"start":16773,"endExclusive":16793,"hex":"e7b864fde71d63f2e71a63f2e71bdff2e70663fd","focusOffset":4},"stubBytes":{"start":16776,"endExclusive":16784,"hex":"fde71d63f2e71a63","focusOffset":0},"ghidra_insn":"LJMP 0xa4a9","ghidra_insn_at_stub":"NOP","region_label":"CODE","cfg_edge_from":{"from":16777,"fromHex":"0x4189","op":"LJMP","bytesHex":"e71d63","dispHex":"0x631D","to":42153,"toHex":"0xA4A9","toRegion":"CODE","toInsideBaselineCode":true,"verificationStatus":"cross_checked"},"landing":{"addr":42153,"addrHex":"0xA4A9","region_label":"CODE","insideBaselineCode":true,"inHighAxxx":true,"bytes":{"start":42153,"endExclusive":42177,"hex":"f090169f389f0220a8b10802b1180665f40186a086040146","focusOffset":0},"ghidra_insns_nearby":[{"addr":42153,"addrHex":"0xA4A9","insn":"RET"},{"addr":42154,"addrHex":"0xA4AA","insn":"ORB R9F,IOS1"},{"addr":42157,"addrHex":"0xA4AD","insn":"JBS R9F,0x0,0xa4b2"},{"addr":42160,"addrHex":"0xA4B0","insn":"SJMP 0xa55a"},{"addr":42162,"addrHex":"0xA4B2","insn":"LDB AD_resultlo,#0x8"},{"addr":42165,"addrHex":"0xA4B5","insn":"LDB HSI_status,#0x18"},{"addr":42168,"addrHex":"0xA4B8","insn":"ADD RW86,#0x1f4"},{"addr":42172,"addrHex":"0xA4BC","insn":"LD HSI_time,RW86"}]},"explanation":"Vector[4] @0x2008 -> stub 0x4188 (NOP + LJMP @0x4189) PC-rel CFG: LJMP disp 0x631D -> 0xA4A9 (region CODE). Landing is inside baseline CODE (≤0xB930 inclusive). Prior DATA label at 0xAxxx was a classifier boundary error; remaining question is mid-CODE executable vs data-island."},{"id":"vec5_stub","vectorIndex":5,"addr":16781,"addrHex":"0x418D","vectorAddr":8202,"vectorAddrHex":"0x200A","stubAddr":16780,"stubAddrHex":"0x418C","stubPrologue":"PUSHF","bytes":{"start":16777,"endExclusive":16797,"hex":"e71d63f2e71a63f2e71bdff2e70663fdfdfdfdfd","focusOffset":4},"stubBytes":{"start":16780,"endExclusive":16788,"hex":"f2e71a63f2e71bdf","focusOffset":0},"ghidra_insn":"LJMP 0xa4aa","ghidra_insn_at_stub":"PUSHF","region_label":"CODE","cfg_edge_from":{"from":16781,"fromHex":"0x418D","op":"LJMP","bytesHex":"e71a63","dispHex":"0x631A","to":42154,"toHex":"0xA4AA","toRegion":"CODE","toInsideBaselineCode":true,"verificationStatus":"cross_checked"},"landing":{"addr":42154,"addrHex":"0xA4AA","region_label":"CODE","insideBaselineCode":true,"inHighAxxx":true,"bytes":{"start":42154,"endExclusive":42178,"hex":"90169f389f0220a8b10802b1180665f40186a0860401463c","focusOffset":0},"ghidra_insns_nearby":[{"addr":42154,"addrHex":"0xA4AA","insn":"ORB R9F,IOS1"},{"addr":42157,"addrHex":"0xA4AD","insn":"JBS R9F,0x0,0xa4b2"},{"addr":42160,"addrHex":"0xA4B0","insn":"SJMP 0xa55a"},{"addr":42162,"addrHex":"0xA4B2","insn":"LDB AD_resultlo,#0x8"},{"addr":42165,"addrHex":"0xA4B5","insn":"LDB HSI_status,#0x18"},{"addr":42168,"addrHex":"0xA4B8","insn":"ADD RW86,#0x1f4"},{"addr":42172,"addrHex":"0xA4BC","insn":"LD HSI_time,RW86"},{"addr":42175,"addrHex":"0xA4BF","insn":"CLR RW46"}]},"explanation":"Vector[5] @0x200A -> stub 0x418C (PUSHF + LJMP @0x418D) PC-rel CFG: LJMP disp 0x631A -> 0xA4AA (region CODE). Landing is inside baseline CODE (≤0xB930 inclusive). Prior DATA label at 0xAxxx was a classifier boundary error; remaining question is mid-CODE executable vs data-island."},{"id":"vec6_stub","vectorIndex":6,"addr":16785,"addrHex":"0x4191","vectorAddr":8204,"vectorAddrHex":"0x200C","stubAddr":16784,"stubAddrHex":"0x4190","stubPrologue":"PUSHF","bytes":{"start":16781,"endExclusive":16801,"hex":"e71a63f2e71bdff2e70663fdfdfdfdfdfdfdfdfd","focusOffset":4},"stubBytes":{"start":16784,"endExclusive":16792,"hex":"f2e71bdff2e70663","focusOffset":0},"ghidra_insn":"LJMP 0x20af","ghidra_insn_at_stub":"PUSHF","region_label":"CODE","cfg_edge_from":{"from":16785,"fromHex":"0x4191","op":"LJMP","bytesHex":"e71bdf","dispHex":"0xDF1B","to":8367,"toHex":"0x20AF","toRegion":"CODE","toInsideBaselineCode":true,"verificationStatus":"cross_checked"},"landing":{"addr":8367,"addrHex":"0x20AF","region_label":"CODE","insideBaselineCode":true,"inHighAxxx":false,"bytes":{"start":8367,"endExclusive":8391,"hex":"e7f80de7b401e7230ee77d0ee7ea14e7ed19e76e17e79f1b","focusOffset":0},"ghidra_insns_nearby":[{"addr":8367,"addrHex":"0x20AF","insn":"LJMP 0x2eaa"},{"addr":8370,"addrHex":"0x20B2","insn":"LJMP 0x2269"},{"addr":8373,"addrHex":"0x20B5","insn":"LJMP 0x2edb"},{"addr":8376,"addrHex":"0x20B8","insn":"LJMP 0x2f38"},{"addr":8379,"addrHex":"0x20BB","insn":"LJMP 0x35a8"},{"addr":8382,"addrHex":"0x20BE","insn":"LJMP 0x3aae"},{"addr":8385,"addrHex":"0x20C1","insn":"LJMP 0x3832"},{"addr":8388,"addrHex":"0x20C4","insn":"LJMP 0x3c66"}]},"explanation":"Vector[6] @0x200C -> stub 0x4190 (PUSHF + LJMP @0x4191) PC-rel CFG: LJMP disp 0xDF1B -> 0x20AF (region CODE). Landing is inside baseline CODE (≤0xB930 inclusive). Prior DATA label at 0xAxxx was a classifier boundary error; remaining question is mid-CODE executable vs data-island."},{"id":"vec7_stub","vectorIndex":7,"addr":16789,"addrHex":"0x4195","vectorAddr":8206,"vectorAddrHex":"0x200E","stubAddr":16788,"stubAddrHex":"0x4194","stubPrologue":"PUSHF","bytes":{"start":16785,"endExclusive":16805,"hex":"e71bdff2e70663fdfdfdfdfdfdfdfdfdfdfdfdfd","focusOffset":4},"stubBytes":{"start":16788,"endExclusive":16796,"hex":"f2e70663fdfdfdfd","focusOffset":0},"ghidra_insn":"LJMP 0xa49e","ghidra_insn_at_stub":"PUSHF","region_label":"CODE","cfg_edge_from":{"from":16789,"fromHex":"0x4195","op":"LJMP","bytesHex":"e70663","dispHex":"0x6306","to":42142,"toHex":"0xA49E","toRegion":"CODE","toInsideBaselineCode":true,"verificationStatus":"cross_checked"},"landing":{"addr":42142,"addrHex":"0xA49E","region_label":"CODE","insideBaselineCode":true,"inHighAxxx":true,"bytes":{"start":42142,"endExclusive":42166,"hex":"17dbdb02f3f0b1ffdbf3f0f090169f389f0220a8b10802b1","focusOffset":0},"ghidra_insns_nearby":[{"addr":42142,"addrHex":"0xA49E","insn":"INCB RDB"},{"addr":42144,"addrHex":"0xA4A0","insn":"JC 0xa4a4"},{"addr":42146,"addrHex":"0xA4A2","insn":"POPF"},{"addr":42147,"addrHex":"0xA4A3","insn":"RET"},{"addr":42148,"addrHex":"0xA4A4","insn":"LDB RDB,#-0x1"},{"addr":42151,"addrHex":"0xA4A7","insn":"POPF"},{"addr":42152,"addrHex":"0xA4A8","insn":"RET"},{"addr":42153,"addrHex":"0xA4A9","insn":"RET"}]},"explanation":"Vector[7] @0x200E -> stub 0x4194 (PUSHF + LJMP @0x4195) PC-rel CFG: LJMP disp 0x6306 -> 0xA49E (region CODE). Landing is inside baseline CODE (≤0xB930 inclusive). Prior DATA label at 0xAxxx was a classifier boundary error; remaining question is mid-CODE executable vs data-island."}],"shippingNote":"Review-only. Do not promote into definitions/packs/*.shipping.json."};
+function u16(n){ return "0x"+n.toString(16).toUpperCase().padStart(4,"0"); }
+function hexBytes(hex){
+  const out=[]; for(let i=0;i<hex.length;i+=2) out.push(hex.slice(i,i+2).toUpperCase()); return out;
+}
+function renderHex(hex, focusOffset, focusLen, cls){
+  return hexBytes(hex).map((b,i)=>{
+    const on = i>=focusOffset && i<(focusOffset+focusLen);
+    return '<span class="b '+(on?cls:"")+'">'+b+"</span>";
+  }).join("");
+}
+function decision(site){
+  if(site.landing.insideBaselineCode){
+    return "Inside CODE 0x2000–0xB930 inclusive. Decide: real IRQ handler vs mid-CODE data island. Do not promote into shipping packs.";
+  }
+  return "Landing beyond CODE endInclusive 0xB930 (DATA from 0xB931) — unexpected under current baseline.";
+}
+const bounds = DATA.codeBounds || {};
+const endInc = "0x"+(bounds.endInclusive ?? 0xB930).toString(16).toUpperCase();
+const endEx = "0x"+(bounds.endExclusive ?? 0xB931).toString(16).toUpperCase();
+const codeStart = "0x"+(bounds.start ?? 0x2000).toString(16).toUpperCase();
+const dataStart = "0x"+(bounds.dataStart ?? 0xB931).toString(16).toUpperCase();
+document.getElementById("banner").innerHTML =
+  "<strong>CODE "+codeStart+"–"+endInc+" inclusive</strong> (endExclusive="+endEx+"; DATA from "+dataStart+") — "+
+  (DATA.codeBounds && DATA.codeBounds.note ? DATA.codeBounds.note+" " : "")+
+  (DATA.shippingNote||"")+" "+(DATA.addressingNote||"");
+document.getElementById("stats").innerHTML =
+  '<div class="stat"><b>'+DATA.siteCount+'</b><span>IRQ stub sites</span></div>'+
+  '<div class="stat"><b>'+(DATA.sitesInsideCodeToB930 ?? DATA.siteCount)+'</b><span>Inside CODE to 0xB930</span></div>'+
+  '<div class="stat"><b>'+DATA.axxxLandingCount+'</b><span>0xAxxx landings</span></div>'+
+  '<div class="stat"><b>'+endInc+' incl.</b><span>CODE end (excl. '+endEx+')</span></div>'+
+  '<div class="stat"><b>'+DATA.ghidraLanguage+'</b><span>Ghidra language</span></div>';
+
+const index=document.getElementById("index");
+const sitesEl=document.getElementById("sites");
+let filter="all";
+
+function matches(site){
+  if(filter==="all") return true;
+  if(filter==="axxx") return !!site.landing.inHighAxxx;
+  if(filter==="low") return !site.landing.inHighAxxx;
+  return true;
+}
+
+function render(){
+  index.innerHTML="";
+  sitesEl.innerHTML="";
+  DATA.sites.filter(matches).forEach(site=>{
+    const tag = site.landing.insideBaselineCode
+      ? '<span class="tag code">CODE (≤0xB930 incl.)</span>'
+      : '<span class="tag data">beyond CODE</span>';
+    const ljmpHex = site.addrHex || site.cfg_edge_from.fromHex;
+    const tr=document.createElement("tr");
+    tr.innerHTML =
+      "<td>v"+site.vectorIndex+"</td><td><code>"+site.stubAddrHex+
+      "</code></td><td>"+site.stubPrologue+"</td><td><code>"+site.ghidra_insn+
+      "</code></td><td><code>"+site.landing.addrHex+"</code></td><td>"+tag+"</td>";
+    tr.onclick=()=>{ document.getElementById(site.id).scrollIntoView({behavior:"smooth"}); };
+    index.appendChild(tr);
+
+    const stubLen = site.stubBytes.hex.length/2;
+    const nearby = (site.landing.ghidra_insns_nearby||[])
+      .map(x=>"<li><code>"+x.addrHex+"</code> "+x.insn+"</li>").join("");
+    const card=document.createElement("section");
+    card.className="site";
+    card.id=site.id;
+    card.innerHTML =
+      "<h3>"+site.id+" — vector["+site.vectorIndex+"] @ "+site.vectorAddrHex+"</h3>"+
+      '<div class="meta">'+
+        "<div>Stub <code>"+site.stubAddrHex+"</code> ("+site.stubPrologue+")</div>"+
+        "<div>LJMP @ <code>"+ljmpHex+"</code></div>"+
+        "<div>Disp <code>"+site.cfg_edge_from.dispHex+"</code> → <code>"+site.landing.addrHex+"</code></div>"+
+        "<div>CFG <code>"+site.cfg_edge_from.verificationStatus+"</code></div>"+
+        '<div>Stub region <span class="tag code">'+site.region_label+"</span></div>"+
+        '<div>Landing region <span class="tag code">'+site.landing.region_label+"</span></div>"+
+      "</div>"+
+      '<div class="caption">Stub window (focus = prologue+LJMP) starting '+u16(site.bytes.start)+"</div>"+
+      '<div class="hex">'+renderHex(site.bytes.hex, site.bytes.focusOffset, stubLen, "focus")+"</div>"+
+      '<div class="caption">Landing window starting '+site.landing.addrHex+" (first 8 bytes emphasized)</div>"+
+      '<div class="hex">'+renderHex(site.landing.bytes.hex, 0, 8, "land")+"</div>"+
+      (nearby
+        ? '<div class="caption">Ghidra nearby at landing</div><ul>'+nearby+"</ul>"
+        : '<div class="caption">No Ghidra instructions listed at landing.</div>')+
+      '<p class="explain">'+site.explanation+"</p>"+
+      '<p class="decide">'+decision(site)+"</p>";
+    sitesEl.appendChild(card);
+  });
+}
+document.querySelectorAll(".toolbar button").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll(".toolbar button").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    filter=btn.dataset.filter;
+    render();
+  });
+});
+document.getElementById("footer").textContent =
+  "Source: "+DATA.id+" · ROM "+DATA.rom+" · ISA "+DATA.isa+
+  " · CODE "+codeStart+"–"+endInc+" inclusive (endExclusive "+endEx+")";
+render();
+</script>
+</body>
+</html>

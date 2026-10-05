@@ -1,0 +1,236 @@
+{
+  "schemaVersion": 1,
+  "id": "sfr_hso_hsi_audit_v1",
+  "rom": "BMW DME413 SW623 D466.29 C16x900A 94 RedLabel.bin",
+  "ghidraLanguage": "MCS96:LE:16:default",
+  "conclusion": {
+    "status": "cross_checked",
+    "summary": "Ghidra names bytes 0x04/0x06 only as HSI_time/HSI_status. Per Intel 80C196KB, those addresses are R/W aliases: WRITE 0x06=HSO_COMMAND, WRITE 0x04=HSO_TIME; READ 0x06=HSI_STATUS, READ 0x04=HSI_TIME. Therefore LDB HSI_status,#imm + LD/ADD HSI_time in this ROM are High-Speed Output schedules (spark/inj/CAM candidates), while LD RWx,HSI_time are true HSI capture reads.",
+    "sources": [
+      "Ghidra MCS96.sinc RAM SFR map @0x00",
+      "Intel 80C196KB User's Guide (HSO_COMMAND/HSI_STATUS @06H; HSO_TIME/HSI_TIME @04H)",
+      "Usage patterns in RedLabel listing (command-then-time write pairs)"
+    ]
+  },
+  "ghidraSfrMap": [
+    {
+      "offset": 0,
+      "ghidraName": "ZRlo/ZR",
+      "note": "fixed"
+    },
+    {
+      "offset": 2,
+      "ghidraName": "AD_result",
+      "note": "R/W windowed on some parts"
+    },
+    {
+      "offset": 4,
+      "ghidraName": "HSI_time (Ghidra name)",
+      "note": "READ=HSI_TIME; WRITE=HSO_TIME (Intel)"
+    },
+    {
+      "offset": 6,
+      "ghidraName": "HSI_status (Ghidra name)",
+      "note": "READ=HSI_STATUS; WRITE=HSO_COMMAND (Intel)"
+    },
+    {
+      "offset": 7,
+      "ghidraName": "SBUF",
+      "note": "TX/RX windowed"
+    },
+    {
+      "offset": 8,
+      "ghidraName": "INT_MASK",
+      "note": ""
+    },
+    {
+      "offset": 9,
+      "ghidraName": "INT_PEND",
+      "note": ""
+    },
+    {
+      "offset": 10,
+      "ghidraName": "TIMER1",
+      "note": "WDT kick uses TIMER1lo writes in this firmware"
+    },
+    {
+      "offset": 12,
+      "ghidraName": "TIMER2",
+      "note": ""
+    },
+    {
+      "offset": 14,
+      "ghidraName": "PORT0",
+      "note": ""
+    },
+    {
+      "offset": 15,
+      "ghidraName": "PORT1",
+      "note": "GPIO; also sampled in vec5"
+    },
+    {
+      "offset": 16,
+      "ghidraName": "PORT2",
+      "note": "GPIO; crank/cam related bits hypothesized"
+    },
+    {
+      "offset": 17,
+      "ghidraName": "SP_STAT",
+      "note": ""
+    },
+    {
+      "offset": 20,
+      "ghidraName": "WSR",
+      "note": "window select \u2014 unused in listing (0 refs)"
+    },
+    {
+      "offset": 21,
+      "ghidraName": "IOS0",
+      "note": ""
+    },
+    {
+      "offset": 22,
+      "ghidraName": "IOS1",
+      "note": "HSO status bits on read; vec2/vec5 gate on IOS1"
+    },
+    {
+      "offset": 23,
+      "ghidraName": "IOS2",
+      "note": ""
+    }
+  ],
+  "counts": {
+    "hsoCommandOrTimeWritesNamedHSI": 66,
+    "hsiTimeReads": 13,
+    "WSRRefsInListing": 0
+  },
+  "hsoCommandImmediates": [
+    "0x0",
+    "0x10",
+    "0x13",
+    "0x18",
+    "0x1a",
+    "0x2",
+    "0x20",
+    "0x21",
+    "0x22",
+    "0x27",
+    "0x30",
+    "0x33",
+    "0x4",
+    "0x51",
+    "0x7",
+    "0x70",
+    "0x71",
+    "0x74"
+  ],
+  "sampleHsoSchedules": [
+    {
+      "site": 15930,
+      "siteHex": "0x3E3A",
+      "insn": "LDB HSI_status,#0x70"
+    },
+    {
+      "site": 15939,
+      "siteHex": "0x3E43",
+      "insn": "LDB HSI_status,#0x20"
+    },
+    {
+      "site": 16184,
+      "siteHex": "0x3F38",
+      "insn": "LDB HSI_status,#0x10"
+    },
+    {
+      "site": 16225,
+      "siteHex": "0x3F61",
+      "insn": "LDB HSI_status,#0x10"
+    },
+    {
+      "site": 18296,
+      "siteHex": "0x4778",
+      "insn": "LDB HSI_status,#0x21"
+    },
+    {
+      "site": 18304,
+      "siteHex": "0x4780",
+      "insn": "LDB HSI_status,#0x4"
+    },
+    {
+      "site": 18410,
+      "siteHex": "0x47EA",
+      "insn": "LDB HSI_status,#0x20"
+    },
+    {
+      "site": 18426,
+      "siteHex": "0x47FA",
+      "insn": "LDB HSI_status,#0x0"
+    },
+    {
+      "site": 18619,
+      "siteHex": "0x48BB",
+      "insn": "LDB HSI_status,#0x13"
+    },
+    {
+      "site": 18630,
+      "siteHex": "0x48C6",
+      "insn": "LDB HSI_status,#0x22"
+    },
+    {
+      "site": 18641,
+      "siteHex": "0x48D1",
+      "insn": "LDB HSI_status,#0x1a"
+    },
+    {
+      "site": 18654,
+      "siteHex": "0x48DE",
+      "insn": "LDB HSI_status,#0x18"
+    }
+  ],
+  "sampleHsiReads": [
+    {
+      "site": 15967,
+      "siteHex": "0x3E5F",
+      "insn": "LD RW28,HSI_time"
+    },
+    {
+      "site": 16047,
+      "siteHex": "0x3EAF",
+      "insn": "LD RW28,HSI_time"
+    },
+    {
+      "site": 18533,
+      "siteHex": "0x4865",
+      "insn": "LD RW28,HSI_time"
+    },
+    {
+      "site": 18560,
+      "siteHex": "0x4880",
+      "insn": "LD RW28,HSI_time"
+    },
+    {
+      "site": 42850,
+      "siteHex": "0xA762",
+      "insn": "LD RW5C,HSI_time"
+    },
+    {
+      "site": 43162,
+      "siteHex": "0xA89A",
+      "insn": "LD RW92,HSI_time"
+    },
+    {
+      "site": 43168,
+      "siteHex": "0xA8A0",
+      "insn": "LD RW92,HSI_time"
+    },
+    {
+      "site": 43174,
+      "siteHex": "0xA8A6",
+      "insn": "LD RW92,HSI_time"
+    }
+  ],
+  "channelDecode": {
+    "status": "open",
+    "note": "HSO_COMMAND bitfields select channel / set-clear / timer1|2 / interrupt. Observed immediates include 0x00,0x02,0x04,0x07,0x10,0x13,0x18,0x1A,0x20,0x21,0x22,0x27,0x30,0x33,0x51,0x70,0x71,0x74 \u2014 not yet mapped to coil vs injector vs VANOS vs fuel-pump."
+  },
+  "ios0WriteNote": "Intel: writes to IOS0 (windowed) can also drive HSO pins directly; this ROM heavily uses HSI_status/HSI_time pairs instead."
+}

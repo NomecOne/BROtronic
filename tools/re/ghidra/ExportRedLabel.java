@@ -32,12 +32,14 @@ public class ExportRedLabel extends GhidraScript {
 		String compiler = currentProgram.getCompilerSpec().getCompilerSpecID().getIdAsString();
 		long size = currentProgram.getMemory().getSize();
 
-		writeMeta(outDir, lang, compiler, size);
+		int insnCount = writeListing(outDir);
 		writeFunctions(outDir);
 		writeSymbols(outDir);
-		writeListing(outDir);
+		writeMeta(outDir, lang, compiler, size, insnCount);
+		writeSanity(outDir, lang, insnCount);
 
-		println("BROtronic ExportRedLabel wrote artifacts to " + outDir.getAbsolutePath());
+		println("BROtronic ExportRedLabel wrote artifacts to " + outDir.getAbsolutePath()
+			+ " instructions=" + insnCount);
 	}
 
 	private File resolveOutDir() {
@@ -52,7 +54,7 @@ public class ExportRedLabel extends GhidraScript {
 		return new File(System.getProperty("user.home"), "brotronic_ghidra_out");
 	}
 
-	private void writeMeta(File outDir, String lang, String compiler, long size) throws Exception {
+	private void writeMeta(File outDir, String lang, String compiler, long size, int insnCount) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		sb.append("{\n");
 		sb.append("  \"schemaVersion\": 1,\n");
@@ -61,10 +63,50 @@ public class ExportRedLabel extends GhidraScript {
 		sb.append("  \"compiler\": ").append(json(compiler)).append(",\n");
 		sb.append("  \"memorySize\": ").append(size).append(",\n");
 		sb.append("  \"imageBase\": ").append(json(currentProgram.getImageBase().toString())).append(",\n");
+		sb.append("  \"instructionCount\": ").append(insnCount).append(",\n");
+		sb.append("  \"functionCount\": ").append(currentProgram.getFunctionManager().getFunctionCount()).append(",\n");
 		sb.append("  \"namingNote\": \"C16x900A in ROM filename is CS16 fingerprint 0x900A, not a C16x language ID\",\n");
 		sb.append("  \"verificationStatus\": \"unverified\"\n");
 		sb.append("}\n");
 		writeText(new File(outDir, "ghidra_export_meta.json"), sb.toString());
+	}
+
+	private void writeSanity(File outDir, String lang, int insnCount) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		sb.append("{\n");
+		sb.append("  \"schemaVersion\": 1,\n");
+		sb.append("  \"language\": ").append(json(lang)).append(",\n");
+		sb.append("  \"instructionCount\": ").append(insnCount).append(",\n");
+		sb.append("  \"functionCount\": ").append(currentProgram.getFunctionManager().getFunctionCount()).append(",\n");
+		sb.append("  \"sampleAt4178\": ").append(json(insnAt(0x4178))).append(",\n");
+		sb.append("  \"sampleAt417C\": ").append(json(insnAt(0x417c))).append(",\n");
+		sb.append("  \"sampleAt2000\": ").append(json(insnAt(0x2000))).append(",\n");
+		sb.append("  \"namingNote\": \"C16x900A = CS16 0x900A only\",\n");
+		boolean looksMcs96 = lang.startsWith("MCS96");
+		boolean looksX86 = lang.startsWith("x86");
+		sb.append("  \"notes\": [\n");
+		sb.append("    \"Raw binary required ForceDisassembleRedLabel seeds at LE16 vectors @0x2000\",\n");
+		if (looksX86 && insnCount == 0) {
+			sb.append("    \"x86 Real Mode produced 0 instructions even after seeding — strong negative evidence\",\n");
+		} else if (looksX86) {
+			sb.append("    \"Inspect whether seeded sites decode as coherent 8086 control flow or nonsense\",\n");
+		}
+		if (looksMcs96) {
+			sb.append("    \"MCS-96 locked: LJMP/LCALL use PC-relative disp16 (Intel + SLEIGH); see blocker1_ljmp_lcall.md\",\n");
+		}
+		sb.append("    \"Do not promote CODE-derived maps until verificationStatus is raised\"\n");
+		sb.append("  ]\n");
+		sb.append("}\n");
+		writeText(new File(outDir, "ghidra_sanity.json"), sb.toString());
+	}
+
+	private String insnAt(long off) {
+		Address a = currentProgram.getAddressFactory().getDefaultAddressSpace().getAddress(off);
+		Instruction ins = currentProgram.getListing().getInstructionAt(a);
+		if (ins == null) {
+			return null;
+		}
+		return a.toString() + "  " + ins.toString();
 	}
 
 	private void writeFunctions(File outDir) throws Exception {
@@ -109,11 +151,11 @@ public class ExportRedLabel extends GhidraScript {
 		writeText(new File(outDir, "ghidra_symbols.csv"), sb.toString());
 	}
 
-	private void writeListing(File outDir) throws Exception {
+	private int writeListing(File outDir) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		sb.append("; BROtronic RedLabel listing export\n");
 		sb.append("; language=").append(currentProgram.getLanguageID()).append('\n');
-		sb.append("; NOTE: unverified — if x86 Real Mode looks wrong, try MCS-96 module (not C16x from filename)\n\n");
+		sb.append("; NOTE: canonical language MCS96:LE:16:default; LJMP/LCALL are PC-relative (not C16x from filename)\n\n");
 
 		Address start = currentProgram.getAddressFactory().getDefaultAddressSpace().getAddress(0x2000);
 		boolean hasCodeWindow = currentProgram.getMemory().contains(start);
@@ -126,7 +168,7 @@ public class ExportRedLabel extends GhidraScript {
 		while (ii.hasNext() && count < MAX) {
 			Instruction ins = ii.next();
 			Address a = ins.getAddress();
-			if (hasCodeWindow && a.getOffset() > 0x7FFF) {
+			if (hasCodeWindow && a.getOffset() > 0xB930) {
 				break;
 			}
 			sb.append(a.toString()).append("  ").append(ins.toString()).append('\n');
@@ -134,6 +176,7 @@ public class ExportRedLabel extends GhidraScript {
 		}
 		sb.append("\n; exported_instructions=").append(count).append('\n');
 		writeText(new File(outDir, "ghidra_listing.txt"), sb.toString());
+		return count;
 	}
 
 	private static void writeText(File f, String text) throws Exception {

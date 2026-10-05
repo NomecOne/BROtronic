@@ -26,6 +26,21 @@ dist-ssr
 .github/workflows/*
 public/rom/*
 
-# Ghidra local project / headless locks (regen via tools/re/ghidra/run_headless.ps1)
+# Ghidra local project / headless locks (regen via tools/re/ghidra/run_headless.sh)
 tools/re/ghidra/project/
 tools/re/out/ghidra_headless.log
+
+# Large / redistributable offline inputs (see tools/re/data/README.md)
+tools/re/data/seed.xdf
+tools/re/data/*.bin
+tools/re/data/cal_sheet_gid*.csv
+
+# Copyrighted / large reference PDFs (local-only; see tools/re/data/refs/README.md)
+tools/re/docs/**/*.pdf
+tools/re/docs/*.pdf
+
+# Scratch PDF OCR dumps
+tools/re/out/_pdf_extract/
+
+# Local RE backup snapshots
+.re_local_bak_*/
