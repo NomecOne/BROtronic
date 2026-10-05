@@ -59,6 +59,7 @@
       "tools/re/out/register_bases_fe24.md",
       "tools/re/out/register_bases_fe24.md",
       "tools/re/out/register_bases_fe24.md",
+      "tools/re/out/register_bases_fe24.md",
       "tools/re/out/register_bases_fe24.md"
     ],
     "ignitionFuelCoverage": {
@@ -67,22 +68,22 @@
       "ghidraProvenPct": 0.0,
       "indexBaseCrossCheckedCalContent": 0,
       "indexBaseCrossCheckedCalContentPct": 0.0,
-      "exclusiveGeometry": 46,
-      "exclusiveGeometryPct": 66.67,
+      "exclusiveGeometry": 69,
+      "exclusiveGeometryPct": 100.0,
       "structuralSplitPtr": 1,
       "registerBasesRomProven": 4,
-      "headline": "0.0% absolute (0/69); 0% CAL-content index-base (D200/D978 retracted); 66.67% exclusive geometry (46/69); 4 ROM-proven FE24 bases.",
-      "note": "v7: prioritized main fuel PT/WOT + main ign tables \u2014 WOT load axes, PT dwell, WOT control block, PT/WOT load maps+dwell, idle base, accel stack, Alpha-N. D200/D978 remain retracted. Absolute CODE content reads still 0."
+      "headline": "0.0% absolute (0/69); 0% CAL-content index-base (D200/D978 retracted); 100.0% exclusive geometry (69/69); 4 ROM-proven FE24 bases.",
+      "note": "v8: exclusive geometry for all 69 ign/fuel XDF items via signature/span/twin methods. Absolute LOOKUP[ZR] still 0 (no path appeared). D200/D978 remain retracted. Unproven exclusive: none."
     },
     "priorityTraces": {
       "irqRamPublications": "done_v1",
       "sfrHsoHsiAudit": "cross_checked",
       "calAccessModel": "corrected_v2",
       "firstProvenIgnFuelXref": false,
-      "boschTiTheoryVsRom": "done_v7_exclusive_geometry",
+      "boschTiTheoryVsRom": "done_v8_exclusive_geometry_complete",
       "rw68IndexBase": "retracted_d200_false_positive",
       "registerBasesFe24": "rom_proven",
-      "exclusiveGeometryFuelIgn": "ti_vanos_main_fuel_ign_v7"
+      "exclusiveGeometryFuelIgn": "exclusive_geometry_69_complete_v8"
     }
   }
 }

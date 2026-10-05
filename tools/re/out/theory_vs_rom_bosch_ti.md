@@ -5,19 +5,19 @@ Theory: [`ref_pdf_bosch_m_motronic_technical_instruction.md`](ref_pdf_bosch_m_mo
 
 > Book is PRIMARY family theory only. Do not verify or promote shipping maps from the PDF alone.
 
-## Coverage (v7)
+## Coverage (v8)
 
 | Metric | Count | % of 69 |
 |--------|------:|--------:|
 | Absolute `LOOKUP[ZR]` proven (ea == XDF) | **0** | **0.0%** |
 | CAL-content index-base cross_checked | **0** | **0.0%** |
-| **Exclusive geometry** | **46** | **66.67%** |
+| **Exclusive geometry** | **69** | **100.0%** |
 | Structural split-ptr (`0xD030`) | 1 | 1.45% |
 | ROM-proven register bases (FE24) | 4 | — |
 
-0.0% absolute (0/69); 0% CAL-content index-base (D200/D978 retracted); 66.67% exclusive geometry (46/69); 4 ROM-proven FE24 bases.
+0.0% absolute (0/69); 0% CAL-content index-base (D200/D978 retracted); 100.0% exclusive geometry (69/69); 4 ROM-proven FE24 bases.
 
-> v7: prioritized main fuel PT/WOT + main ign tables — WOT load axes, PT dwell, WOT control block, PT/WOT load maps+dwell, idle base, accel stack, Alpha-N. D200/D978 remain retracted. Absolute CODE content reads still 0.
+> v8: exclusive geometry for all 69 ign/fuel XDF items via signature/span/twin methods. Absolute LOOKUP[ZR] still 0 (no path appeared). D200/D978 remain retracted. Unproven exclusive: none.
 
 ## ROM-proven register bases
 
@@ -158,7 +158,37 @@ RW24/RW20/RW38 ‘exclusive’ ign geometries rejected — those regs are scratc
 - Offsets: `0xDBC3`
 - Unique 4-byte pre + 8-byte header immediately before Alpha-N DBC3.
 
-**All exclusive offsets (46):** `0xD030`, `0xD032`, `0xD290`, `0xD5A6`, `0xD5E6`, `0xD63A`, `0xD67C`, `0xD69E`, `0xD6AE`, `0xD6C6`, `0xD6E8`, `0xD6FA`, `0xD722`, `0xD734`, `0xD75E`, `0xD8EF`, `0xD8FD`, `0xD91F`, `0xD970`, `0xD984`, `0xD9A6`, `0xD9C8`, `0xD9DA`, `0xDAA8`, `0xDABA`, `0xDBC3`, `0xDC21`, `0xDC37`, `0xDC47`, `0xDC63`, `0xDC79`, `0xDCCF`, `0xDCD9`, `0xDCF3`, `0xDD05`, `0xDD0F`, `0xDD21`, `0xDD89`, `0xDD9B`, `0xDE6D`, `0xDE7F`, `0xDF4D`, `0xDF5F`, `0xE065`, `0xE0B3`, `0xE0DA`
+### Early fuel/ign scalars (AFR, limiter Δzw, cyl trim)
+
+- Method: `unique_span_chain`
+- Offsets: `0xD06A`, `0xD093`, `0xD0FA`
+- Unique span covering Target AFR, speed-limiter ign delta, cyl trim.
+
+### MAF/sensor/speed/spark limit scalar block
+
+- Method: `unique_span_chain`
+- Offsets: `0xD23D`, `0xD23E`, `0xD240`, `0xD244`, `0xD256`, `0xD257`, `0xD25A`, `0xD25B`, `0xD27B`, `0xD27D`, `0xD27E`, `0xD281`, `0xD288`
+- Unique contiguous CAL block: MAF fault limits, coolant/IAT bounds, speed-signal thresholds, spark fault, knock DTC scalar.
+
+### Warm-up enrich + knock sensitivity tables
+
+- Method: `unique_span_chain`
+- Offsets: `0xD815`, `0xD8B1`
+- Unique span from warm-up enrich suspect through knock-by-temp table.
+
+### Knock-related block E044
+
+- Method: `unique_span_chain`
+- Offsets: `0xE044`
+- Unique span from E044 knock block into proven PT load-map region.
+
+### Lambda OFF RPM tables 1–4
+
+- Method: `unique_span_chain`
+- Offsets: `0xE364`, `0xE372`, `0xE37E`, `0xE388`
+- Unique span covering all four Air Lambda OFF RPM tables.
+
+**All exclusive offsets (69):** `0xD030`, `0xD032`, `0xD06A`, `0xD093`, `0xD0FA`, `0xD23D`, `0xD23E`, `0xD240`, `0xD244`, `0xD256`, `0xD257`, `0xD25A`, `0xD25B`, `0xD27B`, `0xD27D`, `0xD27E`, `0xD281`, `0xD288`, `0xD290`, `0xD5A6`, `0xD5E6`, `0xD63A`, `0xD67C`, `0xD69E`, `0xD6AE`, `0xD6C6`, `0xD6E8`, `0xD6FA`, `0xD722`, `0xD734`, `0xD75E`, `0xD815`, `0xD8B1`, `0xD8EF`, `0xD8FD`, `0xD91F`, `0xD970`, `0xD984`, `0xD9A6`, `0xD9C8`, `0xD9DA`, `0xDAA8`, `0xDABA`, `0xDBC3`, `0xDC21`, `0xDC37`, `0xDC47`, `0xDC63`, `0xDC79`, `0xDCCF`, `0xDCD9`, `0xDCF3`, `0xDD05`, `0xDD0F`, `0xDD21`, `0xDD89`, `0xDD9B`, `0xDE6D`, `0xDE7F`, `0xDF4D`, `0xDF5F`, `0xE044`, `0xE065`, `0xE0B3`, `0xE0DA`, `0xE364`, `0xE372`, `0xE37E`, `0xE388`
 
 ## T1–T8 checklist
 
@@ -183,9 +213,9 @@ RW24/RW20/RW38 ‘exclusive’ ign geometries rejected — those regs are scratc
 
 ## Next
 
-1. Compose D000+|0030 and [deref] Ti; CODE-walk one VANOS RPM/load axis
-1. Descriptor patches 0x42DF → 0xDxxx for remaining unproven scalars
-1. Absolute LOOKUP[ZR] for one fuel map body and one ign map body
+1. Compose D000+|0030 and [deref] Ti content (first absolute fuel read)
+1. Descriptor 0x42DF → 0xDxxx for absolute map-body LOOKUP
+1. CODE-walk one exclusive VANOS/fuel/ign table via interp 0x20C7
 
 ---
 Research-only. Verification gates unchanged.

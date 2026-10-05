@@ -366,11 +366,80 @@
       "offsets": [
         "0xDBC3"
       ]
+    },
+    {
+      "id": "early_fuel_ign_scalars_v1",
+      "title": "Early fuel/ign scalars (AFR, limiter \u0394zw, cyl trim)",
+      "offsets": [
+        "0xD06A",
+        "0xD093",
+        "0xD0FA"
+      ]
+    },
+    {
+      "id": "maf_sensor_limit_block_v1",
+      "title": "MAF/sensor/speed/spark limit scalar block",
+      "offsets": [
+        "0xD23D",
+        "0xD23E",
+        "0xD240",
+        "0xD244",
+        "0xD256",
+        "0xD257",
+        "0xD25A",
+        "0xD25B",
+        "0xD27B",
+        "0xD27D",
+        "0xD27E",
+        "0xD281",
+        "0xD288"
+      ]
+    },
+    {
+      "id": "warmup_knock_tables_v1",
+      "title": "Warm-up enrich + knock sensitivity tables",
+      "offsets": [
+        "0xD815",
+        "0xD8B1"
+      ]
+    },
+    {
+      "id": "knock_block_e044_v1",
+      "title": "Knock-related block E044",
+      "offsets": [
+        "0xE044"
+      ]
+    },
+    {
+      "id": "lambda_off_rpm_v1",
+      "title": "Lambda OFF RPM tables 1\u20134",
+      "offsets": [
+        "0xE364",
+        "0xE372",
+        "0xE37E",
+        "0xE388"
+      ]
     }
   ],
   "exclusiveOffsets": [
     "0xD030",
     "0xD032",
+    "0xD06A",
+    "0xD093",
+    "0xD0FA",
+    "0xD23D",
+    "0xD23E",
+    "0xD240",
+    "0xD244",
+    "0xD256",
+    "0xD257",
+    "0xD25A",
+    "0xD25B",
+    "0xD27B",
+    "0xD27D",
+    "0xD27E",
+    "0xD281",
+    "0xD288",
     "0xD290",
     "0xD5A6",
     "0xD5E6",
@@ -384,6 +453,8 @@
     "0xD722",
     "0xD734",
     "0xD75E",
+    "0xD815",
+    "0xD8B1",
     "0xD8EF",
     "0xD8FD",
     "0xD91F",
@@ -412,8 +483,13 @@
     "0xDE7F",
     "0xDF4D",
     "0xDF5F",
+    "0xE044",
     "0xE065",
     "0xE0B3",
-    "0xE0DA"
+    "0xE0DA",
+    "0xE364",
+    "0xE372",
+    "0xE37E",
+    "0xE388"
   ]
 }

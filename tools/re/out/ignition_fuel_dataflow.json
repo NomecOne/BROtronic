@@ -3,18 +3,18 @@
   "id": "ignition_fuel_dataflow_v2",
   "rom": "BMW DME413 SW623 D466.29 C16x900A 94 RedLabel.bin",
   "coverage": {
-    "schemaVersion": 7,
+    "schemaVersion": 8,
     "ignFuelItems": 69,
     "ghidraProvenAbsolute": 0,
     "ghidraProvenAbsolutePct": 0.0,
     "indexBaseCrossCheckedCalContent": 0,
     "indexBaseCrossCheckedCalContentPct": 0.0,
-    "exclusiveGeometry": 46,
-    "exclusiveGeometryPct": 66.67,
+    "exclusiveGeometry": 69,
+    "exclusiveGeometryPct": 100.0,
     "structuralSplitPtr": 1,
     "registerBasesRomProven": 4,
-    "headline": "0.0% absolute (0/69); 0% CAL-content index-base (D200/D978 retracted); 66.67% exclusive geometry (46/69); 4 ROM-proven FE24 bases.",
-    "note": "v7: prioritized main fuel PT/WOT + main ign tables \u2014 WOT load axes, PT dwell, WOT control block, PT/WOT load maps+dwell, idle base, accel stack, Alpha-N. D200/D978 remain retracted. Absolute CODE content reads still 0."
+    "headline": "0.0% absolute (0/69); 0% CAL-content index-base (D200/D978 retracted); 100.0% exclusive geometry (69/69); 4 ROM-proven FE24 bases.",
+    "note": "v8: exclusive geometry for all 69 ign/fuel XDF items via signature/span/twin methods. Absolute LOOKUP[ZR] still 0 (no path appeared). D200/D978 remain retracted. Unproven exclusive: none."
   },
   "seeAlso": [
     "tools/re/out/cal_access_model.json",
@@ -81,8 +81,8 @@
       "dataSize": 8,
       "category": "Fuel",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_early_fuel_ign_scalars_v1",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 208,
@@ -90,7 +90,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
         "CODE has LOOKUP[ZR] immed 0x00D0 (= register RD0), NOT ROM page \u2014 do not treat as CAL read."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 53395,
@@ -104,8 +105,8 @@
       "dataSize": 8,
       "category": "Ignition",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_early_fuel_ign_scalars_v1",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 208,
@@ -113,7 +114,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
         "CODE has LOOKUP[ZR] immed 0x00D0 (= register RD0), NOT ROM page \u2014 do not treat as CAL read."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 53498,
@@ -127,8 +129,8 @@
       "dataSize": 8,
       "category": "Fuel",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_early_fuel_ign_scalars_v1",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 208,
@@ -136,7 +138,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
         "CODE has LOOKUP[ZR] immed 0x00D0 (= register RD0), NOT ROM page \u2014 do not treat as CAL read."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 53821,
@@ -150,8 +153,8 @@
       "dataSize": 8,
       "category": "Ignition",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_maf_sensor_limit_block_v1",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 210,
@@ -159,7 +162,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
         "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page \u2014 do not treat as CAL read."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 53822,
@@ -173,8 +177,8 @@
       "dataSize": 16,
       "category": "Sensors",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_maf_sensor_limit_block_v1",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 210,
@@ -182,7 +186,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
         "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page \u2014 do not treat as CAL read."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 53824,
@@ -196,8 +201,8 @@
       "dataSize": 16,
       "category": "Sensors",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_maf_sensor_limit_block_v1",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 210,
@@ -205,7 +210,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
         "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page \u2014 do not treat as CAL read."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 53828,
@@ -219,8 +225,8 @@
       "dataSize": 16,
       "category": "Sensors",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_maf_sensor_limit_block_v1",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 210,
@@ -228,7 +234,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
         "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page \u2014 do not treat as CAL read."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 53846,
@@ -242,8 +249,8 @@
       "dataSize": 8,
       "category": "Ignition",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_maf_sensor_limit_block_v1",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 210,
@@ -251,7 +258,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
         "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page \u2014 do not treat as CAL read."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 53847,
@@ -265,8 +273,8 @@
       "dataSize": 8,
       "category": "Ignition",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_maf_sensor_limit_block_v1",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 210,
@@ -274,7 +282,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
         "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page \u2014 do not treat as CAL read."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 53850,
@@ -288,8 +297,8 @@
       "dataSize": 8,
       "category": "Ignition",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_maf_sensor_limit_block_v1",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 210,
@@ -297,7 +306,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
         "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page \u2014 do not treat as CAL read."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 53851,
@@ -311,8 +321,8 @@
       "dataSize": 8,
       "category": "Ignition",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_maf_sensor_limit_block_v1",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 210,
@@ -320,7 +330,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
         "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page \u2014 do not treat as CAL read."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 53883,
@@ -334,8 +345,8 @@
       "dataSize": 8,
       "category": "Ignition",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_maf_sensor_limit_block_v1",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 210,
@@ -343,7 +354,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
         "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page \u2014 do not treat as CAL read."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 53885,
@@ -357,8 +369,8 @@
       "dataSize": 8,
       "category": "Ignition",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_maf_sensor_limit_block_v1",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 210,
@@ -366,7 +378,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
         "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page \u2014 do not treat as CAL read."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 53886,
@@ -380,8 +393,8 @@
       "dataSize": 8,
       "category": "Ignition",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_maf_sensor_limit_block_v1",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 210,
@@ -389,7 +402,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
         "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page \u2014 do not treat as CAL read."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 53889,
@@ -403,8 +417,8 @@
       "dataSize": 8,
       "category": "Ignition",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_maf_sensor_limit_block_v1",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 210,
@@ -412,7 +426,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
         "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page \u2014 do not treat as CAL read."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 53896,
@@ -426,8 +441,8 @@
       "dataSize": 8,
       "category": "XDF",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_maf_sensor_limit_block_v1",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 210,
@@ -435,7 +450,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
         "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page \u2014 do not treat as CAL read."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 53904,
@@ -754,8 +770,8 @@
       "dataSize": 8,
       "category": "XDF",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_warmup_knock_tables_v1",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 216,
@@ -763,7 +779,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
         "CODE has LOOKUP[ZR] immed 0x00D8 (= register RD8), NOT ROM page \u2014 do not treat as CAL read."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 55473,
@@ -777,8 +794,8 @@
       "dataSize": 8,
       "category": "XDF",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_warmup_knock_tables_v1",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 216,
@@ -786,7 +803,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
         "CODE has LOOKUP[ZR] immed 0x00D8 (= register RD8), NOT ROM page \u2014 do not treat as CAL read."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 55535,
@@ -1446,15 +1464,16 @@
       "dataSize": 8,
       "category": "XDF",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_knock_block_e044_v1",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 224,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xE0), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 57445,
@@ -1537,15 +1556,16 @@
       "dataSize": 8,
       "category": "Sensors",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_lambda_off_rpm_v1",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 227,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xE3), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 58226,
@@ -1559,15 +1579,16 @@
       "dataSize": 8,
       "category": "Sensors",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_lambda_off_rpm_v1",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 227,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xE3), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 58238,
@@ -1581,15 +1602,16 @@
       "dataSize": 8,
       "category": "Sensors",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_lambda_off_rpm_v1",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 1,
       "pageByte": 227,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xE3), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 58248,
@@ -1603,15 +1625,16 @@
       "dataSize": 8,
       "category": "Sensors",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_lambda_off_rpm_v1",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 227,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xE3), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
-      ]
+      ],
+      "exclusiveGeometry": true
     }
   ],
   "shippingNote": "Research-only. Do not promote into definitions/packs/*.shipping.json.",
@@ -2304,11 +2327,266 @@
           }
         ],
         "note": "Unique 4-byte pre + 8-byte header immediately before Alpha-N DBC3."
+      },
+      {
+        "id": "early_fuel_ign_scalars_v1",
+        "method": "unique_span_chain",
+        "title": "Early fuel/ign scalars (AFR, limiter \u0394zw, cyl trim)",
+        "span": "0xD06A..0xD0FA+4",
+        "offsets": [
+          53354,
+          53395,
+          53498
+        ],
+        "items": [
+          {
+            "offset": 53354,
+            "offsetHex": "0xD06A",
+            "name": "0xD06A[8bit] Fuel, Target AFR of Motronic system",
+            "category": "Fuel",
+            "domain": "fuel"
+          },
+          {
+            "offset": 53395,
+            "offsetHex": "0xD093",
+            "name": "0xD093[8bit] Ign, Timing delta while in Speed Limiter fuel cut",
+            "category": "Ignition",
+            "domain": "ignition"
+          },
+          {
+            "offset": 53498,
+            "offsetHex": "0xD0FA",
+            "name": "0xD0FA[8bit] Fuel, Trim, Individual Cylinder",
+            "category": "Fuel",
+            "domain": "fuel"
+          }
+        ],
+        "note": "Unique span covering Target AFR, speed-limiter ign delta, cyl trim."
+      },
+      {
+        "id": "maf_sensor_limit_block_v1",
+        "method": "unique_span_chain",
+        "title": "MAF/sensor/speed/spark limit scalar block",
+        "span": "0xD23D..0xD288+2",
+        "offsets": [
+          53821,
+          53822,
+          53824,
+          53828,
+          53846,
+          53847,
+          53850,
+          53851,
+          53883,
+          53885,
+          53886,
+          53889,
+          53896
+        ],
+        "items": [
+          {
+            "offset": 53821,
+            "offsetHex": "0xD23D",
+            "name": "0xD23D[8bit] Air, MAF, RPM min threshold for MAF signal check",
+            "category": "Ignition",
+            "domain": "ignition"
+          },
+          {
+            "offset": 53822,
+            "offsetHex": "0xD23E",
+            "name": "0xD23E[16bit] Air, MAF, High Fault Limit kg/h",
+            "category": "Sensors",
+            "domain": "fuel"
+          },
+          {
+            "offset": 53824,
+            "offsetHex": "0xD240",
+            "name": "0xD240[16bit] Air, MAF, Low Fault Limit kg/h",
+            "category": "Sensors",
+            "domain": "fuel"
+          },
+          {
+            "offset": 53828,
+            "offsetHex": "0xD244",
+            "name": "0xD244[16bit] Air, MAF, MAF/RPM Ratio Limit",
+            "category": "Sensors",
+            "domain": "fuel"
+          },
+          {
+            "offset": 53846,
+            "offsetHex": "0xD256",
+            "name": "0xD256[8bit] Coolant Temp Sensor max signal@min volts RAW",
+            "category": "Ignition",
+            "domain": "ignition"
+          },
+          {
+            "offset": 53847,
+            "offsetHex": "0xD257",
+            "name": "0xD257[8bit] Coolant Temp Sensor min signal@max volts RAW",
+            "category": "Ignition",
+            "domain": "ignition"
+          },
+          {
+            "offset": 53850,
+            "offsetHex": "0xD25A",
+            "name": "0xD25A[8bit] Air, IAT max signal",
+            "category": "Ignition",
+            "domain": "ignition"
+          },
+          {
+            "offset": 53851,
+            "offsetHex": "0xD25B",
+            "name": "0xD25B[8bit] Air, IAT min signal",
+            "category": "Ignition",
+            "domain": "ignition"
+          },
+          {
+            "offset": 53883,
+            "offsetHex": "0xD27B",
+            "name": "0xD27B[8bit] Speed, RPM Threshold to activate speed signal check",
+            "category": "Ignition",
+            "domain": "ignition"
+          },
+          {
+            "offset": 53885,
+            "offsetHex": "0xD27D",
+            "name": "0xD27D[8bit] Speed, Counter? Threshold for speed signal check DTC 42",
+            "category": "Ignition",
+            "domain": "ignition"
+          },
+          {
+            "offset": 53886,
+            "offsetHex": "0xD27E",
+            "name": "0xD27E[8bit] RPM, Rev Limit, IF no speed signal",
+            "category": "Ignition",
+            "domain": "ignition"
+          },
+          {
+            "offset": 53889,
+            "offsetHex": "0xD281",
+            "name": "0xD281[8bit] Ign., Spark Fault",
+            "category": "Ignition",
+            "domain": "ignition"
+          },
+          {
+            "offset": 53896,
+            "offsetHex": "0xD288",
+            "name": "0xD288 Knock Sensor DTC related",
+            "category": "XDF",
+            "domain": "fuel"
+          }
+        ],
+        "note": "Unique contiguous CAL block: MAF fault limits, coolant/IAT bounds, speed-signal thresholds, spark fault, knock DTC scalar."
+      },
+      {
+        "id": "warmup_knock_tables_v1",
+        "method": "unique_span_chain",
+        "title": "Warm-up enrich + knock sensitivity tables",
+        "span": "0xD815..0xD8B1+8",
+        "offsets": [
+          55317,
+          55473
+        ],
+        "items": [
+          {
+            "offset": 55317,
+            "offsetHex": "0xD815",
+            "name": "0xD815[D7|6x1] (suspect for warm up enrich?)",
+            "category": "XDF",
+            "domain": "fuel"
+          },
+          {
+            "offset": 55473,
+            "offsetHex": "0xD8B1",
+            "name": "0xD8B1 D7xD4 Knock sensor sensitivity by Temp?",
+            "category": "XDF",
+            "domain": "fuel"
+          }
+        ],
+        "note": "Unique span from warm-up enrich suspect through knock-by-temp table."
+      },
+      {
+        "id": "knock_block_e044_v1",
+        "method": "unique_span_chain",
+        "title": "Knock-related block E044",
+        "span": "0xE044..0xE065+4",
+        "offsets": [
+          57412
+        ],
+        "items": [
+          {
+            "offset": 57412,
+            "offsetHex": "0xE044",
+            "name": "0xE044 D7xD3 3x4 knock related?likely not.. between vanos and Trans data",
+            "category": "XDF",
+            "domain": "fuel"
+          }
+        ],
+        "note": "Unique span from E044 knock block into proven PT load-map region."
+      },
+      {
+        "id": "lambda_off_rpm_v1",
+        "method": "unique_span_chain",
+        "title": "Lambda OFF RPM tables 1\u20134",
+        "span": "0xE364..0xE388+8",
+        "offsets": [
+          58212,
+          58226,
+          58238,
+          58248
+        ],
+        "items": [
+          {
+            "offset": 58212,
+            "offsetHex": "0xE364",
+            "name": "0xE364[|6x1] Air, Lambda OFF 1 RPM*",
+            "category": "Sensors",
+            "domain": "fuel"
+          },
+          {
+            "offset": 58226,
+            "offsetHex": "0xE372",
+            "name": "0xE372[|6x1] Air, Lambda OFF 2 RPM*",
+            "category": "Sensors",
+            "domain": "fuel"
+          },
+          {
+            "offset": 58238,
+            "offsetHex": "0xE37E",
+            "name": "0xE37E[|4x1] Air, Lambda OFF 3 RPM*",
+            "category": "Sensors",
+            "domain": "fuel"
+          },
+          {
+            "offset": 58248,
+            "offsetHex": "0xE388",
+            "name": "0xE388[|4x1] Air, Lambda OFF 4 RPM*",
+            "category": "Sensors",
+            "domain": "fuel"
+          }
+        ],
+        "note": "Unique span covering all four Air Lambda OFF RPM tables."
       }
     ],
     "allOffsets": [
       "0xD030",
       "0xD032",
+      "0xD06A",
+      "0xD093",
+      "0xD0FA",
+      "0xD23D",
+      "0xD23E",
+      "0xD240",
+      "0xD244",
+      "0xD256",
+      "0xD257",
+      "0xD25A",
+      "0xD25B",
+      "0xD27B",
+      "0xD27D",
+      "0xD27E",
+      "0xD281",
+      "0xD288",
       "0xD290",
       "0xD5A6",
       "0xD5E6",
@@ -2322,6 +2600,8 @@
       "0xD722",
       "0xD734",
       "0xD75E",
+      "0xD815",
+      "0xD8B1",
       "0xD8EF",
       "0xD8FD",
       "0xD91F",
@@ -2350,9 +2630,14 @@
       "0xDE7F",
       "0xDF4D",
       "0xDF5F",
+      "0xE044",
       "0xE065",
       "0xE0B3",
-      "0xE0DA"
+      "0xE0DA",
+      "0xE364",
+      "0xE372",
+      "0xE37E",
+      "0xE388"
     ]
   },
   "keyCodeSites": {
@@ -2542,6 +2827,69 @@
           "0xDBC3"
         ],
         "note": "Unique 4-byte pre + 8-byte header immediately before Alpha-N DBC3."
+      },
+      {
+        "id": "early_fuel_ign_scalars_v1",
+        "title": "Early fuel/ign scalars (AFR, limiter \u0394zw, cyl trim)",
+        "method": "unique_span_chain",
+        "offsets": [
+          "0xD06A",
+          "0xD093",
+          "0xD0FA"
+        ],
+        "note": "Unique span covering Target AFR, speed-limiter ign delta, cyl trim."
+      },
+      {
+        "id": "maf_sensor_limit_block_v1",
+        "title": "MAF/sensor/speed/spark limit scalar block",
+        "method": "unique_span_chain",
+        "offsets": [
+          "0xD23D",
+          "0xD23E",
+          "0xD240",
+          "0xD244",
+          "0xD256",
+          "0xD257",
+          "0xD25A",
+          "0xD25B",
+          "0xD27B",
+          "0xD27D",
+          "0xD27E",
+          "0xD281",
+          "0xD288"
+        ],
+        "note": "Unique contiguous CAL block: MAF fault limits, coolant/IAT bounds, speed-signal thresholds, spark fault, knock DTC scalar."
+      },
+      {
+        "id": "warmup_knock_tables_v1",
+        "title": "Warm-up enrich + knock sensitivity tables",
+        "method": "unique_span_chain",
+        "offsets": [
+          "0xD815",
+          "0xD8B1"
+        ],
+        "note": "Unique span from warm-up enrich suspect through knock-by-temp table."
+      },
+      {
+        "id": "knock_block_e044_v1",
+        "title": "Knock-related block E044",
+        "method": "unique_span_chain",
+        "offsets": [
+          "0xE044"
+        ],
+        "note": "Unique span from E044 knock block into proven PT load-map region."
+      },
+      {
+        "id": "lambda_off_rpm_v1",
+        "title": "Lambda OFF RPM tables 1\u20134",
+        "method": "unique_span_chain",
+        "offsets": [
+          "0xE364",
+          "0xE372",
+          "0xE37E",
+          "0xE388"
+        ],
+        "note": "Unique span covering all four Air Lambda OFF RPM tables."
       }
     ]
   }

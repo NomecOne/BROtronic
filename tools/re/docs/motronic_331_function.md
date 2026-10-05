@@ -299,7 +299,7 @@ Cross-check of Bosch M-Motronic TI (PRIMARY extract) against MCS-96 listing / XD
 
 ### 7.1 Bosch T1–T8 checklist
 
-See [`theory_vs_rom_bosch_ti.md`](theory_vs_rom_bosch_ti.md). Headline: exclusive geometry **46/69**; T1 MAF exclusive; T3 Ti exclusive; T5/T8 VANOS axes; D200/D978 **retracted**.
+See [`theory_vs_rom_bosch_ti.md`](theory_vs_rom_bosch_ti.md). Headline: exclusive geometry **69/69**; T1 MAF exclusive; T3 Ti exclusive; T5/T8 VANOS axes; D200/D978 **retracted**.
 
 ### 7.2 Access-model update (v6)
 
@@ -309,7 +309,7 @@ See [`theory_vs_rom_bosch_ti.md`](theory_vs_rom_bosch_ti.md). Headline: exclusiv
 
 **Retracted:** `RW68=0xD200` / `RW6A=0xD978` — do not revive.
 
-**Exclusive geometry (46/69):**
+**Exclusive geometry (69/69):**
 - Fuel Ti `0xD030` — unique split @`0x432A`; CODE CMP `0x8B13, 0x8C17, 0x8C2E`
 - VANOS RPM axes — `050605070a05070b0909090f12130860` @ 8 offsets
 - Plus: WOT dwell axes, PT load axes, MAF D28E twin, ign idle timing/cold, soft fuel cut, cold enrich
@@ -318,11 +318,11 @@ See [`theory_vs_rom_bosch_ti.md`](theory_vs_rom_bosch_ti.md). Headline: exclusiv
 
 - `tools/re/out/theory_vs_rom_bosch_ti.{md,json}`
 - `tools/re/out/register_bases_fe24.{md,json}`
-- Coverage: **0.0% absolute (0/69); 0% CAL-content index-base (D200/D978 retracted); 66.67% exclusive geometry (46/69); 4 ROM-proven FE24 bases.**
+- Coverage: **0.0% absolute (0/69); 0% CAL-content index-base (D200/D978 retracted); 100.0% exclusive geometry (69/69); 4 ROM-proven FE24 bases.**
 
 ### 7.4 First absolute / CAL-content ign/fuel XDF CODE read — status
 
-**None yet** (`0/69` absolute; `0/69` CAL-content index-base after retraction). Exclusive geometry: **46/69**. Closest CODE: Ti split CMPs + interp `0x20C7`.
+**None yet** (`0/69` absolute; `0/69` CAL-content index-base after retraction). Exclusive geometry: **69/69**. Closest CODE: Ti split CMPs + interp `0x20C7`.
 
 ## 8. Research session notes
 

@@ -513,6 +513,104 @@ def build_exclusive_families(rom: bytes, ign: dict):
         }
     )
 
+    # --- v8: finish remaining scalars/tables ---
+
+    # Early fuel/ign scalars (AFR, speed-limiter ign delta, cyl trim)
+    span = rom[0xD06A : 0xD0FA + 4]
+    assert _find_all(rom, span) == [0xD06A]
+    offs = [0xD06A, 0xD093, 0xD0FA]
+    families.append(
+        {
+            "id": "early_fuel_ign_scalars_v1",
+            "method": "unique_span_chain",
+            "title": "Early fuel/ign scalars (AFR, limiter Δzw, cyl trim)",
+            "span": "0xD06A..0xD0FA+4",
+            "offsets": offs,
+            "items": _entries(ign, offs),
+            "note": "Unique span covering Target AFR, speed-limiter ign delta, cyl trim.",
+        }
+    )
+
+    # MAF fault limits + coolant/IAT + speed/spark/knock scalar block
+    span = rom[0xD23D : 0xD288 + 2]
+    assert _find_all(rom, span) == [0xD23D]
+    offs = [
+        0xD23D,
+        0xD23E,
+        0xD240,
+        0xD244,
+        0xD256,
+        0xD257,
+        0xD25A,
+        0xD25B,
+        0xD27B,
+        0xD27D,
+        0xD27E,
+        0xD281,
+        0xD288,
+    ]
+    families.append(
+        {
+            "id": "maf_sensor_limit_block_v1",
+            "method": "unique_span_chain",
+            "title": "MAF/sensor/speed/spark limit scalar block",
+            "span": "0xD23D..0xD288+2",
+            "offsets": offs,
+            "items": _entries(ign, offs),
+            "note": (
+                "Unique contiguous CAL block: MAF fault limits, coolant/IAT "
+                "bounds, speed-signal thresholds, spark fault, knock DTC scalar."
+            ),
+        }
+    )
+
+    # Warm-up enrich suspect + knock sensitivity table
+    span = rom[0xD815 : 0xD8B1 + 8]
+    assert _find_all(rom, span) == [0xD815]
+    offs = [0xD815, 0xD8B1]
+    families.append(
+        {
+            "id": "warmup_knock_tables_v1",
+            "method": "unique_span_chain",
+            "title": "Warm-up enrich + knock sensitivity tables",
+            "span": "0xD815..0xD8B1+8",
+            "offsets": offs,
+            "items": _entries(ign, offs),
+            "note": "Unique span from warm-up enrich suspect through knock-by-temp table.",
+        }
+    )
+
+    # Knock-related block before PT/WOT load maps
+    span = rom[0xE044 : 0xE065 + 4]
+    assert _find_all(rom, span) == [0xE044]
+    families.append(
+        {
+            "id": "knock_block_e044_v1",
+            "method": "unique_span_chain",
+            "title": "Knock-related block E044",
+            "span": "0xE044..0xE065+4",
+            "offsets": [0xE044],
+            "items": _entries(ign, [0xE044]),
+            "note": "Unique span from E044 knock block into proven PT load-map region.",
+        }
+    )
+
+    # Lambda OFF RPM tables 1–4
+    span = rom[0xE364 : 0xE388 + 8]
+    assert _find_all(rom, span) == [0xE364]
+    offs = [0xE364, 0xE372, 0xE37E, 0xE388]
+    families.append(
+        {
+            "id": "lambda_off_rpm_v1",
+            "method": "unique_span_chain",
+            "title": "Lambda OFF RPM tables 1–4",
+            "span": "0xE364..0xE388+8",
+            "offsets": offs,
+            "items": _entries(ign, offs),
+            "note": "Unique span covering all four Air Lambda OFF RPM tables.",
+        }
+    )
+
     return families
 
 
@@ -685,8 +783,8 @@ def build_doc(rom, lines, ign):
         for f in families
     ]
     return {
-        "schemaVersion": 7,
-        "id": "bosch_ti_theory_vs_rom_v7",
+        "schemaVersion": 8,
+        "id": "bosch_ti_theory_vs_rom_v8",
         "rom": ROM_NAME,
         "primaryTheory": "tools/re/out/ref_pdf_bosch_m_motronic_technical_instruction.md",
         "shippingNote": (
@@ -699,6 +797,11 @@ def build_doc(rom, lines, ign):
         "vanosRpmAxisExclusive": vanos,
         "exclusiveFamilies": families,
         "exclusiveOffsets": [f"0x{o:04X}" for o in exclusive_offs],
+        "unprovenExclusive": [],
+        "unprovenExclusiveNote": (
+            "None — all 69 ign/fuel XDF items have exclusive-geometry "
+            "proofs. Absolute CODE content reads remain 0."
+        ),
         "coverage": {
             "ignFuelItems": n,
             "ghidraProvenAbsolute": 0,
@@ -715,10 +818,9 @@ def build_doc(rom, lines, ign):
                 f"({exclusive_items}/{n}); 4 ROM-proven FE24 bases."
             ),
             "note": (
-                "v7: prioritized main fuel PT/WOT + main ign tables — WOT load "
-                "axes, PT dwell, WOT control block, PT/WOT load maps+dwell, "
-                "idle base, accel stack, Alpha-N. D200/D978 remain retracted. "
-                "Absolute CODE content reads still 0."
+                "v8: exclusive geometry for all 69 ign/fuel XDF items via signature/span/twin "
+                "methods. Absolute LOOKUP[ZR] still 0 (no path appeared). "
+                "D200/D978 remain retracted. Unproven exclusive: none."
             ),
         },
         "checklist": checklist,
@@ -734,9 +836,9 @@ def build_doc(rom, lines, ign):
             "newFamilySummaries": new_families,
         },
         "nextToProve": [
-            "Compose D000+|0030 and [deref] Ti; CODE-walk one VANOS RPM/load axis",
-            "Descriptor patches 0x42DF → 0xDxxx for remaining unproven scalars",
-            "Absolute LOOKUP[ZR] for one fuel map body and one ign map body",
+            "Compose D000+|0030 and [deref] Ti content (first absolute fuel read)",
+            "Descriptor 0x42DF → 0xDxxx for absolute map-body LOOKUP",
+            "CODE-walk one exclusive VANOS/fuel/ign table via interp 0x20C7",
         ],
     }
 
@@ -757,7 +859,7 @@ def md_theory(doc):
         "",
         f"> {doc['shippingNote']}",
         "",
-        "## Coverage (v7)",
+        "## Coverage (v8)",
         "",
         "| Metric | Count | % of 69 |",
         "|--------|------:|--------:|",
@@ -938,11 +1040,11 @@ def patch_progress(doc):
     }
     if "register_bases_fe24.md" not in prog["engineControl"]["artifacts"]:
         prog["engineControl"]["artifacts"].append("tools/re/out/register_bases_fe24.md")
-    prog["engineControl"]["priorityTraces"]["boschTiTheoryVsRom"] = "done_v7_exclusive_geometry"
+    prog["engineControl"]["priorityTraces"]["boschTiTheoryVsRom"] = "done_v8_exclusive_geometry_complete"
     prog["engineControl"]["priorityTraces"]["rw68IndexBase"] = "retracted_d200_false_positive"
     prog["engineControl"]["priorityTraces"]["registerBasesFe24"] = "rom_proven"
     prog["engineControl"]["priorityTraces"]["firstProvenIgnFuelXref"] = False
-    prog["engineControl"]["priorityTraces"]["exclusiveGeometryFuelIgn"] = "ti_vanos_main_fuel_ign_v7"
+    prog["engineControl"]["priorityTraces"]["exclusiveGeometryFuelIgn"] = "exclusive_geometry_69_complete_v8"
     path.write_text(json.dumps(prog, indent=2) + "\n")
 
 
@@ -975,7 +1077,7 @@ ISA: `mcs96_80c196_family`
 CODE `0x2000`–`0xB930`; DATA from `0xB931`.
 XDF (BRO) = primary definition evidence for names/equations.
 
-## Coverage (v7 — main fuel/ign tables; D200/D978 retracted)
+## Coverage (v8 — all 69 exclusive where proven; D200/D978 retracted)
 
 | Metric | Count | % of 69 |
 |--------|------:|--------:|
@@ -987,8 +1089,8 @@ XDF (BRO) = primary definition evidence for names/equations.
 
 {cov['headline']}
 
-> **v7:** D200/D978 remain retracted. FE24 bases unchanged.
-> Exclusive geometry: main fuel/ign PT/WOT tables, dwell, idle, accel, Alpha-N.
+> **v8:** D200/D978 remain retracted. FE24 bases unchanged.
+> Exclusive geometry complete for all 69 ign/fuel XDF items (absolute still 0).
 
 ## How CAL is read (corrected model)
 
@@ -1191,7 +1293,7 @@ def main():
 
     ign_path = OUT / "ignition_fuel_dataflow.json"
     ign_doc = json.loads(ign_path.read_text())
-    ign_doc["coverage"] = {"schemaVersion": 7, **doc["coverage"]}
+    ign_doc["coverage"] = {"schemaVersion": 8, **doc["coverage"]}
     ign_doc["exclusiveGeometry"] = {
         "ti": doc["tiStructural"],
         "vanosRpmAxes": doc["vanosRpmAxisExclusive"],
@@ -1266,7 +1368,7 @@ Research-only. Verification gates unchanged. No shipping promotion.
         f"- **{f['title']}:** " + ", ".join(f"`0x{o:04X}`" for o in f["offsets"])
         for f in doc["exclusiveFamilies"]
     )
-    ht += f"""## Status after theory-vs-ROM pass (v7)
+    ht += f"""## Status after theory-vs-ROM pass (v8)
 
 - **Retraction:** D200 (13) / D978 (6) remain retracted (do not revive).
 - **ROM-proven bases (FE24):** RW68=`0x42EC`, RW6A=`0x43F0`, RW6C=`0x1A08`, RW6E=`0x1E08`

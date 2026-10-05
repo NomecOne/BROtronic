@@ -20,11 +20,11 @@ Richard added a **local PRIMARY** Bosch *M-Motronic Engine Management* Technical
 2. Prove or refute T1–T8 / H1–H7 in MCS-96 CODE against RedLabel + XDF.
 3. Do not promote shipping maps from the PDF alone.
 
-## Status after theory-vs-ROM pass (v7)
+## Status after theory-vs-ROM pass (v8)
 
 - **Retraction:** D200 (13) / D978 (6) remain retracted (do not revive).
 - **ROM-proven bases (FE24):** RW68=`0x42EC`, RW6A=`0x43F0`, RW6C=`0x1A08`, RW6E=`0x1E08`
-- **Coverage:** 0.0% absolute (0/69); 0% CAL-content index-base (D200/D978 retracted); 66.67% exclusive geometry (46/69); 4 ROM-proven FE24 bases.
+- **Coverage:** 0.0% absolute (0/69); 0% CAL-content index-base (D200/D978 retracted); 100.0% exclusive geometry (69/69); 4 ROM-proven FE24 bases.
 - **Fuel exclusive:** Ti `0xD030` — unique split @`0x432A`; CODE CMP ['0x8B13', '0x8C17', '0x8C2E']
 - **VANOS RPM axes:** ['0xD984', '0xD9A6', '0xD9C8', '0xDAA8', '0xDD0F', '0xDD89', '0xDE6D', '0xDF4D']
 - **VANOS WOT dwell RPM axes:** `0xD67C`, `0xD69E`
@@ -42,4 +42,9 @@ Richard added a **local PRIMARY** Bosch *M-Motronic Engine Management* Technical
 - **Fuel idle base + cold lambda correction:** `0xD91F`, `0xD970`
 - **Fuel accel enrich stack:** `0xDC21`, `0xDC37`, `0xDC47`, `0xDC63`, `0xDC79`
 - **Alpha-N limp load map:** `0xDBC3`
+- **Early fuel/ign scalars (AFR, limiter Δzw, cyl trim):** `0xD06A`, `0xD093`, `0xD0FA`
+- **MAF/sensor/speed/spark limit scalar block:** `0xD23D`, `0xD23E`, `0xD240`, `0xD244`, `0xD256`, `0xD257`, `0xD25A`, `0xD25B`, `0xD27B`, `0xD27D`, `0xD27E`, `0xD281`, `0xD288`
+- **Warm-up enrich + knock sensitivity tables:** `0xD815`, `0xD8B1`
+- **Knock-related block E044:** `0xE044`
+- **Lambda OFF RPM tables 1–4:** `0xE364`, `0xE372`, `0xE37E`, `0xE388`
 - **Next:** descriptor → 0xDxxx deref; compose+deref Ti; CODE-walk one VANOS axis
