@@ -14,22 +14,22 @@ Examples:
 - `0x539E` `LDB R56,0xd0, LOOKUP[ZR]` bytes `b301d00056` → immed16 `0x00D0` → register_file_0x00D0_not_rom_0xD000
 - `0x5553` `LDB R56,0xd0, LOOKUP[ZR]` bytes `b301d00056` → immed16 `0x00D0` → register_file_0x00D0_not_rom_0xD000
 
-## Descriptor / interp path
+## Descriptor / interp path (v9)
 
-- RW6E expected **`0x1E08`** (CMP sites @0x481B/0x4D66)
-- Init `@ 0x4ED9`: LD RW1C,#0x1E08; fill through 0x1F34 with pointer 0x42DF (and related 0x42E9) — template/default descriptors in mid-CODE island.
-- Interp: ADD RW1A,RW6E; LD RW4C,[RW1A]; then axis/map walk via [RW4C]/[RW50].
-- Blocker: External RedLabel image has 0x0000–0x1FFF erased (0xFF). If production uses internal ROM content at 0x1E08 beyond the 0x4ED9 fill, those CAL pointers are invisible in this dump.
+- Runtime **RW6E=`0xE67E`** (FE14-loaded CAL descriptor table), not RAM `0x1E08`.
+- CMP @0x481B/0x4D66 is dual-config: when `RW6E≠0x1E08`, skip `0x4ECC` RAM fill to `0x42DF`.
+- Interp: `ADD RW1A,RW6E; LD RW4C,[RW1A]`; then axis/map walk via `[RW4C]` / `[RW50]`.
+- Descriptor slots hold LE16 map headers in CAL (e.g. `[E67E+0x9A]=0xDD0D` → ign WOT axis `0xDD0F`).
 
 ## Coverage (ign/fuel XDF items)
 
 | Metric | Count | % |
 |--------|------:|--:|
-| **Ghidra-proven CODE read of XDF offset** | **0** | **0.0%** |
+| **Absolute CODE reads (ea → XDF)** | **31** | **44.93%** |
+| **Exclusive geometry** | **69** | **100.0%** |
 | Structural split-ptr in data island | 1 | 1.45% |
-| Access path unresolved | 68 | — |
 
-0.0% proven CODE reads (0/69); 1 structural split-ptr (0xD030); page-index candidates retracted.
+44.93% absolute (31/69); exclusive 100% (69/69); FE14 CAL bases.
 
 ## Proven absolute DATA reads (any DATA, not necessarily ign/fuel XDF)
 
@@ -41,8 +41,8 @@ Examples:
 
 ## Structural pointers
 
-- `0x432A`: `0xD000` + `0x0030` → `0xD030` (0xD030[16bit] Inj. Constant(Ti) lb/h@3.5B|*DO NOT EDIT ALONE) — CODE read proven: **False**
-  - Mid-CODE data island holds LE16 0xD000 then 0x0030 (= Inj Constant 0xD030). No CODE site yet shown loading this pair into a pointer and dereferencing — structural only.
+- `0x432A`: island exclusive `D000|0030` twin (geometry only).
+- **Absolute Ti:** `RW68+0x2E` → `0xD030` via `LD` @`0xAFC7` / `DIVU` @`0x9A82` — CODE read proven: **True**.
 
 ## Index-base path — RETRACTED (v5)
 
