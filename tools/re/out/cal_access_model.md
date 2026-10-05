@@ -49,10 +49,16 @@ Examples:
 Prior `RW68=0xD200` / `RW6A=0xD978` “exclusive XDF geometry” claims are **false positives**.
 ROM-proven bases from FE24: `RW68=0x42EC`, `RW6A=0x43F0`, `RW6C=0x1A08`, `RW6E=0x1E08`.
 
-## Exclusive geometry (v5 replacement)
+## Exclusive geometry (v6)
 
 1. **Fuel Ti `0xD030`:** unique `D000|0030` @`0x432A` (RW68+0x3E/+0x40) + island↔CAL body twins
-2. **Ign/fuel VANOS RPM axes:** 16-byte signature exclusive to 8 XDF axis starts (rep ign `0xDD0F`)
+2. **VANOS RPM axes (8):** signature `05060507…0860`
+3. **VANOS WOT dwell axes:** `0xD67C`/`0xD69E`
+4. **PT load axes (4):** fuel+ign `0xD9DA`/`DABA`/`DE7F`/`DF5F`
+5. **MAF `0xD290`:** unique BE↔LE twin of `0xD28E` (@FE18 / @D28E)
+6. **Ign idle timing/cold + fuel cold enrich + soft fuel cut** — signature/span/twin methods
+
+**Count: 23/69 exclusive geometry.** Absolute CODE reads still 0. D200/D978 remain retracted.
 
 See `theory_vs_rom_bosch_ti.md` / `register_bases_fe24.md`.
 
@@ -60,7 +66,7 @@ See `theory_vs_rom_bosch_ti.md` / `register_bases_fe24.md`.
 
 1. Compose D000+|0030 from island and `[deref]` Ti content
 1. Trace one `0x20C7` interp call through `[RW4C]` to a `0xDxxx` pointer
-1. CODE-walk one VANOS RPM axis from the exclusive signature set
+1. CODE-walk one VANOS RPM/load axis from the exclusive signature set
 
 ---
 Research-only. Verification gates unchanged. No shipping promotion.

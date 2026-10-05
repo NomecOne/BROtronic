@@ -21,7 +21,7 @@ python3 tools/re/scripts/analyze_bosch_theory_rom.py  # Bosch TI T1–T8 + FE24 
 
 Priority-trace outputs: `irq_ram_publications.*`, `sfr_hso_hsi_audit.*`, `cal_access_model.*`, `register_bases_fe24.*`, `theory_vs_rom_bosch_ti.*`; theory checklist in `motronic_331_function.md` §7.
 
-> **Note:** Prior `RW68=0xD200` “13/69 index-base” claim is **retracted** (false positive). Real bases from unique FE24 structure: `RW68=0x42EC`, `RW6A=0x43F0`, `RW6C=0x1A08`, `RW6E=0x1E08`. Exclusive geometry: Ti `0xD030` + 8 VANOS RPM axes.
+> **Note:** Prior `RW68=0xD200` “13/69 index-base” claim is **retracted** (false positive). Real bases from unique FE24 structure: `RW68=0x42EC`, `RW6A=0x43F0`, `RW6C=0x1A08`, `RW6E=0x1E08`. Exclusive geometry: **23/69** (Ti, VANOS RPM/load/dwell axes, MAF, ign idle, cold enrich, soft fuel cut).
 
 ## Definition evidence (XDF-primary)
 
