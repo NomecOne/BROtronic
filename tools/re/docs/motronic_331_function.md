@@ -294,40 +294,42 @@ Use these as search targets in MCS-96 listing / CFG (`tools/re/out/ghidra/`, `mc
 
 ## 7. Theory vs RedLabel ROM (this RE pass)
 
-Cross-check of §3–§5 control concept against MCS-96 listing / CFG / XDF (offline).  
-**Still not end-to-end CODE+DATA control.**
+Cross-check of Bosch M-Motronic TI (PRIMARY extract) + §§3–5 against MCS-96 listing / XDF.
+**Still not end-to-end CODE+DATA control. Book alone does not verify shipping.**
 
-### 7.1 Checklist
+### 7.1 Bosch T1–T8 checklist
 
-| Theory element (from §§3–5) | ROM / RE status | Evidence |
-|----------------------------|-----------------|----------|
-| HFM/MAF → load → ti / zw chain (H1) | **Partial** | XDF maps present; **0%** proven CODE reads of those offsets (`0.0%`) |
-| MAF transfer `0xD290` | DATA present; CODE path **unresolved** | No absolute `LOOKUP[ZR]` to `0xD290`; likely descriptor/indirect via RW6E=`0x1E08` |
-| Ti constant `0xD030` scales load (H2) | **Structural hit** | Mid-CODE island `@0x432A`: LE16 `0xD000` then `0x0030` (=`0xD030`); CODE deref **not** proven |
-| Crank speed / position | **Strong IRQ** | vec2 `@0xA88E` reads `HSI_time`, publishes `0x14C0/0x14C2/0x14C4/0x14CC` |
-| ADC sensor sampling (MAF/temps) | **Strong IRQ** | vec5 `@0xA4AA` AD kick + `AD_resulthi` → `0x187C` / RW70 ring |
-| Injector / spark drivers | **HSO path identified** | Writes named `HSI_status`/`HSI_time` are Intel **HSO_COMMAND/HSO_TIME** aliases (SFR audit `cross_checked`); channel bits **open** |
-| Dual VANOS fuel/ign maps (H3) | REPO only | XDF dual tables; selector CODE TBD |
-| Alpha-N limp `0xDBC3` (H4) | REPO only | Fault path CODE TBD |
-| 10 ms / ignition-sync tasks | **Partial** | Foreground `FUN_4815`+EI; HSI/HSO sync in IRQ; exact 10 ms tick TBD |
-| EWS fuel lock (H6) | **Unknown** | No claim |
+See [`theory_vs_rom_bosch_ti.md`](theory_vs_rom_bosch_ti.md) for full table. Headline statuses:
 
-### 7.2 Access-model correction (blocks false “page” xrefs)
+| ID | Status |
+|----|--------|
+| T1 HFM/MAF | `partial_code` — ADC schedule + RW68→MAF region |
+| T2 load/stroke | `partial_code` — 0x14CC→DIVU→0x1566 |
+| T3 ti_base | `structural_only` — 0xD030 island; interp #0xD0/#0x30 |
+| T4 corrections | `xdf_only` |
+| T5 zw/knock | `partial_code` — 0xD288/0xD281 via RW68 |
+| T6 dwell | `xdf_only` |
+| T7 Alpha-N | `xdf_only` |
+| T8 VANOS | `xdf_only` |
 
-`LDB Rx,0xd0, LOOKUP[ZR]` is **register file `0x00D0`**, not ROM page `0xD0`.  
-Prior ign/fuel “page-indexed” candidates are **retracted**. Real CAL reads likely go:
-`RW6E(=0x1E08) → descriptor → [ptr]` into `0xDxxx`, with internal/low ROM visibility limited (`0x0000–0x1FFF` erased in external image).
+### 7.2 Access-model update (RW68 index base)
+
+`LDB Rx,0xd0, LOOKUP[ZR]` remains **register file `0x00D0`**, not ROM page `0xD0`.
+
+**New:** `LOOKUP/TABLE[RW68]` with base **`RW68 = 0xD200`** is **cross_checked** by unique XDF geometry (MAF offset quartet `+0x3E/+0x40/+0x44/+0x90` → `0xD23E/D240/D244/D290` only for that base). External image has no `LD RW68,#imm` (low ROM erased).
 
 ### 7.3 Artifacts
 
+- `tools/re/out/theory_vs_rom_bosch_ti.{md,json}`
+- `tools/re/out/rw68_cal_index_base.{md,json}`
 - `tools/re/out/irq_ram_publications.{md,json}`
 - `tools/re/out/sfr_hso_hsi_audit.{md,json}`
 - `tools/re/out/cal_access_model.{md,json}`
-- Coverage headline: **0.0% proven CODE reads (0/69); 1 structural split-ptr (0xD030); page-index candidates retracted.**
+- Coverage: **0.0% absolute proven (0/69); 18.84% index-base cross_checked (13/69 via RW68=0xD200); 1 structural (0xD030).**
 
-### 7.4 First proven ign/fuel XDF CODE read — status
+### 7.4 First absolute ign/fuel XDF CODE read — status
 
-**None yet** (`0/69`). Closest: structural `0xD030` split-ptr in data island; next work is pointer-chase from `@0x432A` / descriptor walk through `0x20C7` interp.
+**None yet** (`0/69` absolute). **New cross_checked index-base xrefs:** 13 targets / 19 sites via `RW68+0xD200` (includes MAF cal `0xD290` @`0x68CD`, MAF fault limits, IAT/coolant mins/maxes, knock `0xD288`).
 
 ## 8. Research session notes
 

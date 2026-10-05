@@ -19,3 +19,10 @@ Richard added a **local PRIMARY** Bosch *M-Motronic Engine Management* Technical
 1. Prefer page cites from the extract (booklet pp. 28–30 load/HFM; 38–41 ti/zw/dwell) over Archive.org borrow.
 2. Prove or refute T1–T8 / H1–H7 in MCS-96 CODE against RedLabel + XDF.
 3. Do not promote shipping maps from the PDF alone.
+
+## Status after theory-vs-ROM pass
+
+- Checklist: `theory_vs_rom_bosch_ti.md` (T1–T8)
+- **Coverage:** 0.0% absolute proven (0/69); **18.84%** index-base cross_checked (13/69 via `RW68=0xD200`); 1 structural (`0xD030`)
+- New xrefs: `rw68_cal_index_base.md` (MAF `0xD290` @`0x68CD`, fault limits, IAT/coolant, knock)
+- Next: confirm `LD RW68,#imm` in internal ROM; chase descriptor `#0xD0`/`#0x30` after `0x1566` load product

@@ -16,6 +16,7 @@ Regenerate engine-control artifacts (after Ghidra + ingest):
 ```bash
 python3 tools/re/scripts/analyze_engine_control.py
 python3 tools/re/scripts/analyze_priority_traces.py   # IRQ RAM pubs, HSO/HSI SFR audit, CAL access model v2
+python3 tools/re/scripts/analyze_bosch_theory_rom.py  # Bosch TI T1–T8 checklist + RW68=0xD200 xrefs
 ```
 
 Priority-trace outputs: `irq_ram_publications.*`, `sfr_hso_hsi_audit.*`, `cal_access_model.*`; theory checklist in `motronic_331_function.md` §7.
@@ -104,10 +105,12 @@ npm aliases: `npm run re:ingest`, `npm run re:annotate`, `npm run re:ghidra:dete
 | `tools/re/out/mcs96_branch_resolve.json` | Branch resolve summary |
 | `tools/re/out/structural_code.json` | Pre-Ghidra structural markers (not canonical) |
 | `tools/re/out/control_loops.{json,md}` | Hypothesized control loops (boot/IRQ/foreground) — not proven semantics |
-| `tools/re/out/ignition_fuel_dataflow.{json,md}` | Ignition/fuel XDF → DATA → CODE xref status (v2 corrects false page model) |
+| `tools/re/out/ignition_fuel_dataflow.{json,md}` | Ignition/fuel XDF → DATA → CODE xref status (v3: RW68 index-base) |
 | `tools/re/out/irq_ram_publications.{json,md}` | vec2/vec5 IRQ → RAM publication map |
 | `tools/re/out/sfr_hso_hsi_audit.{json,md}` | HSO_COMMAND/HSO_TIME vs HSI_* R/W alias (cross_checked) |
 | `tools/re/out/cal_access_model.{json,md}` | CAL access model correction + proven-xref attempt |
+| `tools/re/out/rw68_cal_index_base.{json,md}` | RW68=0xD200 index-base cross_checked ign/fuel xrefs |
+| `tools/re/out/theory_vs_rom_bosch_ti.{json,md}` | Bosch TI T1–T8 theory-vs-ROM checklist + load path |
 | `tools/re/out/motronic_331_function.md` | Motronic 3.3.1 MAF theory + §7 theory-vs-ROM |
 | `tools/re/out/ref_pdf_bosch_m_motronic_technical_instruction.md` | Page-cited extract from local Bosch M-Motronic TI PDF |
 | `tools/re/out/code_verification_progress.json` | CODE verification + engine-control coverage framing |

@@ -147,19 +147,22 @@ Use this PDF as **expected structure**; prove or refute in MCS-96 CODE:
 
 | # | Theory (this PDF) | ROM / XDF target | Status |
 |---|-------------------|------------------|--------|
-| T1 | Primary load = air-mass kg/h (HFM) | MAF `0xD290`; ADC→lookup | Theory **PRIMARY**; CODE TBD |
-| T2 | Load = air mass per stroke from mass + speed | D5 filtered load (inj-time referred) | Strong XDF; CODE TBD |
-| T3 | `ti_base = f(load, injector_constant)`, λ≈1 | Ti `0xD030` + PT/WOT fuel maps | Strong XDF; CODE TBD |
-| T4 | Correction stack + Vbat + lambda + overrun cut | Enrich / O2 / voltage / cut tables | Partial XDF |
-| T5 | `zw_base = map(load, rpm)` + corrections − knock | PT/WOT ign VANOS maps; knock | Partial |
-| T6 | Dwell = f(Vbat, rpm) | `0xE0DA` | XDF named; CODE TBD |
-| T7 | TPS secondary / limp load | Alpha-N `0xDBC3` | Strong XDF |
-| T8 | Camshaft control expander | VANOS dual fuel/ign maps | BMW app + XDF; CODE selector TBD |
+| T1 | Primary load = air-mass kg/h (HFM) | MAF 0xD290; ADC→lookup | `partial_code` — ADC schedule @0x427A (ch 0x0A→0x1454 high-rate hyp); RW68+0x90→0xD290 CODE site @0x68CD (index-base cross_checked); MAF fault limits 0xD23E/D240/D244 via RW68. |
+| T2 | Load = air mass per stroke from mass + speed | D5 filtered load (inj-time referred) | `partial_code` — vec2 0x14CC period → DIVU @0x5AEB → ST 0x1566 @0x5AFD; consumer @0xB212. XDF D5 axis link still open. |
+| T3 | ti_base = f(load, injector_constant), λ≈1 | Ti 0xD030 + PT/WOT fuel maps | `structural_only` — Structural 0xD000+0x0030 @0x432A; post-load LCALL 0x20C7 RW1A=#0xD0/#0x30. No CODE deref of 0xD030 yet. |
+| T4 | Correction stack + Vbat + lambda + overrun cut | Enrich / O2 / voltage / cut tables | `xdf_only` — Partial XDF; CODE stack order not mapped this pass. |
+| T5 | zw_base = map(load, rpm) + corrections − knock | PT/WOT ign VANOS maps; knock | `partial_code` — Knock-related 0xD288 via RW68+0x88 @0x660C; spark-fault 0xD281 @0xB0AF. Main zw map reads still unresolved. |
+| T6 | Dwell = f(Vbat, rpm) | 0xE0DA | `xdf_only` — XDF named; no RW68/absolute CODE read this pass. |
+| T7 | TPS secondary / limp load | Alpha-N 0xDBC3 | `xdf_only` — Strong XDF; fault path CODE TBD. |
+| T8 | Camshaft control expander | VANOS dual fuel/ign maps | `xdf_only` — BMW app + XDF dual maps; selector CODE TBD. |
+
+**Coverage (CODE×XDF, not book):** 0.0% absolute proven (0/69); 18.84% index-base cross_checked (13/69 via RW68=0xD200); 1 structural (0xD030).
 
 **Do not** promote shipping maps from this PDF alone.
 
----
+Detail: [`theory_vs_rom_bosch_ti.md`](theory_vs_rom_bosch_ti.md), [`rw68_cal_index_base.md`](rw68_cal_index_base.md).
 
+---
 ## 6. Cloud RE handoff note
 
 **New evidence available locally:** Bosch M-Motronic Technical Instruction PDF under `tools/re/docs/`.  

@@ -3,14 +3,15 @@
   "id": "ignition_fuel_dataflow_v2",
   "rom": "BMW DME413 SW623 D466.29 C16x900A 94 RedLabel.bin",
   "coverage": {
-    "items": 69,
-    "ghidraProvenCodeRead": 0,
-    "ghidraProvenPct": 0.0,
+    "schemaVersion": 3,
+    "ignFuelItems": 69,
+    "ghidraProvenAbsolute": 0,
+    "ghidraProvenAbsolutePct": 0.0,
+    "indexBaseCrossChecked": 13,
+    "indexBaseCrossCheckedPct": 18.84,
     "structuralSplitPtr": 1,
-    "structuralSplitPtrPct": 1.45,
-    "accessPathUnresolved": 68,
-    "registerFileConfusionSitesNoted": 27,
-    "headline": "0.0% proven CODE reads (0/69); 1 structural split-ptr (0xD030); page-index candidates retracted."
+    "headline": "0.0% absolute proven (0/69); 18.84% index-base cross_checked (13/69 via RW68=0xD200); 1 structural (0xD030).",
+    "accessModel": "v3_rw68_index_base"
   },
   "seeAlso": [
     "tools/re/out/cal_access_model.json",

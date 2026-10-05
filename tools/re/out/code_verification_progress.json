@@ -28,8 +28,10 @@
       "IRQ 0xAxxx landings are inside CODE\u22640xB930 \u2014 review mid-CODE executable vs data-island (irq_stubs_review.json)",
       "Mid-CODE data islands (XDF claims / pads) still coarsely labeled",
       "Do not promote CODE-derived maps to shipping until map-level cross_checked/verified",
-      "Engine control: 0% ghidraProven ign/fuel CODE reads \u2014 resolve page-index bases to XDF offsets",
       "Trace HSI_*/PORT outputs to spark vs injector (SFR naming audit)",
+      "Do not claim full CODE+DATA control; verification gates unchanged",
+      "Engine control: 0% absolute ign/fuel CODE reads; 18.84% RW68 index-base cross_checked \u2014 confirm LD RW68 in internal ROM",
+      "Trace descriptor slot 0xD0/0x30 after load (0x1566) to Ti/fuel map pointers",
       "Do not claim full CODE+DATA control; verification gates unchanged"
     ]
   },
@@ -50,21 +52,28 @@
       "tools/re/out/irq_ram_publications.md",
       "tools/re/out/sfr_hso_hsi_audit.md",
       "tools/re/out/cal_access_model.md",
-      "tools/re/out/motronic_331_function.md"
+      "tools/re/out/motronic_331_function.md",
+      "tools/re/out/theory_vs_rom_bosch_ti.md",
+      "tools/re/out/rw68_cal_index_base.md",
+      "tools/re/out/ref_pdf_bosch_m_motronic_technical_instruction.md"
     ],
     "ignitionFuelCoverage": {
       "items": 69,
       "ghidraProvenCodeRead": 0,
       "ghidraProvenPct": 0.0,
+      "indexBaseCrossChecked": 13,
+      "indexBaseCrossCheckedPct": 18.84,
       "structuralSplitPtr": 1,
-      "headline": "0.0% proven CODE reads (0/69); 1 structural split-ptr (0xD030); page-index candidates retracted.",
-      "note": "v2: retracted false page-index candidates; proven still requires absolute/indirect ea == XDF offset."
+      "headline": "0.0% absolute proven (0/69); 18.84% index-base cross_checked (13/69 via RW68=0xD200); 1 structural (0xD030).",
+      "note": "v3: absolute proven still 0; new RW68=0xD200 index-base cross_checked xrefs (unique MAF offset quartet). Not shipping."
     },
     "priorityTraces": {
       "irqRamPublications": "done_v1",
       "sfrHsoHsiAudit": "cross_checked",
       "calAccessModel": "corrected_v2",
-      "firstProvenIgnFuelXref": false
+      "firstProvenIgnFuelXref": false,
+      "boschTiTheoryVsRom": "done_v1",
+      "rw68IndexBase": "cross_checked_d200"
     }
   }
 }

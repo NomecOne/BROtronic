@@ -1,0 +1,309 @@
+{
+  "schemaVersion": 1,
+  "id": "bosch_ti_theory_vs_rom_v1",
+  "rom": "BMW DME413 SW623 D466.29 C16x900A 94 RedLabel.bin",
+  "primaryTheory": "tools/re/out/ref_pdf_bosch_m_motronic_technical_instruction.md",
+  "shippingNote": "Book is PRIMARY family theory only. Do not verify or promote shipping maps from the PDF alone.",
+  "coverage": {
+    "ignFuelItems": 69,
+    "ghidraProvenAbsolute": 0,
+    "ghidraProvenAbsolutePct": 0.0,
+    "indexBaseCrossChecked": 13,
+    "indexBaseCrossCheckedPct": 18.84,
+    "structuralSplitPtr": 1,
+    "headline": "0.0% absolute proven (0/69); 18.84% index-base cross_checked (13/69 via RW68=0xD200); 1 structural (0xD030)."
+  },
+  "checklist": [
+    {
+      "id": "T1",
+      "theory": "Primary load = air-mass kg/h (HFM)",
+      "romTarget": "MAF 0xD290; ADC\u2192lookup",
+      "status": "partial_code",
+      "evidence": "ADC schedule @0x427A (ch 0x0A\u21920x1454 high-rate hyp); RW68+0x90\u21920xD290 CODE site @0x68CD (index-base cross_checked); MAF fault limits 0xD23E/D240/D244 via RW68."
+    },
+    {
+      "id": "T2",
+      "theory": "Load = air mass per stroke from mass + speed",
+      "romTarget": "D5 filtered load (inj-time referred)",
+      "status": "partial_code",
+      "evidence": "vec2 0x14CC period \u2192 DIVU @0x5AEB \u2192 ST 0x1566 @0x5AFD; consumer @0xB212. XDF D5 axis link still open."
+    },
+    {
+      "id": "T3",
+      "theory": "ti_base = f(load, injector_constant), \u03bb\u22481",
+      "romTarget": "Ti 0xD030 + PT/WOT fuel maps",
+      "status": "structural_only",
+      "evidence": "Structural 0xD000+0x0030 @0x432A; post-load LCALL 0x20C7 RW1A=#0xD0/#0x30. No CODE deref of 0xD030 yet."
+    },
+    {
+      "id": "T4",
+      "theory": "Correction stack + Vbat + lambda + overrun cut",
+      "romTarget": "Enrich / O2 / voltage / cut tables",
+      "status": "xdf_only",
+      "evidence": "Partial XDF; CODE stack order not mapped this pass."
+    },
+    {
+      "id": "T5",
+      "theory": "zw_base = map(load, rpm) + corrections \u2212 knock",
+      "romTarget": "PT/WOT ign VANOS maps; knock",
+      "status": "partial_code",
+      "evidence": "Knock-related 0xD288 via RW68+0x88 @0x660C; spark-fault 0xD281 @0xB0AF. Main zw map reads still unresolved."
+    },
+    {
+      "id": "T6",
+      "theory": "Dwell = f(Vbat, rpm)",
+      "romTarget": "0xE0DA",
+      "status": "xdf_only",
+      "evidence": "XDF named; no RW68/absolute CODE read this pass."
+    },
+    {
+      "id": "T7",
+      "theory": "TPS secondary / limp load",
+      "romTarget": "Alpha-N 0xDBC3",
+      "status": "xdf_only",
+      "evidence": "Strong XDF; fault path CODE TBD."
+    },
+    {
+      "id": "T8",
+      "theory": "Camshaft control expander",
+      "romTarget": "VANOS dual fuel/ign maps",
+      "status": "xdf_only",
+      "evidence": "BMW app + XDF dual maps; selector CODE TBD."
+    }
+  ],
+  "loadPath": {
+    "t1_hfm_adc": {
+      "scheduleBase": "0x427A",
+      "scheduleEnd": "0x42A0",
+      "isr": "0xA4AA",
+      "mechanism": "vec5 loads channel word then dest word from schedule; LDB AD_resultlo,R44 kicks channel; STB AD_resulthi,[RW44] stores sample.",
+      "entries": [
+        {
+          "channel": "0x0E",
+          "destHex": "0x129A",
+          "note": null
+        },
+        {
+          "channel": "0x0B",
+          "destHex": "0x1453",
+          "note": null
+        },
+        {
+          "channel": "0x0A",
+          "destHex": "0x1454",
+          "note": "highest sample rate (\u00d74)"
+        },
+        {
+          "channel": "0x0D",
+          "destHex": "0x1451",
+          "note": null
+        },
+        {
+          "channel": "0x09",
+          "destHex": "0x1452",
+          "note": null
+        },
+        {
+          "channel": "0x0C",
+          "destHex": "0x12BE",
+          "note": null
+        },
+        {
+          "channel": "0x0A",
+          "destHex": "0x1454",
+          "note": "highest sample rate (\u00d74)"
+        },
+        {
+          "channel": "0x0A",
+          "destHex": "0x1454",
+          "note": "highest sample rate (\u00d74)"
+        },
+        {
+          "channel": "0x0A",
+          "destHex": "0x1454",
+          "note": "highest sample rate (\u00d74)"
+        },
+        {
+          "channel": "0x09",
+          "destHex": "0x1450",
+          "note": null
+        }
+      ],
+      "mafChannelHypothesis": {
+        "channel": "0x0A",
+        "dest": "0x1454",
+        "reason": "most frequent schedule slot; consumers do range/fault checks",
+        "evidenceStrength": "medium"
+      }
+    },
+    "t2_load_per_stroke": {
+      "periodPub": {
+        "ram": "0x14CC",
+        "writer": "0xAA8F (vec2)",
+        "role": "derived_period_scale"
+      },
+      "divuSite": "0x5AEB",
+      "divuInsn": "DIVU RL48,0x14cc, TABLE[ZR]",
+      "productRam": "0x1566",
+      "storeSite": "0x5AFD",
+      "consumer": "0xB212 LD RW38,0x1566",
+      "note": "Foreground scales a quantity by 1/period (\u00d70x9C40) into 0x1566 \u2014 candidate air-mass-per-stroke / load index (Bosch p.38). Not yet tied to XDF D5 filtered-load axis by CODE proof.",
+      "evidenceStrength": "medium"
+    },
+    "t3_interp_after_load": {
+      "sites": [
+        {
+          "ld": "0x5B02",
+          "index": "0xD0",
+          "call": "0x5B06 LCALL 0x20C7"
+        },
+        {
+          "ld": "0x5B57",
+          "index": "0x30",
+          "call": "0x5B5B LCALL 0x20C7"
+        }
+      ],
+      "interp": "0x20C7 \u2192 0x33C2; ADD RW1A,RW6E; LD RW4C,[RW1A]",
+      "descriptorTable": "RW6E=0x1E08 (default fill 0x42DF @0x4ED9)",
+      "note": "Post-load interp indices 0xD0 / 0x30 are descriptor slots, not ROM page bytes. CAL target behind slot still unresolved in external image.",
+      "evidenceStrength": "high_for_mechanism"
+    }
+  },
+  "rw68": {
+    "baseHex": "0xD200",
+    "uniqueTargetCount": 13,
+    "siteCount": 19,
+    "targets": {
+      "0xD23E": {
+        "offset": 53822,
+        "name": "0xD23E[16bit] Air, MAF, High Fault Limit kg/h",
+        "siteCount": 3,
+        "sites": [
+          "0x8B13",
+          "0x8C17",
+          "0x8C2E"
+        ]
+      },
+      "0xD240": {
+        "offset": 53824,
+        "name": "0xD240[16bit] Air, MAF, Low Fault Limit kg/h",
+        "siteCount": 1,
+        "sites": [
+          "0x8BCC"
+        ]
+      },
+      "0xD244": {
+        "offset": 53828,
+        "name": "0xD244[16bit] Air, MAF, MAF/RPM Ratio Limit",
+        "siteCount": 2,
+        "sites": [
+          "0x8CD3",
+          "0x8CE7"
+        ]
+      },
+      "0xD256": {
+        "offset": 53846,
+        "name": "0xD256[8bit] Coolant Temp Sensor max signal@min volts RAW",
+        "siteCount": 3,
+        "sites": [
+          "0x498E",
+          "0x5162",
+          "0xAFAD"
+        ]
+      },
+      "0xD257": {
+        "offset": 53847,
+        "name": "0xD257[8bit] Coolant Temp Sensor min signal@max volts RAW",
+        "siteCount": 1,
+        "sites": [
+          "0x5A6C"
+        ]
+      },
+      "0xD25A": {
+        "offset": 53850,
+        "name": "0xD25A[8bit] Air, IAT max signal",
+        "siteCount": 1,
+        "sites": [
+          "0x5C73"
+        ]
+      },
+      "0xD25B": {
+        "offset": 53851,
+        "name": "0xD25B[8bit] Air, IAT min signal",
+        "siteCount": 1,
+        "sites": [
+          "0x5CEF"
+        ]
+      },
+      "0xD27B": {
+        "offset": 53883,
+        "name": "0xD27B[8bit] Speed, RPM Threshold to activate speed signal check",
+        "siteCount": 1,
+        "sites": [
+          "0x99BE"
+        ]
+      },
+      "0xD27D": {
+        "offset": 53885,
+        "name": "0xD27D[8bit] Speed, Counter? Threshold for speed signal check DTC 42",
+        "siteCount": 1,
+        "sites": [
+          "0x9974"
+        ]
+      },
+      "0xD27E": {
+        "offset": 53886,
+        "name": "0xD27E[8bit] RPM, Rev Limit, IF no speed signal",
+        "siteCount": 2,
+        "sites": [
+          "0x9758",
+          "0x9B7C"
+        ]
+      },
+      "0xD281": {
+        "offset": 53889,
+        "name": "0xD281[8bit] Ign., Spark Fault",
+        "siteCount": 1,
+        "sites": [
+          "0xB0AF"
+        ]
+      },
+      "0xD288": {
+        "offset": 53896,
+        "name": "0xD288 Knock Sensor DTC related",
+        "siteCount": 1,
+        "sites": [
+          "0x660C"
+        ]
+      },
+      "0xD290": {
+        "offset": 53904,
+        "name": "0xD290[Func|5V|256]MAF Cal. kg/h",
+        "siteCount": 1,
+        "sites": [
+          "0x68CD"
+        ]
+      }
+    },
+    "proof": {
+      "method": "unique_xdf_geometry",
+      "constraintOffsets": [
+        "0x3E",
+        "0x40",
+        "0x44",
+        "0x90"
+      ],
+      "constraintTargets": [
+        "0xD23E",
+        "0xD240",
+        "0xD244",
+        "0xD290"
+      ],
+      "uniqueBases": [
+        "0xD200"
+      ],
+      "note": "Only base 0xD200 makes RW68+{0x3E,0x40,0x44,0x90} land simultaneously on MAF high/low/ratio/cal XDF items. No LD RW68,#imm in external image (0x0000\u20130x1FFF erased); base is cross_checked by geometry, not by immediate load.",
+      "ldImmediateInExternalImage": false
+    }
+  }
+}

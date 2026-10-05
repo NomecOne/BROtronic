@@ -44,11 +44,15 @@ Examples:
 - `0x432A`: `0xD000` + `0x0030` → `0xD030` (0xD030[16bit] Inj. Constant(Ti) lb/h@3.5B|*DO NOT EDIT ALONE) — CODE read proven: **False**
   - Mid-CODE data island holds LE16 0xD000 then 0x0030 (= Inj Constant 0xD030). No CODE site yet shown loading this pair into a pointer and dereferencing — structural only.
 
-## Next to prove first XDF CODE read
+## Index-base path (v3 addendum)
 
+`LOOKUP/TABLE[RW68]` with **`RW68 = 0xD200`** is **cross_checked** by unique XDF geometry (MAF quartet). See `rw68_cal_index_base.md` — **13/69** ign/fuel targets, **not** absolute `LOOKUP[ZR]` proven.
+
+## Next to prove first *absolute* XDF CODE read
+
+1. Recover `LD RW68,#0xD200` (likely in erased `0x0000–0x1FFF`) or otherwise lock the base by immediate
 1. Find CODE that loads 0xD000 from 0x432A (or descriptor) into RWxx and ADDs 0x0030, then [RWxx]
-1. Dump/recover internal ROM 0x0000–0x1FFF or instrument RAM 0x1E08 descriptor contents after boot
-1. Trace one 0x20C7 interp call with known RW1A index through [RW4C] to a 0xDxxx pointer
+1. Trace one 0x20C7 interp call with known RW1A index (`#0xD0` / `#0x30` after load) through [RW4C] to a 0xDxxx pointer
 
 ---
 Research-only. Verification gates unchanged. No shipping promotion.
