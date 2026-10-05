@@ -156,7 +156,7 @@ Use this PDF as **expected structure**; prove or refute in MCS-96 CODE:
 | T7 | TPS secondary / limp load | Alpha-N 0xDBC3 | `exclusive_geometry` — Alpha-N DBC3 unique pre+header; fault-path CODE TBD. |
 | T8 | Camshaft control expander | VANOS dual maps | `exclusive_geometry_axes` — PT/WOT fuel+ign VANOS RPM + PT load + WOT dwell axes exclusive. Selector CODE TBD. |
 
-**Coverage (CODE×XDF, not book):** 98.55% absolute (68/69); exclusive geometry 100.0% (69/69); unproven absolute 1; FE14 CAL bases; D200/D978 retracted.
+**Coverage (CODE×XDF, not book):** 100.0% absolute (69/69); exclusive geometry 100.0% (69/69); unproven absolute 0; resolved XDF mislabels 1; FE14 CAL bases; D200/D978 retracted.
 
 **Do not** promote shipping maps from this PDF alone.
 

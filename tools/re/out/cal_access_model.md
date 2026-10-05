@@ -25,12 +25,15 @@ Examples:
 
 | Metric | Count | % |
 |--------|------:|--:|
-| **Absolute CODE reads (ea → XDF)** | **68** | **98.55%** |
+| **Absolute CODE reads (ea → XDF)** | **69** | **100.0%** |
 | **Exclusive geometry** | **69** | **100.0%** |
-| Unproven absolute | **1** (`0xD23D`) | — |
+| Unproven absolute | **0** | — |
+| Reconciled XDF mislabels | **1** (`0xD23D`→`0xD23C`) | — |
 | Structural split-ptr in data island | 1 | 1.45% |
 
-98.55% absolute (68/69); exclusive 100% (69/69); leftover `0xD23D` (byte vs adjacent word).
+100.0% absolute (69/69); exclusive geometry 100.0% (69/69); unproven absolute 0; resolved XDF mislabels 1; FE14 CAL bases; D200/D978 retracted.
+
+> **v11 D23D:** XDF mislabel — true read is LE16 @`0xD23C` via CMP @`0x52E3` (ROM `0x01F4`). Do **not** auto-promote shipping.
 
 ## Proven absolute DATA reads (any DATA, not necessarily ign/fuel XDF)
 
@@ -68,10 +71,11 @@ CMP @0x4D60/0x481B is dual-config (CAL bases skip 0x4ECC RAM fill).
 1. **MAF `0xD290`:** ADC ISR `0xA53B` `ADD RW64,0x2[RW46]` with `RW46=RW6C+2·ADC`
 2. **Ti `0xD030`:** `LD RW40,0x2e[RW68]` @0xAFC7; `DIVU …,0x2e,TABLE[RW68]` @0x9A82
 3. **Ign WOT `0xDD0F`:** `LD RW1A,#0x9A` @0x66EC → `0x20CD` → `[E67E+9A]=DD0D`
+4. **D23D reconcile (v11):** CMP @`0x52E3` → LE16 @`0xD23C`=`0x01F4` — XDF 8-bit@`0xD23D` mislabel; **do not auto-promote**
 
-**Coverage:** absolute **68/69** (98.55%); exclusive **69/69** (100%). Unproven absolute: `0xD23D` (no byte LOOKUP; adjacent word @`0xD23C`). D200/D978 remain retracted.
+**Coverage:** absolute **69/69** (100.0%); exclusive **69/69** (100%). Unproven absolute: **0**. Reconciled XDF mislabels: **1** (`0xD23D`). D200/D978 remain retracted.
 
-See `theory_vs_rom_bosch_ti.md` / `register_bases_fe24.md` / `absolute_code_reads.json`.
+See `theory_vs_rom_bosch_ti.md` / `register_bases_fe24.md` / `absolute_code_reads.json` / `engine_control_dataflow_summary.md`.
 
 ---
 Research-only. Verification gates unchanged. No shipping promotion.

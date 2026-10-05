@@ -20,13 +20,15 @@ Richard added a **local PRIMARY** Bosch *M-Motronic Engine Management* Technical
 2. Prove or refute T1–T8 / H1–H7 in MCS-96 CODE against RedLabel + XDF.
 3. Do not promote shipping maps from the PDF alone.
 
-## Status after theory-vs-ROM pass (v10)
+## Status after theory-vs-ROM pass (v11)
 
 - **Retraction:** D200 / D978 remain retracted.
 - **Runtime FE14 CAL bases:** RW68=`0xD002`, RW6A=`0xD106`, RW6C=`0xD28E`, RW6E=`0xE67E`
-- **Coverage:** 98.55% absolute (68/69); exclusive geometry 100.0% (69/69); unproven absolute 1; FE14 CAL bases; D200/D978 retracted.
-- **Absolute:** 68/69 — ['0xD030', '0xD032', '0xD06A', '0xD093', '0xD0FA', '0xD23E', '0xD240', '0xD244', '0xD256', '0xD257', '0xD25A', '0xD25B', '0xD27B', '0xD27D', '0xD27E', '0xD281', '0xD288', '0xD290', '0xD5A6', '0xD5E6', '0xD63A', '0xD67C', '0xD69E', '0xD6AE', '0xD6C6', '0xD6E8', '0xD6FA', '0xD722', '0xD734', '0xD75E', '0xD815', '0xD8B1', '0xD8EF', '0xD8FD', '0xD91F', '0xD970', '0xD984', '0xD9A6', '0xD9C8', '0xD9DA', '0xDAA8', '0xDABA', '0xDBC3', '0xDC21', '0xDC37', '0xDC47', '0xDC63', '0xDC79', '0xDCCF', '0xDCD9', '0xDCF3', '0xDD05', '0xDD0F', '0xDD21', '0xDD89', '0xDD9B', '0xDE6D', '0xDE7F', '0xDF4D', '0xDF5F', '0xE044', '0xE065', '0xE0B3', '0xE0DA', '0xE364', '0xE372', '0xE37E', '0xE388']
-- **Unproven absolute:** [{'offsetHex': '0xD23D', 'name': '0xD23D[8bit] Air, MAF, RPM min threshold for MAF signal check', 'reason': 'No byte LOOKUP of 0xD23D. Adjacent word @0xD23C is read (CMP RW1C,0x136,TABLE[RW6A] @0x52E3 = RW6A+0x136); XDF 8-bit label appears to be the high byte of that word (0x01F4) — not a standalone absolute byte read of 0xD23D.'}]
+- **Coverage:** 100.0% absolute (69/69); exclusive geometry 100.0% (69/69); unproven absolute 0; resolved XDF mislabels 1; FE14 CAL bases; D200/D978 retracted.
+- **Absolute:** 69/69 — ['0xD030', '0xD032', '0xD06A', '0xD093', '0xD0FA', '0xD23D', '0xD23E', '0xD240', '0xD244', '0xD256', '0xD257', '0xD25A', '0xD25B', '0xD27B', '0xD27D', '0xD27E', '0xD281', '0xD288', '0xD290', '0xD5A6', '0xD5E6', '0xD63A', '0xD67C', '0xD69E', '0xD6AE', '0xD6C6', '0xD6E8', '0xD6FA', '0xD722', '0xD734', '0xD75E', '0xD815', '0xD8B1', '0xD8EF', '0xD8FD', '0xD91F', '0xD970', '0xD984', '0xD9A6', '0xD9C8', '0xD9DA', '0xDAA8', '0xDABA', '0xDBC3', '0xDC21', '0xDC37', '0xDC47', '0xDC63', '0xDC79', '0xDCCF', '0xDCD9', '0xDCF3', '0xDD05', '0xDD0F', '0xDD21', '0xDD89', '0xDD9B', '0xDE6D', '0xDE7F', '0xDF4D', '0xDF5F', '0xE044', '0xE065', '0xE0B3', '0xE0DA', '0xE364', '0xE372', '0xE37E', '0xE388']
+- **Unproven absolute:** []
+- **Resolved XDF mislabels:** [{'offsetHex': '0xD23D', 'name': '0xD23D[8bit] Air, MAF, RPM min threshold for MAF signal check', 'status': 'absolute_reconciled_xdf_mislabel', 'verdict': 'xdf_mislabel', 'trueRead': '0xD23C[16bit] via CMP @0x52E3 (RW6A+0x136)', 'romWordLe16': '0x01F4', 'rationale': 'No byte LOOKUP of 0xD23D. CODE reads LE16 @0xD23C=0x01F4. XDF 8-bit@0xD23D MATH x*40 yields nonsense (raw 1 → 40 RPM) vs word neighbors that are proven 16-bit long-index. Count as reconciled absolute; do not auto-promote shipping.', 'sites': [{'site': 21219, 'siteHex': '0x52E3', 'reg': 'RW6A', 'immHex': '0x136', 'eaHex': '0xD23C', 'xdfHex': '0xD23D', 'insn': 'CMP RW1C,0x136, TABLE[RW6A]', 'kind': 'xdf_mislabel_word_high_byte', 'romWordLe16': '0x01F4', 'romHighByte': '0x01', 'xdfClaim': '8bit @0xD23D MATH x*40', 'verdict': 'xdf_mislabel', 'status': 'absolute_reconciled_xdf_mislabel', 'note': 'XDF 8-bit @0xD23D is the high byte of the LE16 word at 0xD23C read by CODE. Not a true standalone 8-bit item.', 'shippingNote': 'Do not auto-promote. Reconciled coverage only — wait for XDF retarget to 0xD23C[16bit] (or confirmed byte proof) before shipping promotion.'}], 'shippingNote': 'Do not auto-promote. Reconciled coverage only — wait for XDF retarget to 0xD23C[16bit] (or confirmed byte proof) before shipping promotion.'}]
+- **D23D verdict:** XDF mislabel — true read is LE16 @`0xD23C` via CMP @`0x52E3` (ROM `0x01F4`). Do **not** auto-promote.
 - **Exclusive geometry:** 69/69 retained
 - **VANOS WOT dwell RPM axes:** `0xD67C`, `0xD69E`
 - **VANOS PT load axes (fuel+ign):** `0xD9DA`, `0xDABA`, `0xDE7F`, `0xDF5F`
@@ -48,4 +50,4 @@ Richard added a **local PRIMARY** Bosch *M-Motronic Engine Management* Technical
 - **Warm-up enrich + knock sensitivity tables:** `0xD815`, `0xD8B1`
 - **Knock-related block E044:** `0xE044`
 - **Lambda OFF RPM tables 1–4:** `0xE364`, `0xE372`, `0xE37E`, `0xE388`
-- **Next:** ['Resolve leftover absolute (see unprovenAbsolute) or confirm XDF misalignment', 'Walk [RW4C] map bodies end-to-end for dwell E0DA / Alpha-N DBC3']
+- **Next:** ['Synthesize engine-control dataflow from absolute MAF/Ti/ign (summary artifact)', 'Walk [RW4C] map bodies end-to-end for dwell E0DA / Alpha-N DBC3', 'Optional: retarget seed.xdf 0xD23D → 0xD23C[16bit] before shipping promote']

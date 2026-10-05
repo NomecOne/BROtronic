@@ -1,0 +1,179 @@
+{
+  "schemaVersion": 1,
+  "id": "engine_control_dataflow_summary_v1",
+  "rom": "BMW DME413 SW623 D466.29 C16x900A 94 RedLabel.bin",
+  "status": "absolute_paths_proven_control_summary",
+  "shippingNote": "Research summary only. Absolute CODE\u2192CAL paths proven under FE14. Do not auto-promote shipping maps. D23D is XDF-mislabel reconcile only.",
+  "coverage": {
+    "absolute": "69/69",
+    "exclusive": "69/69",
+    "unprovenAbsolute": 0,
+    "reconciledXdfMislabels": 1,
+    "headline": "100.0% absolute (69/69); exclusive geometry 100.0% (69/69); unproven absolute 0; resolved XDF mislabels 1; FE14 CAL bases; D200/D978 retracted."
+  },
+  "runtimeBases": {
+    "RW68": "0xD002",
+    "RW6A": "0xD106",
+    "RW6C": "0xD28E",
+    "RW6E": "0xE67E"
+  },
+  "controlLoops": [
+    {
+      "id": "air_maf",
+      "role": "air_mass_input",
+      "xdf": "0xD290",
+      "status": "absolute",
+      "codePath": "0xA53B ADD RW64,0x2[RW46] (RW46=RW6C+2\u00b7ADC)",
+      "dataflow": "ADC ISR vec5 @0xA4AA \u2192 index word table at RW6C+2 (RW6C=0xD28E \u2192 body 0xD290). Publishes air-mass proxy for fuel/ign load axes.",
+      "feeds": [
+        "fuel_ti",
+        "ign_maps",
+        "maf_limits"
+      ]
+    },
+    {
+      "id": "maf_limits",
+      "role": "air_plausibility_gates",
+      "xdf": [
+        "0xD23E",
+        "0xD240",
+        "0xD244",
+        "0xD23D(reconciled\u2192D23C)"
+      ],
+      "status": "absolute",
+      "codePath": "CMP/MULU long-index RW6A+0x138/13A/13E; D23D reconcile CMP RW6A+0x136 @0x52E3 \u2192 LE16@0xD23C",
+      "dataflow": "Sensor/limit block under RW6A=0xD106 gates MAF high/low faults and MAF/RPM ratio. D23D XDF byte is mislabel of word threshold at 0xD23C (do not auto-promote).",
+      "feeds": [
+        "diagnostic_flags"
+      ]
+    },
+    {
+      "id": "fuel_ti",
+      "role": "injector_constant_base",
+      "xdf": "0xD030",
+      "status": "absolute",
+      "codePath": [
+        "0x9A82",
+        "0xAFC7"
+      ],
+      "dataflow": "RW68=0xD002; LD/DIVU at +0x2E \u2192 Ti injector constant 0xD030. Used with load (MAF-derived) to form injection pulse width before HSO/PORT scheduling.",
+      "feeds": [
+        "injector_pulse"
+      ],
+      "related": [
+        "cylinder_trim_0xD0FA"
+      ]
+    },
+    {
+      "id": "cylinder_trim",
+      "role": "per_cylinder_fuel_trim",
+      "xdf": "0xD0FA",
+      "status": "absolute",
+      "codePath": "0x5B65 LD RW1E,RW68; 0x5B6B LDB \u2026,0xf8,LOOKUP[RW1E] \u2192 D0FA",
+      "dataflow": "Chained base: LD RW1E,RW68 then LDB \u2026,0xf8,LOOKUP[RW1E] (+ INC\u00d76) reads per-cylinder trim bytes at 0xD0FA.",
+      "feeds": [
+        "injector_pulse"
+      ]
+    },
+    {
+      "id": "ign_wot",
+      "role": "main_ignition_wot_axis",
+      "xdf": "0xDD0F",
+      "status": "absolute",
+      "codePath": "0x66EC LD RW1A,#0x9A \u2192 0x6987 \u2192 0x20CD \u2192 DD0D/DD0F",
+      "dataflow": "Select index 0x9A \u2192 interp 0x20CD \u2192 descriptor [RW6E+0x9A]=0xDD0D \u2192 XDF ign WOT VANOS-retarded RPM axis 0xDD0F. Map body walked via [RW4C].",
+      "feeds": [
+        "spark_advance",
+        "dwell"
+      ]
+    },
+    {
+      "id": "map_interp",
+      "role": "shared_cal_interp",
+      "status": "absolute_helper",
+      "codePath": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A] (RW6E=0xE67E)",
+      "dataflow": "Trampoline 0x20C7/0x20CD: ADD RW1A,RW6E; LD RW4C,[RW1A]. Shared by fuel and ignition map consumers.",
+      "feeds": [
+        "fuel_maps",
+        "ign_maps",
+        "dwell_maps"
+      ]
+    }
+  ],
+  "endToEndSketch": [
+    "1. Crank/cam HSI ISR (vec2) + ADC ISR (vec5) publish RPM/air samples to RAM.",
+    "2. Foreground loads FE14 CAL bases (RW68/6A/6C/6E) once via 0x2EDB.",
+    "3. MAF word table 0xD290 scales ADC \u2192 air mass; RW6A limits gate plausibility.",
+    "4. Ti 0xD030 (+ cylinder trim 0xD0FA) combines with load for injection timing.",
+    "5. Ign WOT/PT maps via RW6E descriptors (e.g. 0xDD0F) \u2192 spark/dwell outputs.",
+    "6. HSO/PORT scheduling drives injectors/coils (bit assignment still open)."
+  ],
+  "priorityProofs": {
+    "maf_D290": {
+      "offset": "0xD290",
+      "status": "absolute",
+      "method": "maf_adc_word_table",
+      "note": "RW6C=0xD28E from FE14 loader; ADC ISR indexes word table at +2 (0xD290 + 2\u00b7ADC)."
+    },
+    "ti_D030": {
+      "offset": "0xD030",
+      "status": "absolute",
+      "method": "long_index",
+      "note": "RW68=0xD002; LD RW40,0x2e[RW68] @0xAFC7 and DIVU RL1C,0x2e,TABLE[RW68] @0x9A82 read injector constant."
+    },
+    "ign_WOT_DD0F": {
+      "offset": "0xDD0F",
+      "status": "absolute",
+      "method": "descriptor_header",
+      "note": "Main ign WOT VANOS-retarded RPM axis via CAL descriptor table."
+    },
+    "d23d_xdf_mislabel": {
+      "offset": "0xD23D",
+      "status": "absolute_reconciled_xdf_mislabel",
+      "method": "xdf_mislabel_word_high_byte",
+      "note": "XDF 8-bit@0xD23D is high byte of LE16@0xD23C=0x01F4. Reconciled absolute; do not auto-promote shipping."
+    }
+  },
+  "d23dVerdict": {
+    "offsetHex": "0xD23D",
+    "name": "0xD23D[8bit] Air, MAF, RPM min threshold for MAF signal check",
+    "status": "absolute_reconciled_xdf_mislabel",
+    "verdict": "xdf_mislabel",
+    "trueRead": "0xD23C[16bit] via CMP @0x52E3 (RW6A+0x136)",
+    "romWordLe16": "0x01F4",
+    "rationale": "No byte LOOKUP of 0xD23D. CODE reads LE16 @0xD23C=0x01F4. XDF 8-bit@0xD23D MATH x*40 yields nonsense (raw 1 \u2192 40 RPM) vs word neighbors that are proven 16-bit long-index. Count as reconciled absolute; do not auto-promote shipping.",
+    "sites": [
+      {
+        "site": 21219,
+        "siteHex": "0x52E3",
+        "reg": "RW6A",
+        "immHex": "0x136",
+        "eaHex": "0xD23C",
+        "xdfHex": "0xD23D",
+        "insn": "CMP RW1C,0x136, TABLE[RW6A]",
+        "kind": "xdf_mislabel_word_high_byte",
+        "romWordLe16": "0x01F4",
+        "romHighByte": "0x01",
+        "xdfClaim": "8bit @0xD23D MATH x*40",
+        "verdict": "xdf_mislabel",
+        "status": "absolute_reconciled_xdf_mislabel",
+        "note": "XDF 8-bit @0xD23D is the high byte of the LE16 word at 0xD23C read by CODE. Not a true standalone 8-bit item.",
+        "shippingNote": "Do not auto-promote. Reconciled coverage only \u2014 wait for XDF retarget to 0xD23C[16bit] (or confirmed byte proof) before shipping promotion."
+      }
+    ],
+    "shippingNote": "Do not auto-promote. Reconciled coverage only \u2014 wait for XDF retarget to 0xD23C[16bit] (or confirmed byte proof) before shipping promotion."
+  },
+  "open": [
+    "HSO/PORT bit assignment for spark vs injector",
+    "End-to-end dwell E0DA / Alpha-N DBC3 body walks via [RW4C]",
+    "Idle vs run mode RAM flags",
+    "Optional seed.xdf retarget 0xD23D \u2192 0xD23C[16bit] before shipping"
+  ],
+  "relatedArtifacts": [
+    "tools/re/out/absolute_code_reads.json",
+    "tools/re/out/ignition_fuel_dataflow.md",
+    "tools/re/out/control_loops.md",
+    "tools/re/out/theory_vs_rom_bosch_ti.md",
+    "tools/re/out/cal_access_model.md"
+  ]
+}

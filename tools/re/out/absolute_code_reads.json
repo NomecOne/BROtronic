@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 2,
-  "id": "absolute_code_reads_v10",
+  "schemaVersion": 3,
+  "id": "absolute_code_reads_v11",
   "runtimeBases": {
     "RW68": "0xD002",
     "RW6A": "0xD106",
@@ -72,15 +72,42 @@
       ],
       "codePath": "0x66EC LD RW1A,#0x9A \u2192 0x6987 \u2192 0x20CD \u2192 [0xE67E+0x9A]=0xDD0D / XDF 0xDD0F",
       "note": "Main ign WOT VANOS-retarded RPM axis via CAL descriptor table."
+    },
+    "d23d_xdf_mislabel": {
+      "offset": "0xD23D",
+      "status": "absolute_reconciled_xdf_mislabel",
+      "method": "xdf_mislabel_word_high_byte",
+      "sites": [
+        {
+          "site": 21219,
+          "siteHex": "0x52E3",
+          "reg": "RW6A",
+          "immHex": "0x136",
+          "eaHex": "0xD23C",
+          "xdfHex": "0xD23D",
+          "insn": "CMP RW1C,0x136, TABLE[RW6A]",
+          "kind": "xdf_mislabel_word_high_byte",
+          "romWordLe16": "0x01F4",
+          "romHighByte": "0x01",
+          "xdfClaim": "8bit @0xD23D MATH x*40",
+          "verdict": "xdf_mislabel",
+          "status": "absolute_reconciled_xdf_mislabel",
+          "note": "XDF 8-bit @0xD23D is the high byte of the LE16 word at 0xD23C read by CODE. Not a true standalone 8-bit item.",
+          "shippingNote": "Do not auto-promote. Reconciled coverage only \u2014 wait for XDF retarget to 0xD23C[16bit] (or confirmed byte proof) before shipping promotion."
+        }
+      ],
+      "trueRead": "0xD23C[16bit] CMP @0x52E3",
+      "note": "XDF 8-bit@0xD23D is high byte of LE16@0xD23C=0x01F4. Reconciled absolute; do not auto-promote shipping."
     }
   },
-  "count": 68,
+  "count": 69,
   "offsets": [
     "0xD030",
     "0xD032",
     "0xD06A",
     "0xD093",
     "0xD0FA",
+    "0xD23D",
     "0xD23E",
     "0xD240",
     "0xD244",
@@ -259,6 +286,35 @@
           "path": "0x5B65 LD RW1E,RW68 \u2192 0x5B6B..0x5B79"
         }
       ]
+    },
+    {
+      "offset": 53821,
+      "offsetHex": "0xD23D",
+      "name": "0xD23D[8bit] Air, MAF, RPM min threshold for MAF signal check",
+      "methods": [
+        "xdf_mislabel_word_reconcile"
+      ],
+      "sites": [
+        {
+          "site": 21219,
+          "siteHex": "0x52E3",
+          "reg": "RW6A",
+          "immHex": "0x136",
+          "eaHex": "0xD23C",
+          "xdfHex": "0xD23D",
+          "insn": "CMP RW1C,0x136, TABLE[RW6A]",
+          "kind": "xdf_mislabel_word_high_byte",
+          "romWordLe16": "0x01F4",
+          "romHighByte": "0x01",
+          "xdfClaim": "8bit @0xD23D MATH x*40",
+          "verdict": "xdf_mislabel",
+          "status": "absolute_reconciled_xdf_mislabel",
+          "note": "XDF 8-bit @0xD23D is the high byte of the LE16 word at 0xD23C read by CODE. Not a true standalone 8-bit item.",
+          "shippingNote": "Do not auto-promote. Reconciled coverage only \u2014 wait for XDF retarget to 0xD23C[16bit] (or confirmed byte proof) before shipping promotion."
+        }
+      ],
+      "status": "absolute_reconciled_xdf_mislabel",
+      "shippingNote": "Do not auto-promote. Reconciled coverage only \u2014 wait for XDF retarget to 0xD23C[16bit] (or confirmed byte proof) before shipping promotion."
     },
     {
       "offset": 53822,
@@ -1726,14 +1782,41 @@
   "directCount": 18,
   "descriptorCount": 50,
   "siblingCount": 7,
-  "unprovenAbsolute": [
+  "reconcileCount": 1,
+  "resolvedXdfMislabels": [
     {
       "offsetHex": "0xD23D",
       "name": "0xD23D[8bit] Air, MAF, RPM min threshold for MAF signal check",
-      "reason": "No byte LOOKUP of 0xD23D. Adjacent word @0xD23C is read (CMP RW1C,0x136,TABLE[RW6A] @0x52E3 = RW6A+0x136); XDF 8-bit label appears to be the high byte of that word (0x01F4) \u2014 not a standalone absolute byte read of 0xD23D."
+      "status": "absolute_reconciled_xdf_mislabel",
+      "verdict": "xdf_mislabel",
+      "trueRead": "0xD23C[16bit] via CMP @0x52E3 (RW6A+0x136)",
+      "romWordLe16": "0x01F4",
+      "rationale": "No byte LOOKUP of 0xD23D. CODE reads LE16 @0xD23C=0x01F4. XDF 8-bit@0xD23D MATH x*40 yields nonsense (raw 1 \u2192 40 RPM) vs word neighbors that are proven 16-bit long-index. Count as reconciled absolute; do not auto-promote shipping.",
+      "sites": [
+        {
+          "site": 21219,
+          "siteHex": "0x52E3",
+          "reg": "RW6A",
+          "immHex": "0x136",
+          "eaHex": "0xD23C",
+          "xdfHex": "0xD23D",
+          "insn": "CMP RW1C,0x136, TABLE[RW6A]",
+          "kind": "xdf_mislabel_word_high_byte",
+          "romWordLe16": "0x01F4",
+          "romHighByte": "0x01",
+          "xdfClaim": "8bit @0xD23D MATH x*40",
+          "verdict": "xdf_mislabel",
+          "status": "absolute_reconciled_xdf_mislabel",
+          "note": "XDF 8-bit @0xD23D is the high byte of the LE16 word at 0xD23C read by CODE. Not a true standalone 8-bit item.",
+          "shippingNote": "Do not auto-promote. Reconciled coverage only \u2014 wait for XDF retarget to 0xD23C[16bit] (or confirmed byte proof) before shipping promotion."
+        }
+      ],
+      "shippingNote": "Do not auto-promote. Reconciled coverage only \u2014 wait for XDF retarget to 0xD23C[16bit] (or confirmed byte proof) before shipping promotion."
     }
   ],
-  "unprovenAbsoluteCount": 1,
+  "unprovenAbsolute": [],
+  "unprovenAbsoluteCount": 0,
   "headerDeltaMax": 24,
-  "note": "Absolute = FE14 long-index / chained-base / MAF ADC table, or RW6E descriptor header within \u221224..0 of XDF, or load/body member of a descriptor-owned map."
+  "shippingNote": "Reconciled XDF mislabels count toward absolute coverage but must not auto-promote to shipping until XDF address/size is corrected.",
+  "note": "Absolute = FE14 long-index / chained-base / MAF ADC table, or RW6E descriptor header within \u221224..0 of XDF, or load/body member of a descriptor-owned map, or XDF-mislabel word reconcile (v11: 0xD23D \u2192 LE16 @0xD23C)."
 }

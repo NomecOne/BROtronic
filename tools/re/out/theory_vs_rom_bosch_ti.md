@@ -3,21 +3,24 @@
 ROM: `BMW DME413 SW623 D466.29 C16x900A 94 RedLabel.bin`
 Theory: [`ref_pdf_bosch_m_motronic_technical_instruction.md`](ref_pdf_bosch_m_motronic_technical_instruction.md)
 
-> Book is PRIMARY family theory only. Do not verify or promote shipping maps from the PDF alone.
+> Book is PRIMARY family theory only. Do not verify or promote shipping maps from the PDF alone. Reconciled XDF mislabels (0xD23D) count toward absolute coverage but must not auto-promote until XDF is corrected.
 
-## Coverage (v10)
+## Coverage (v11)
 
 | Metric | Count | % of 69 |
 |--------|------:|--------:|
-| **Absolute CODE reads** (ea → XDF) | **68** | **98.55%** |
+| **Absolute CODE reads** (ea → XDF) | **69** | **100.0%** |
 | **Exclusive geometry** | **69** | **100.0%** |
-| Unproven absolute | **1** | — |
+| Unproven absolute | **0** | — |
+| Reconciled XDF mislabels | **1** | — |
 | CAL-content index-base (D200/D978) | **0** | **0%** (retracted) |
 | Runtime FE14 CAL bases | 4 | — |
 
-98.55% absolute (68/69); exclusive geometry 100.0% (69/69); unproven absolute 1; FE14 CAL bases; D200/D978 retracted.
+100.0% absolute (69/69); exclusive geometry 100.0% (69/69); unproven absolute 0; resolved XDF mislabels 1; FE14 CAL bases; D200/D978 retracted.
 
-> v10: absolute via FE14 long-index/chained-base/MAF, descriptor headers within −24..0, and map load/body siblings. Exclusive 69/69 retained.
+> **v11:** D23D resolved as XDF mislabel (LE16 @0xD23C via CMP @0x52E3). Do **not** auto-promote reconciled mislabels to shipping.
+
+> v11: absolute via FE14 long-index/chained-base/MAF, descriptor headers within −24..0, map load/body siblings, and XDF-mislabel word reconcile (0xD23D → LE16 @0xD23C CMP @0x52E3). Exclusive 69/69 retained. Do not auto-promote reconciled mislabels to shipping.
 
 ## Addressing model — FE14 CAL bases
 
@@ -51,12 +54,22 @@ CMP dual-config: With FE14 CAL bases, descriptor RAM fill @0x4ECC is skipped; in
 - Main ign WOT VANOS-retarded RPM axis via CAL descriptor table.
 - Path: `0x66EC LD RW1A,#0x9A → 0x6987 → 0x20CD → [0xE67E+0x9A]=0xDD0D / XDF 0xDD0F`
 
-**All absolute offsets (68):** `0xD030`, `0xD032`, `0xD06A`, `0xD093`, `0xD0FA`, `0xD23E`, `0xD240`, `0xD244`, `0xD256`, `0xD257`, `0xD25A`, `0xD25B`, `0xD27B`, `0xD27D`, `0xD27E`, `0xD281`, `0xD288`, `0xD290`, `0xD5A6`, `0xD5E6`, `0xD63A`, `0xD67C`, `0xD69E`, `0xD6AE`, `0xD6C6`, `0xD6E8`, `0xD6FA`, `0xD722`, `0xD734`, `0xD75E`, `0xD815`, `0xD8B1`, `0xD8EF`, `0xD8FD`, `0xD91F`, `0xD970`, `0xD984`, `0xD9A6`, `0xD9C8`, `0xD9DA`, `0xDAA8`, `0xDABA`, `0xDBC3`, `0xDC21`, `0xDC37`, `0xDC47`, `0xDC63`, `0xDC79`, `0xDCCF`, `0xDCD9`, `0xDCF3`, `0xDD05`, `0xDD0F`, `0xDD21`, `0xDD89`, `0xDD9B`, `0xDE6D`, `0xDE7F`, `0xDF4D`, `0xDF5F`, `0xE044`, `0xE065`, `0xE0B3`, `0xE0DA`, `0xE364`, `0xE372`, `0xE37E`, `0xE388`
+### d23d_xdf_mislabel: `0xD23D` — `absolute_reconciled_xdf_mislabel`
+
+- Method: `xdf_mislabel_word_high_byte`
+- XDF 8-bit@0xD23D is high byte of LE16@0xD23C=0x01F4. Reconciled absolute; do not auto-promote shipping.
+
+**All absolute offsets (69):** `0xD030`, `0xD032`, `0xD06A`, `0xD093`, `0xD0FA`, `0xD23D`, `0xD23E`, `0xD240`, `0xD244`, `0xD256`, `0xD257`, `0xD25A`, `0xD25B`, `0xD27B`, `0xD27D`, `0xD27E`, `0xD281`, `0xD288`, `0xD290`, `0xD5A6`, `0xD5E6`, `0xD63A`, `0xD67C`, `0xD69E`, `0xD6AE`, `0xD6C6`, `0xD6E8`, `0xD6FA`, `0xD722`, `0xD734`, `0xD75E`, `0xD815`, `0xD8B1`, `0xD8EF`, `0xD8FD`, `0xD91F`, `0xD970`, `0xD984`, `0xD9A6`, `0xD9C8`, `0xD9DA`, `0xDAA8`, `0xDABA`, `0xDBC3`, `0xDC21`, `0xDC37`, `0xDC47`, `0xDC63`, `0xDC79`, `0xDCCF`, `0xDCD9`, `0xDCF3`, `0xDD05`, `0xDD0F`, `0xDD21`, `0xDD89`, `0xDD9B`, `0xDE6D`, `0xDE7F`, `0xDF4D`, `0xDF5F`, `0xE044`, `0xE065`, `0xE0B3`, `0xE0DA`, `0xE364`, `0xE372`, `0xE37E`, `0xE388`
 
 ## Unproven absolute
 
-- `0xD23D` — 0xD23D[8bit] Air, MAF, RPM min threshold for MAF signal chec
-  - No byte LOOKUP of 0xD23D. Adjacent word @0xD23C is read (CMP RW1C,0x136,TABLE[RW6A] @0x52E3 = RW6A+0x136); XDF 8-bit label appears to be the high byte of that word (0x01F4) — not a standalone absolute byte read of 0xD23D.
+_None._
+## Resolved XDF mislabels (v11)
+
+- `0xD23D` — **xdf_mislabel** → `0xD23C[16bit] via CMP @0x52E3 (RW6A+0x136)`
+  - Status: `absolute_reconciled_xdf_mislabel` (ROM word `0x01F4`)
+  - No byte LOOKUP of 0xD23D. CODE reads LE16 @0xD23C=0x01F4. XDF 8-bit@0xD23D MATH x*40 yields nonsense (raw 1 → 40 RPM) vs word neighbors that are proven 16-bit long-index. Count as reconciled absolute; do not auto-promote shipping.
+  - Shipping: Do not auto-promote. Reconciled coverage only — wait for XDF retarget to 0xD23C[16bit] (or confirmed byte proof) before shipping promotion.
 
 ## Retraction (important)
 
@@ -239,8 +252,9 @@ RW24/RW20/RW38 ‘exclusive’ ign geometries rejected — those regs are scratc
 
 ## Next
 
-1. Resolve leftover absolute (see unprovenAbsolute) or confirm XDF misalignment
+1. Synthesize engine-control dataflow from absolute MAF/Ti/ign (summary artifact)
 1. Walk [RW4C] map bodies end-to-end for dwell E0DA / Alpha-N DBC3
+1. Optional: retarget seed.xdf 0xD23D → 0xD23C[16bit] before shipping promote
 
 ---
 Research-only. Verification gates unchanged.

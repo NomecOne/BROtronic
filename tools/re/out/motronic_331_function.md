@@ -299,7 +299,7 @@ Cross-check of Bosch M-Motronic TI (PRIMARY extract) against MCS-96 listing / XD
 
 ### 7.1 Bosch T1–T8 checklist
 
-See [`theory_vs_rom_bosch_ti.md`](theory_vs_rom_bosch_ti.md). Headline: **absolute 68/69**; exclusive **69/69**; unproven absolute **1**. T1/T3/T5 absolute. D200/D978 **retracted**.
+See [`theory_vs_rom_bosch_ti.md`](theory_vs_rom_bosch_ti.md). Headline: **absolute 69/69**; exclusive **69/69**; unproven absolute **0**. T1/T3/T5 absolute. D200/D978 **retracted**.
 
 ### 7.2 Access-model update (v9)
 
@@ -315,16 +315,18 @@ See [`theory_vs_rom_bosch_ti.md`](theory_vs_rom_bosch_ti.md). Headline: **absolu
 - MAF `0xD290` — `0xA53B ADD RW64,0x2[RW46] (RW46=RW6C+2·ADC)`
 - Ti `0xD030` — `0x9A82`, `0xAFC7`
 - Ign WOT `0xDD0F` — `0x66EC LD RW1A,#0x9A → 0x6987 → 0x20CD → DD0D/DD0F`
+- D23D reconcile — `0x52E3 CMP RW1C,0x136,TABLE[RW6A] → LE16@0xD23C (XDF mislabel @0xD23D)` (XDF mislabel; do not auto-promote)
 
 ### 7.3 Artifacts
 
 - `tools/re/out/theory_vs_rom_bosch_ti.{md,json}`
 - `tools/re/out/register_bases_fe24.{md,json}`
-- Coverage: **98.55% absolute (68/69); exclusive geometry 100.0% (69/69); unproven absolute 1; FE14 CAL bases; D200/D978 retracted.**
+- `tools/re/out/engine_control_dataflow_summary.{md,json}`
+- Coverage: **100.0% absolute (69/69); exclusive geometry 100.0% (69/69); unproven absolute 0; resolved XDF mislabels 1; FE14 CAL bases; D200/D978 retracted.**
 
 ### 7.4 Absolute ign/fuel XDF CODE reads — status
 
-**68/69 absolute** (98.55%). Exclusive geometry: **69/69**. Unproven absolute: **1** (see `absoluteProofs.unprovenAbsolute`).
+**69/69 absolute** (100.0%). Exclusive geometry: **69/69**. Unproven absolute: **0**. Reconciled XDF mislabels: **1** (0xD23D → LE16 @0xD23C; do not auto-promote).
 
 ## 8. Research session notes
 

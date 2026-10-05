@@ -15,6 +15,9 @@ v9 addressing-model correction:
   quadruplet; CMP @0x4D60/0x481B accepts either CAL bases or 1A08/1E08.
 
 v4–v8 still hold: D200/D978 retracted; exclusive geometry 69/69.
+
+v11: 0xD23D resolved as XDF mislabel (high byte of LE16 @0xD23C =
+CMP @0x52E3). Absolute 69/69 reconciled; do not auto-promote shipping.
 """
 
 from __future__ import annotations
@@ -356,25 +359,76 @@ def build_absolute_proofs(rom: bytes, lines, ign: dict) -> dict:
             }
         )
 
-    # Unprovable leftovers (documented)
+    # --- D23D verdict (v11): XDF mislabel of LE16 word @0xD23C ---
+    # CODE: CMP RW1C,0x136,TABLE[RW6A] @0x52E3 → RW6A+0x136 = 0xD23C.
+    # ROM LE16@0xD23C = 0x01F4. XDF places an 8-bit CONSTANT at 0xD23D
+    # (MATH x*40) — that is the high byte of the word, not a standalone
+    # byte LOOKUP. Neighbors D23E/D240/D244 are proven 16-bit long-index.
+    # No CODE byte LOOKUP of 0xD23D exists. Verdict: XDF mislabel.
+    reconcile: dict[int, list] = defaultdict(list)
+    word_d23c = struct.unpack_from("<H", rom, 0xD23C)[0]
+    assert RW6A_BASE + 0x136 == 0xD23C
+    assert word_d23c == 0x01F4
+    assert rom[0xD23D] == 0x01  # high byte of LE16 0x01F4
+    if 0xD23D in ign:
+        reconcile[0xD23D].append(
+            {
+                "site": 0x52E3,
+                "siteHex": "0x52E3",
+                "reg": "RW6A",
+                "immHex": "0x136",
+                "eaHex": "0xD23C",
+                "xdfHex": "0xD23D",
+                "insn": "CMP RW1C,0x136, TABLE[RW6A]",
+                "kind": "xdf_mislabel_word_high_byte",
+                "romWordLe16": f"0x{word_d23c:04X}",
+                "romHighByte": f"0x{rom[0xD23D]:02X}",
+                "xdfClaim": "8bit @0xD23D MATH x*40",
+                "verdict": "xdf_mislabel",
+                "status": "absolute_reconciled_xdf_mislabel",
+                "note": (
+                    "XDF 8-bit @0xD23D is the high byte of the LE16 word at "
+                    "0xD23C read by CODE. Not a true standalone 8-bit item."
+                ),
+                "shippingNote": (
+                    "Do not auto-promote. Reconciled coverage only — wait for "
+                    "XDF retarget to 0xD23C[16bit] (or confirmed byte proof) "
+                    "before shipping promotion."
+                ),
+            }
+        )
+
     unproven = []
-    all_offs = sorted(set(direct) | set(desc) | set(siblings))
+    all_offs = sorted(set(direct) | set(desc) | set(siblings) | set(reconcile))
     for off in sorted(ign):
         if off in all_offs:
             continue
-        reason = "No FE14 long-index, chained-base, or RW6E descriptor path."
-        if off == 0xD23D:
-            reason = (
-                "No byte LOOKUP of 0xD23D. Adjacent word @0xD23C is read "
-                "(CMP RW1C,0x136,TABLE[RW6A] @0x52E3 = RW6A+0x136); XDF 8-bit "
-                "label appears to be the high byte of that word (0x01F4) — "
-                "not a standalone absolute byte read of 0xD23D."
-            )
         unproven.append(
             {
                 "offsetHex": f"0x{off:04X}",
                 "name": ign[off]["name"],
-                "reason": reason,
+                "reason": "No FE14 long-index, chained-base, RW6E descriptor, or XDF-mislabel word reconcile path.",
+            }
+        )
+
+    resolved_mislabels = []
+    for off, sites in reconcile.items():
+        resolved_mislabels.append(
+            {
+                "offsetHex": f"0x{off:04X}",
+                "name": ign[off]["name"],
+                "status": "absolute_reconciled_xdf_mislabel",
+                "verdict": "xdf_mislabel",
+                "trueRead": "0xD23C[16bit] via CMP @0x52E3 (RW6A+0x136)",
+                "romWordLe16": f"0x{word_d23c:04X}",
+                "rationale": (
+                    "No byte LOOKUP of 0xD23D. CODE reads LE16 @0xD23C=0x01F4. "
+                    "XDF 8-bit@0xD23D MATH x*40 yields nonsense (raw 1 → 40 RPM) "
+                    "vs word neighbors that are proven 16-bit long-index. "
+                    "Count as reconciled absolute; do not auto-promote shipping."
+                ),
+                "sites": sites,
+                "shippingNote": sites[0]["shippingNote"],
             }
         )
 
@@ -410,6 +464,17 @@ def build_absolute_proofs(rom: bytes, lines, ign: dict) -> dict:
             ),
             "note": "Main ign WOT VANOS-retarded RPM axis via CAL descriptor table.",
         },
+        "d23d_xdf_mislabel": {
+            "offset": "0xD23D",
+            "status": "absolute_reconciled_xdf_mislabel",
+            "method": "xdf_mislabel_word_high_byte",
+            "sites": reconcile.get(0xD23D, []),
+            "trueRead": "0xD23C[16bit] CMP @0x52E3",
+            "note": (
+                "XDF 8-bit@0xD23D is high byte of LE16@0xD23C=0x01F4. "
+                "Reconciled absolute; do not auto-promote shipping."
+            ),
+        },
     }
 
     items = []
@@ -430,11 +495,16 @@ def build_absolute_proofs(rom: bytes, lines, ign: dict) -> dict:
         if off in siblings:
             entry["methods"].append("descriptor_map_member")
             entry["sites"].extend(siblings[off])
+        if off in reconcile:
+            entry["methods"].append("xdf_mislabel_word_reconcile")
+            entry["sites"].extend(reconcile[off])
+            entry["status"] = "absolute_reconciled_xdf_mislabel"
+            entry["shippingNote"] = reconcile[off][0]["shippingNote"]
         items.append(entry)
 
     return {
-        "schemaVersion": 2,
-        "id": "absolute_code_reads_v10",
+        "schemaVersion": 3,
+        "id": "absolute_code_reads_v11",
         "runtimeBases": {k: f"0x{v:04X}" for k, v in bases.items()},
         "priority": priority,
         "count": len(all_offs),
@@ -443,13 +513,20 @@ def build_absolute_proofs(rom: bytes, lines, ign: dict) -> dict:
         "directCount": len(direct),
         "descriptorCount": len(desc),
         "siblingCount": len(siblings),
+        "reconcileCount": len(reconcile),
+        "resolvedXdfMislabels": resolved_mislabels,
         "unprovenAbsolute": unproven,
         "unprovenAbsoluteCount": len(unproven),
         "headerDeltaMax": HEADER_DELTA_MAX,
+        "shippingNote": (
+            "Reconciled XDF mislabels count toward absolute coverage but must "
+            "not auto-promote to shipping until XDF address/size is corrected."
+        ),
         "note": (
             "Absolute = FE14 long-index / chained-base / MAF ADC table, or "
             f"RW6E descriptor header within −{HEADER_DELTA_MAX}..0 of XDF, or "
-            "load/body member of a descriptor-owned map."
+            "load/body member of a descriptor-owned map, or XDF-mislabel "
+            "word reconcile (v11: 0xD23D → LE16 @0xD23C)."
         ),
     }
 
@@ -1120,13 +1197,14 @@ def build_doc(rom, lines, ign):
         for f in families
     ]
     return {
-        "schemaVersion": 10,
-        "id": "bosch_ti_theory_vs_rom_v10",
+        "schemaVersion": 11,
+        "id": "bosch_ti_theory_vs_rom_v11",
         "rom": ROM_NAME,
         "primaryTheory": "tools/re/out/ref_pdf_bosch_m_motronic_technical_instruction.md",
         "shippingNote": (
             "Book is PRIMARY family theory only. Do not verify or promote shipping "
-            "maps from the PDF alone."
+            "maps from the PDF alone. Reconciled XDF mislabels (0xD23D) count toward "
+            "absolute coverage but must not auto-promote until XDF is corrected."
         ),
         "registerBasesRomProven": fe,
         "addressingModel": {
@@ -1152,9 +1230,15 @@ def build_doc(rom, lines, ign):
         ),
         "unprovenAbsolute": absolute.get("unprovenAbsolute", []),
         "unprovenAbsoluteNote": (
-            f"{absolute.get('unprovenAbsoluteCount', 0)} item(s) lack absolute "
-            "CODE paths under FE14 model — see absoluteProofs.unprovenAbsolute."
+            "None — all 69 ign/fuel XDF items have absolute CODE paths "
+            "(68 direct/descriptor/sibling + 1 XDF-mislabel word reconcile @0xD23D)."
+            if absolute.get("unprovenAbsoluteCount", 0) == 0
+            else (
+                f"{absolute.get('unprovenAbsoluteCount', 0)} item(s) lack absolute "
+                "CODE paths under FE14 model — see absoluteProofs.unprovenAbsolute."
+            )
         ),
+        "resolvedXdfMislabels": absolute.get("resolvedXdfMislabels", []),
         "coverage": {
             "ignFuelItems": n,
             "ghidraProvenAbsolute": abs_n,
@@ -1166,16 +1250,20 @@ def build_doc(rom, lines, ign):
             "structuralSplitPtr": 1,
             "registerBasesRomProven": 4,
             "unprovenAbsolute": absolute.get("unprovenAbsoluteCount", 0),
+            "reconciledXdfMislabels": absolute.get("reconcileCount", 0),
             "headline": (
                 f"{abs_pct}% absolute ({abs_n}/{n}); exclusive geometry "
                 f"{exclusive_pct}% ({exclusive_items}/{n}); "
                 f"unproven absolute {absolute.get('unprovenAbsoluteCount', 0)}; "
+                f"resolved XDF mislabels {absolute.get('reconcileCount', 0)}; "
                 f"FE14 CAL bases; D200/D978 retracted."
             ),
             "note": (
-                "v10: absolute via FE14 long-index/chained-base/MAF, descriptor "
-                f"headers within −{absolute.get('headerDeltaMax', 24)}..0, and "
-                "map load/body siblings. Exclusive 69/69 retained."
+                "v11: absolute via FE14 long-index/chained-base/MAF, descriptor "
+                f"headers within −{absolute.get('headerDeltaMax', 24)}..0, "
+                "map load/body siblings, and XDF-mislabel word reconcile "
+                "(0xD23D → LE16 @0xD23C CMP @0x52E3). Exclusive 69/69 retained. "
+                "Do not auto-promote reconciled mislabels to shipping."
             ),
         },
         "checklist": checklist,
@@ -1189,13 +1277,15 @@ def build_doc(rom, lines, ign):
             "mafAbsolute": "0xA53B ADD RW64,0x2[RW46] (RW46=RW6C+2·ADC)",
             "ignWotSelect": "0x66EC LD RW1A,#0x9A → 0x6987 → 0x20CD → DD0D/DD0F",
             "cylinderTrim": "0x5B65 LD RW1E,RW68; 0x5B6B LDB …,0xf8,LOOKUP[RW1E] → D0FA",
+            "d23dReconcile": "0x52E3 CMP RW1C,0x136,TABLE[RW6A] → LE16@0xD23C (XDF mislabel @0xD23D)",
             "vanosAxisRom": vanos["exclusiveLocations"],
             "mafAnchor": ["FE14 RW6C=0xD28E", "MAF body 0xD290", "ADC ISR 0xA4AA"],
             "newFamilySummaries": new_families,
         },
         "nextToProve": [
-            "Resolve leftover absolute (see unprovenAbsolute) or confirm XDF misalignment",
+            "Synthesize engine-control dataflow from absolute MAF/Ti/ign (summary artifact)",
             "Walk [RW4C] map bodies end-to-end for dwell E0DA / Alpha-N DBC3",
+            "Optional: retarget seed.xdf 0xD23D → 0xD23C[16bit] before shipping promote",
         ],
     }
 
@@ -1216,17 +1306,21 @@ def md_theory(doc):
         "",
         f"> {doc['shippingNote']}",
         "",
-        "## Coverage (v10)",
+        "## Coverage (v11)",
         "",
         "| Metric | Count | % of 69 |",
         "|--------|------:|--------:|",
         f"| **Absolute CODE reads** (ea → XDF) | **{cov['ghidraProvenAbsolute']}** | **{cov['ghidraProvenAbsolutePct']}%** |",
         f"| **Exclusive geometry** | **{cov['exclusiveGeometry']}** | **{cov['exclusiveGeometryPct']}%** |",
         f"| Unproven absolute | **{cov.get('unprovenAbsolute', 0)}** | — |",
+        f"| Reconciled XDF mislabels | **{cov.get('reconciledXdfMislabels', 0)}** | — |",
         f"| CAL-content index-base (D200/D978) | **0** | **0%** (retracted) |",
         f"| Runtime FE14 CAL bases | {cov['registerBasesRomProven']} | — |",
         "",
         cov["headline"],
+        "",
+        "> **v11:** D23D resolved as XDF mislabel (LE16 @0xD23C via CMP @0x52E3). "
+        "Do **not** auto-promote reconciled mislabels to shipping.",
         "",
         f"> {cov['note']}",
         "",
@@ -1271,6 +1365,22 @@ def md_theory(doc):
     else:
         for u in unp:
             lines += [f"- `{u['offsetHex']}` — {u['name'][:60]}", f"  - {u['reason']}", ""]
+    lines += [
+        "## Resolved XDF mislabels (v11)",
+        "",
+    ]
+    mis = doc.get("resolvedXdfMislabels") or doc.get("absoluteProofs", {}).get("resolvedXdfMislabels") or []
+    if not mis:
+        lines.append("_None._")
+    else:
+        for m in mis:
+            lines += [
+                f"- `{m['offsetHex']}` — **{m['verdict']}** → `{m['trueRead']}`",
+                f"  - Status: `{m['status']}` (ROM word `{m.get('romWordLe16')}`)",
+                f"  - {m['rationale']}",
+                f"  - Shipping: {m['shippingNote']}",
+                "",
+            ]
     lines += [
         "## Retraction (important)",
         "",
@@ -1408,11 +1518,14 @@ def patch_progress(doc):
         and "exclusive geometry growing" not in f
         and "grow beyond 31/69" not in f
         and "absolute>0 via FE14" not in f
+        and "resolve leftover unprovenAbsolute" not in f
+        and "absolute nearly complete" not in f
     ]
     deduped.extend(
         [
-            "Engine control: absolute nearly complete — resolve leftover unprovenAbsolute if any",
-            "Optional: deeper [RW4C] body walks for dwell/Alpha-N semantics",
+            "Engine control: absolute 69/69 complete — deepen [RW4C] dwell/Alpha-N body walks",
+            "Optional: retarget seed.xdf 0xD23D → 0xD23C[16bit] before shipping promote",
+            "Optional: HSO/PORT bit assignment for spark vs injector",
         ]
     )
     # dedupe again
@@ -1438,7 +1551,7 @@ def patch_progress(doc):
     }
     if "register_bases_fe24.md" not in prog["engineControl"]["artifacts"]:
         prog["engineControl"]["artifacts"].append("tools/re/out/register_bases_fe24.md")
-    prog["engineControl"]["priorityTraces"]["boschTiTheoryVsRom"] = "done_v10_absolute_near_complete"
+    prog["engineControl"]["priorityTraces"]["boschTiTheoryVsRom"] = "done_v11_absolute_69_reconciled"
     prog["engineControl"]["priorityTraces"]["rw68IndexBase"] = "retracted_d200_false_positive"
     prog["engineControl"]["priorityTraces"]["registerBasesFe14"] = "rom_proven_runtime_cal"
     prog["engineControl"]["priorityTraces"]["registerBasesFe24"] = "adjacent_not_loaded_alternate"
@@ -1447,10 +1560,23 @@ def patch_progress(doc):
         "maf_D290": True,
         "ti_D030": True,
         "ign_WOT_DD0F": True,
+        "d23d_xdf_mislabel": True,
         "absoluteCount": cov["ghidraProvenAbsolute"],
         "unprovenAbsolute": cov.get("unprovenAbsolute", 0),
+        "reconciledXdfMislabels": cov.get("reconciledXdfMislabels", 0),
     }
     prog["engineControl"]["priorityTraces"]["exclusiveGeometryFuelIgn"] = "exclusive_geometry_69_complete_v8"
+    prog["engineControl"]["priorityTraces"]["d23dVerdict"] = {
+        "verdict": "xdf_mislabel",
+        "status": "absolute_reconciled_xdf_mislabel",
+        "trueRead": "0xD23C[16bit] via CMP @0x52E3",
+        "romWordLe16": "0x01F4",
+        "shipping": "do_not_auto_promote",
+    }
+    if "engine_control_dataflow_summary.md" not in prog["engineControl"]["artifacts"]:
+        prog["engineControl"]["artifacts"].append(
+            "tools/re/out/engine_control_dataflow_summary.md"
+        )
     path.write_text(json.dumps(prog, indent=2) + "\n")
 
 
@@ -1483,19 +1609,20 @@ ISA: `mcs96_80c196_family`
 CODE `0x2000`–`0xB930`; DATA from `0xB931`.
 XDF (BRO) = primary definition evidence for names/equations.
 
-## Coverage (v10 — exclusive 100%; absolute nearly complete)
+## Coverage (v11 — exclusive 100%; absolute 69/69 reconciled)
 
 | Metric | Count | % of 69 |
 |--------|------:|--------:|
 | **Absolute CODE reads** (ea → XDF) | **{cov['ghidraProvenAbsolute']}** | **{cov['ghidraProvenAbsolutePct']}%** |
 | **Exclusive geometry** | **{cov['exclusiveGeometry']}** | **{cov['exclusiveGeometryPct']}%** |
 | Unproven absolute | **{cov.get('unprovenAbsolute', 0)}** | — |
+| Reconciled XDF mislabels | **{cov.get('reconciledXdfMislabels', 0)}** | — |
 | **CAL-content index-base (D200/D978)** | **0** | **0%** (retracted) |
 | Runtime FE14 CAL bases | {cov['registerBasesRomProven']} | — |
 
 {cov['headline']}
 
-> **v10:** FE14 bases + descriptor headers (−24..0) + map siblings. Exclusive 69/69.
+> **v11:** D23D = XDF mislabel of LE16 @0xD23C (CMP @0x52E3). Absolute **69/69** reconciled. Do **not** auto-promote shipping until XDF retarget.
 
 ## How CAL is read (FE14 addressing model)
 
@@ -1509,10 +1636,13 @@ XDF (BRO) = primary definition evidence for names/equations.
 - **MAF `0xD290`:** `{sites.get('mafAbsolute')}`
 - **Ti `0xD030`:** {', '.join(f'`{s}`' for s in sites.get('tiContent', []))} — contentDeref **{ti['contentDerefProven']}**
 - **Ign WOT `0xDD0F`:** `{sites.get('ignWotSelect')}`
+- **D23D reconcile:** `{sites.get('d23dReconcile')}` — XDF mislabel; do not auto-promote
 
 Absolute offsets ({cov['ghidraProvenAbsolute']}): {', '.join(f'`{o}`' for o in doc.get('absoluteProofs', {}).get('offsets', []))}
 
 Unproven absolute: {', '.join(f"`{u['offsetHex']}`" for u in (doc.get('unprovenAbsolute') or doc.get('absoluteProofs', {}).get('unprovenAbsolute') or [])) or '_none_'}
+
+Resolved XDF mislabels: {', '.join(f"`{m['offsetHex']}`→`{m['trueRead']}`" for m in (doc.get('resolvedXdfMislabels') or doc.get('absoluteProofs', {}).get('resolvedXdfMislabels') or [])) or '_none_'}
 
 ## Fuel Ti `0xD030`
 
@@ -1551,8 +1681,9 @@ Signature `{vanos['signatureHex']}` — exactly {vanos['count']} hits (exclusive
 ## What is *not* claimed
 
 - Shipping promotion from Bosch PDF or retracted geometry
-- Absolute coverage of all 69 (currently {cov['ghidraProvenAbsolute']}/69)
+- Absolute coverage of all 69 (currently {cov['ghidraProvenAbsolute']}/69; D23D via XDF-mislabel reconcile only)
 - End-to-end HFM→ti→ign control closed-loop proof
+- Auto-promotion of reconciled XDF mislabels to shipping maps
 
 ---
 Research-only. Verification gates for promotion unchanged.
@@ -1624,16 +1755,18 @@ See [`theory_vs_rom_bosch_ti.md`](theory_vs_rom_bosch_ti.md). Headline: **absolu
 - MAF `0xD290` — `{sites.get('mafAbsolute')}`
 - Ti `0xD030` — {', '.join(f'`{s}`' for s in sites.get('tiContent', []))}
 - Ign WOT `0xDD0F` — `{sites.get('ignWotSelect')}`
+- D23D reconcile — `{sites.get('d23dReconcile')}` (XDF mislabel; do not auto-promote)
 
 ### 7.3 Artifacts
 
 - `tools/re/out/theory_vs_rom_bosch_ti.{{md,json}}`
 - `tools/re/out/register_bases_fe24.{{md,json}}`
+- `tools/re/out/engine_control_dataflow_summary.{{md,json}}`
 - Coverage: **{cov['headline']}**
 
 ### 7.4 Absolute ign/fuel XDF CODE reads — status
 
-**{cov['ghidraProvenAbsolute']}/69 absolute** ({cov['ghidraProvenAbsolutePct']}%). Exclusive geometry: **{cov['exclusiveGeometry']}/69**. Unproven absolute: **{cov.get('unprovenAbsolute', 0)}** (see `absoluteProofs.unprovenAbsolute`).
+**{cov['ghidraProvenAbsolute']}/69 absolute** ({cov['ghidraProvenAbsolutePct']}%). Exclusive geometry: **{cov['exclusiveGeometry']}/69**. Unproven absolute: **{cov.get('unprovenAbsolute', 0)}**. Reconciled XDF mislabels: **{cov.get('reconciledXdfMislabels', 0)}** (0xD23D → LE16 @0xD23C; do not auto-promote).
 
 """
     for path in [OUT / "motronic_331_function.md", ROOT / "docs" / "motronic_331_function.md"]:
@@ -1646,6 +1779,209 @@ See [`theory_vs_rom_bosch_ti.md`](theory_vs_rom_bosch_ti.md). Headline: **absolu
         if start < 0 or end < 0:
             continue
         path.write_text(text[:start] + section + text[end:])
+
+
+def write_engine_control_summary(doc):
+    """Synthesize proven absolute MAF/Ti/ign into a control-loop dataflow artifact."""
+    cov = doc["coverage"]
+    sites = doc["keyCodeSites"]
+    abs_p = doc["absoluteProofs"]["priority"]
+    mis = doc.get("resolvedXdfMislabels") or []
+    summary = {
+        "schemaVersion": 1,
+        "id": "engine_control_dataflow_summary_v1",
+        "rom": ROM_NAME,
+        "status": "absolute_paths_proven_control_summary",
+        "shippingNote": (
+            "Research summary only. Absolute CODE→CAL paths proven under FE14. "
+            "Do not auto-promote shipping maps. D23D is XDF-mislabel reconcile only."
+        ),
+        "coverage": {
+            "absolute": f"{cov['ghidraProvenAbsolute']}/69",
+            "exclusive": f"{cov['exclusiveGeometry']}/69",
+            "unprovenAbsolute": cov.get("unprovenAbsolute", 0),
+            "reconciledXdfMislabels": cov.get("reconciledXdfMislabels", 0),
+            "headline": cov["headline"],
+        },
+        "runtimeBases": doc["absoluteProofs"]["runtimeBases"],
+        "controlLoops": [
+            {
+                "id": "air_maf",
+                "role": "air_mass_input",
+                "xdf": "0xD290",
+                "status": "absolute",
+                "codePath": sites.get("mafAbsolute"),
+                "dataflow": (
+                    "ADC ISR vec5 @0xA4AA → index word table at RW6C+2 "
+                    "(RW6C=0xD28E → body 0xD290). Publishes air-mass proxy for "
+                    "fuel/ign load axes."
+                ),
+                "feeds": ["fuel_ti", "ign_maps", "maf_limits"],
+            },
+            {
+                "id": "maf_limits",
+                "role": "air_plausibility_gates",
+                "xdf": ["0xD23E", "0xD240", "0xD244", "0xD23D(reconciled→D23C)"],
+                "status": "absolute",
+                "codePath": (
+                    "CMP/MULU long-index RW6A+0x138/13A/13E; "
+                    "D23D reconcile CMP RW6A+0x136 @0x52E3 → LE16@0xD23C"
+                ),
+                "dataflow": (
+                    "Sensor/limit block under RW6A=0xD106 gates MAF high/low "
+                    "faults and MAF/RPM ratio. D23D XDF byte is mislabel of "
+                    "word threshold at 0xD23C (do not auto-promote)."
+                ),
+                "feeds": ["diagnostic_flags"],
+            },
+            {
+                "id": "fuel_ti",
+                "role": "injector_constant_base",
+                "xdf": "0xD030",
+                "status": "absolute",
+                "codePath": sites.get("tiContent"),
+                "dataflow": (
+                    "RW68=0xD002; LD/DIVU at +0x2E → Ti injector constant 0xD030. "
+                    "Used with load (MAF-derived) to form injection pulse width "
+                    "before HSO/PORT scheduling."
+                ),
+                "feeds": ["injector_pulse"],
+                "related": ["cylinder_trim_0xD0FA"],
+            },
+            {
+                "id": "cylinder_trim",
+                "role": "per_cylinder_fuel_trim",
+                "xdf": "0xD0FA",
+                "status": "absolute",
+                "codePath": sites.get("cylinderTrim"),
+                "dataflow": (
+                    "Chained base: LD RW1E,RW68 then LDB …,0xf8,LOOKUP[RW1E] "
+                    "(+ INC×6) reads per-cylinder trim bytes at 0xD0FA."
+                ),
+                "feeds": ["injector_pulse"],
+            },
+            {
+                "id": "ign_wot",
+                "role": "main_ignition_wot_axis",
+                "xdf": "0xDD0F",
+                "status": "absolute",
+                "codePath": sites.get("ignWotSelect"),
+                "dataflow": (
+                    "Select index 0x9A → interp 0x20CD → descriptor "
+                    "[RW6E+0x9A]=0xDD0D → XDF ign WOT VANOS-retarded RPM axis "
+                    "0xDD0F. Map body walked via [RW4C]."
+                ),
+                "feeds": ["spark_advance", "dwell"],
+            },
+            {
+                "id": "map_interp",
+                "role": "shared_cal_interp",
+                "status": "absolute_helper",
+                "codePath": sites.get("mapInterp"),
+                "dataflow": (
+                    "Trampoline 0x20C7/0x20CD: ADD RW1A,RW6E; LD RW4C,[RW1A]. "
+                    "Shared by fuel and ignition map consumers."
+                ),
+                "feeds": ["fuel_maps", "ign_maps", "dwell_maps"],
+            },
+        ],
+        "endToEndSketch": [
+            "1. Crank/cam HSI ISR (vec2) + ADC ISR (vec5) publish RPM/air samples to RAM.",
+            "2. Foreground loads FE14 CAL bases (RW68/6A/6C/6E) once via 0x2EDB.",
+            "3. MAF word table 0xD290 scales ADC → air mass; RW6A limits gate plausibility.",
+            "4. Ti 0xD030 (+ cylinder trim 0xD0FA) combines with load for injection timing.",
+            "5. Ign WOT/PT maps via RW6E descriptors (e.g. 0xDD0F) → spark/dwell outputs.",
+            "6. HSO/PORT scheduling drives injectors/coils (bit assignment still open).",
+        ],
+        "priorityProofs": {
+            k: {
+                "offset": v["offset"],
+                "status": v["status"],
+                "method": v["method"],
+                "note": v.get("note"),
+            }
+            for k, v in abs_p.items()
+        },
+        "d23dVerdict": mis[0] if mis else None,
+        "open": [
+            "HSO/PORT bit assignment for spark vs injector",
+            "End-to-end dwell E0DA / Alpha-N DBC3 body walks via [RW4C]",
+            "Idle vs run mode RAM flags",
+            "Optional seed.xdf retarget 0xD23D → 0xD23C[16bit] before shipping",
+        ],
+        "relatedArtifacts": [
+            "tools/re/out/absolute_code_reads.json",
+            "tools/re/out/ignition_fuel_dataflow.md",
+            "tools/re/out/control_loops.md",
+            "tools/re/out/theory_vs_rom_bosch_ti.md",
+            "tools/re/out/cal_access_model.md",
+        ],
+    }
+    (OUT / "engine_control_dataflow_summary.json").write_text(
+        json.dumps(summary, indent=2) + "\n"
+    )
+    loops_md = []
+    for loop in summary["controlLoops"]:
+        xdf = loop.get("xdf")
+        xdf_s = (
+            ", ".join(f"`{x}`" for x in xdf)
+            if isinstance(xdf, list)
+            else (f"`{xdf}`" if xdf else "_helper_")
+        )
+        loops_md.append(
+            f"### `{loop['id']}` — {loop['role']} (`{loop['status']}`)\n\n"
+            f"- XDF: {xdf_s}\n"
+            f"- CODE: `{loop.get('codePath')}`\n"
+            f"- Dataflow: {loop['dataflow']}\n"
+            f"- Feeds: {', '.join(f'`{f}`' for f in loop.get('feeds', []))}\n"
+        )
+    d23 = summary.get("d23dVerdict") or {}
+    md = f"""# Engine-control dataflow summary — absolute MAF / Ti / ign
+
+ROM: `{ROM_NAME}`
+Addressing: FE14 CAL bases (`RW68=0xD002`, `RW6A=0xD106`, `RW6C=0xD28E`, `RW6E=0xE67E`)
+
+> {summary['shippingNote']}
+
+## Coverage
+
+| Metric | Value |
+|--------|------:|
+| Absolute CODE→XDF | **{cov['ghidraProvenAbsolute']}/69** |
+| Exclusive geometry | **{cov['exclusiveGeometry']}/69** |
+| Unproven absolute | **{cov.get('unprovenAbsolute', 0)}** |
+| Reconciled XDF mislabels | **{cov.get('reconciledXdfMislabels', 0)}** |
+
+{cov['headline']}
+
+## Control-loop dataflow (proven absolute paths)
+
+{"".join(loops_md)}
+## End-to-end sketch
+
+{chr(10).join(summary['endToEndSketch'])}
+
+## D23D verdict
+
+- **Verdict:** `{d23.get('verdict', 'n/a')}`
+- **Status:** `{d23.get('status', 'n/a')}`
+- **True read:** `{d23.get('trueRead', 'n/a')}` (ROM `{d23.get('romWordLe16', 'n/a')}`)
+- **Rationale:** {d23.get('rationale', 'n/a')}
+- **Shipping:** {d23.get('shippingNote', 'Do not auto-promote.')}
+
+## Open (next RE value)
+
+{chr(10).join(f'- {o}' for o in summary['open'])}
+
+## Related
+
+{chr(10).join(f'- `{a}`' for a in summary['relatedArtifacts'])}
+
+---
+Research-only. Verification gates for promotion unchanged.
+"""
+    (OUT / "engine_control_dataflow_summary.md").write_text(md)
+    return summary
 
 
 def main():
@@ -1693,7 +2029,7 @@ def main():
                 "schemaVersion": 3,
                 "id": "rw68_cal_index_base_v3_retracted",
                 "status": "retracted",
-                "replacedBy": "fe14_cal_bases_v9 + absolute_code_reads_v9",
+                "replacedBy": "fe14_cal_bases_v9 + absolute_code_reads_v11",
                 "priorFalseBase": "0xD200",
                 "runtimeBase": "0xD002",
                 "fe24AdjacentNotLoaded": "0x42EC",
@@ -1705,7 +2041,8 @@ def main():
 
     ign_path = OUT / "ignition_fuel_dataflow.json"
     ign_doc = json.loads(ign_path.read_text())
-    ign_doc["coverage"] = {"schemaVersion": 10, **doc["coverage"]}
+    ign_doc["coverage"] = {"schemaVersion": 11, **doc["coverage"]}
+    ign_doc["resolvedXdfMislabels"] = doc.get("resolvedXdfMislabels", [])
     ign_doc["exclusiveGeometry"] = {
         "ti": doc["tiStructural"],
         "vanosRpmAxes": doc["vanosRpmAxisExclusive"],
@@ -1733,6 +2070,11 @@ def main():
                 it["absoluteCodeRead"] = True
                 it["codeReadStatus"] = "absolute"
                 it["evidenceStrength"] = "high_absolute"
+                if off == 0xD23D:
+                    it["codeReadStatus"] = "absolute_reconciled_xdf_mislabel"
+                    it["shippingNote"] = (
+                        "Do not auto-promote. Reconciled via LE16 @0xD23C CMP @0x52E3."
+                    )
             elif off == 0xD030:
                 it["codeReadStatus"] = "exclusive_structural_split_ptr"
             elif off in vanos_set:
@@ -1742,22 +2084,41 @@ def main():
     ign_path.write_text(json.dumps(ign_doc, indent=2) + "\n")
 
     patch_ignition_md(doc)
+    write_engine_control_summary(doc)
     patch_progress(doc)
     patch_ref_pdf(doc)
     patch_motronic(doc)
 
-    # cal_access_model.md quick patch
+    # cal_access_model.md — refresh coverage + D23D note
     cal_md = OUT / "cal_access_model.md"
     if cal_md.exists():
         text = cal_md.read_text()
-        marker = "## Index-base path (v3 addendum)"
-        if marker in text:
-            text = text.split(marker)[0].rstrip() + "\n\n"
-            text += """## Index-base path — RETRACTED (v5)
+        cov = doc["coverage"]
+        # Replace Coverage (ign/fuel) table block
+        cov_start = text.find("## Coverage (ign/fuel XDF items)")
+        cov_end = text.find("## Proven absolute DATA reads")
+        if cov_start >= 0 and cov_end > cov_start:
+            cov_block = f"""## Coverage (ign/fuel XDF items)
 
-Prior `RW68=0xD200` / `RW6A=0xD978` “exclusive XDF geometry” claims are **false positives**.
+| Metric | Count | % |
+|--------|------:|--:|
+| **Absolute CODE reads (ea → XDF)** | **{cov['ghidraProvenAbsolute']}** | **{cov['ghidraProvenAbsolutePct']}%** |
+| **Exclusive geometry** | **{cov['exclusiveGeometry']}** | **{cov['exclusiveGeometryPct']}%** |
+| Unproven absolute | **{cov.get('unprovenAbsolute', 0)}** | — |
+| Reconciled XDF mislabels | **{cov.get('reconciledXdfMislabels', 0)}** (`0xD23D`→`0xD23C`) | — |
+| Structural split-ptr in data island | 1 | 1.45% |
 
-## Addressing model (v9) — absolute unlock
+{cov['headline']}
+
+> **v11 D23D:** XDF mislabel — true read is LE16 @`0xD23C` via CMP @`0x52E3` (ROM `0x01F4`). Do **not** auto-promote shipping.
+
+"""
+            text = text[:cov_start] + cov_block + text[cov_end:]
+        # Refresh trailing Addressing / Coverage lines if present
+        if "## Addressing model (v9)" in text:
+            head, _, _ = text.partition("## Addressing model (v9)")
+            text = head.rstrip() + "\n\n"
+            text += f"""## Addressing model (v9) — absolute unlock
 
 Loader `0x2EDB` loads **FE14** BE words (after FF-pad scan), **not FE24**:
 
@@ -1776,13 +2137,29 @@ CMP @0x4D60/0x481B is dual-config (CAL bases skip 0x4ECC RAM fill).
 1. **MAF `0xD290`:** ADC ISR `0xA53B` `ADD RW64,0x2[RW46]` with `RW46=RW6C+2·ADC`
 2. **Ti `0xD030`:** `LD RW40,0x2e[RW68]` @0xAFC7; `DIVU …,0x2e,TABLE[RW68]` @0x9A82
 3. **Ign WOT `0xDD0F`:** `LD RW1A,#0x9A` @0x66EC → `0x20CD` → `[E67E+9A]=DD0D`
+4. **D23D reconcile (v11):** CMP @`0x52E3` → LE16 @`0xD23C`=`0x01F4` — XDF 8-bit@`0xD23D` mislabel; **do not auto-promote**
 
-See `theory_vs_rom_bosch_ti.md` / `register_bases_fe24.md`.
+**Coverage:** absolute **{cov['ghidraProvenAbsolute']}/69** ({cov['ghidraProvenAbsolutePct']}%); exclusive **{cov['exclusiveGeometry']}/69** (100%). Unproven absolute: **{cov.get('unprovenAbsolute', 0)}**. Reconciled XDF mislabels: **{cov.get('reconciledXdfMislabels', 0)}** (`0xD23D`). D200/D978 remain retracted.
+
+See `theory_vs_rom_bosch_ti.md` / `register_bases_fe24.md` / `absolute_code_reads.json` / `engine_control_dataflow_summary.md`.
 
 ---
 Research-only. Verification gates unchanged. No shipping promotion.
 """
-            cal_md.write_text(text)
+        cal_md.write_text(text)
+
+    # cal_access_model.json coverage refresh
+    cal_json = OUT / "cal_access_model.json"
+    if cal_json.exists():
+        cj = json.loads(cal_json.read_text())
+        cj["coverage"] = {
+            "schemaVersion": 11,
+            **doc["coverage"],
+            "d23dVerdict": "xdf_mislabel_reconciled",
+            "shippingNote": "Do not auto-promote reconciled XDF mislabels.",
+        }
+        cj["resolvedXdfMislabels"] = doc.get("resolvedXdfMislabels", [])
+        cal_json.write_text(json.dumps(cj, indent=2) + "\n")
 
     # handoff
     handoff = OUT / "cloud_re_handoff_pdf.md"
@@ -1793,13 +2170,15 @@ Research-only. Verification gates unchanged. No shipping promotion.
         f"- **{f['title']}:** " + ", ".join(f"`0x{o:04X}`" for o in f["offsets"])
         for f in doc["exclusiveFamilies"]
     )
-    ht += f"""## Status after theory-vs-ROM pass (v10)
+    ht += f"""## Status after theory-vs-ROM pass (v11)
 
 - **Retraction:** D200 / D978 remain retracted.
 - **Runtime FE14 CAL bases:** RW68=`0xD002`, RW6A=`0xD106`, RW6C=`0xD28E`, RW6E=`0xE67E`
 - **Coverage:** {doc['coverage']['headline']}
 - **Absolute:** {doc['absoluteProofs']['count']}/69 — {doc['absoluteProofs']['offsets']}
 - **Unproven absolute:** {doc['absoluteProofs'].get('unprovenAbsolute', [])}
+- **Resolved XDF mislabels:** {doc['absoluteProofs'].get('resolvedXdfMislabels', [])}
+- **D23D verdict:** XDF mislabel — true read is LE16 @`0xD23C` via CMP @`0x52E3` (ROM `0x01F4`). Do **not** auto-promote.
 - **Exclusive geometry:** 69/69 retained
 {fam_lines}
 - **Next:** {doc['nextToProve']}
@@ -1815,8 +2194,10 @@ Research-only. Verification gates unchanged. No shipping promotion.
     print("FE14 bases:", doc["registerBasesRomProven"]["words"])
     print("Absolute:", doc["absoluteProofs"]["count"], doc["absoluteProofs"]["offsets"])
     print("Unproven:", doc["absoluteProofs"].get("unprovenAbsolute"))
+    print("Resolved mislabels:", doc["absoluteProofs"].get("resolvedXdfMislabels"))
     print("Priority:", {k: v["status"] for k, v in doc["absoluteProofs"]["priority"].items()})
     print("Exclusive all:", len(doc["exclusiveOffsets"]))
+    print("Summary:", OUT / "engine_control_dataflow_summary.md")
 
 
 if __name__ == "__main__":

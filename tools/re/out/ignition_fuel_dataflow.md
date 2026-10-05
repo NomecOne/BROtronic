@@ -5,19 +5,20 @@ ISA: `mcs96_80c196_family`
 CODE `0x2000`–`0xB930`; DATA from `0xB931`.
 XDF (BRO) = primary definition evidence for names/equations.
 
-## Coverage (v10 — exclusive 100%; absolute nearly complete)
+## Coverage (v11 — exclusive 100%; absolute 69/69 reconciled)
 
 | Metric | Count | % of 69 |
 |--------|------:|--------:|
-| **Absolute CODE reads** (ea → XDF) | **68** | **98.55%** |
+| **Absolute CODE reads** (ea → XDF) | **69** | **100.0%** |
 | **Exclusive geometry** | **69** | **100.0%** |
-| Unproven absolute | **1** | — |
+| Unproven absolute | **0** | — |
+| Reconciled XDF mislabels | **1** | — |
 | **CAL-content index-base (D200/D978)** | **0** | **0%** (retracted) |
 | Runtime FE14 CAL bases | 4 | — |
 
-98.55% absolute (68/69); exclusive geometry 100.0% (69/69); unproven absolute 1; FE14 CAL bases; D200/D978 retracted.
+100.0% absolute (69/69); exclusive geometry 100.0% (69/69); unproven absolute 0; resolved XDF mislabels 1; FE14 CAL bases; D200/D978 retracted.
 
-> **v10:** FE14 bases + descriptor headers (−24..0) + map siblings. Exclusive 69/69.
+> **v11:** D23D = XDF mislabel of LE16 @0xD23C (CMP @0x52E3). Absolute **69/69** reconciled. Do **not** auto-promote shipping until XDF retarget.
 
 ## How CAL is read (FE14 addressing model)
 
@@ -31,10 +32,13 @@ XDF (BRO) = primary definition evidence for names/equations.
 - **MAF `0xD290`:** `0xA53B ADD RW64,0x2[RW46] (RW46=RW6C+2·ADC)`
 - **Ti `0xD030`:** `0x9A82`, `0xAFC7` — contentDeref **True**
 - **Ign WOT `0xDD0F`:** `0x66EC LD RW1A,#0x9A → 0x6987 → 0x20CD → DD0D/DD0F`
+- **D23D reconcile:** `0x52E3 CMP RW1C,0x136,TABLE[RW6A] → LE16@0xD23C (XDF mislabel @0xD23D)` — XDF mislabel; do not auto-promote
 
-Absolute offsets (68): `0xD030`, `0xD032`, `0xD06A`, `0xD093`, `0xD0FA`, `0xD23E`, `0xD240`, `0xD244`, `0xD256`, `0xD257`, `0xD25A`, `0xD25B`, `0xD27B`, `0xD27D`, `0xD27E`, `0xD281`, `0xD288`, `0xD290`, `0xD5A6`, `0xD5E6`, `0xD63A`, `0xD67C`, `0xD69E`, `0xD6AE`, `0xD6C6`, `0xD6E8`, `0xD6FA`, `0xD722`, `0xD734`, `0xD75E`, `0xD815`, `0xD8B1`, `0xD8EF`, `0xD8FD`, `0xD91F`, `0xD970`, `0xD984`, `0xD9A6`, `0xD9C8`, `0xD9DA`, `0xDAA8`, `0xDABA`, `0xDBC3`, `0xDC21`, `0xDC37`, `0xDC47`, `0xDC63`, `0xDC79`, `0xDCCF`, `0xDCD9`, `0xDCF3`, `0xDD05`, `0xDD0F`, `0xDD21`, `0xDD89`, `0xDD9B`, `0xDE6D`, `0xDE7F`, `0xDF4D`, `0xDF5F`, `0xE044`, `0xE065`, `0xE0B3`, `0xE0DA`, `0xE364`, `0xE372`, `0xE37E`, `0xE388`
+Absolute offsets (69): `0xD030`, `0xD032`, `0xD06A`, `0xD093`, `0xD0FA`, `0xD23D`, `0xD23E`, `0xD240`, `0xD244`, `0xD256`, `0xD257`, `0xD25A`, `0xD25B`, `0xD27B`, `0xD27D`, `0xD27E`, `0xD281`, `0xD288`, `0xD290`, `0xD5A6`, `0xD5E6`, `0xD63A`, `0xD67C`, `0xD69E`, `0xD6AE`, `0xD6C6`, `0xD6E8`, `0xD6FA`, `0xD722`, `0xD734`, `0xD75E`, `0xD815`, `0xD8B1`, `0xD8EF`, `0xD8FD`, `0xD91F`, `0xD970`, `0xD984`, `0xD9A6`, `0xD9C8`, `0xD9DA`, `0xDAA8`, `0xDABA`, `0xDBC3`, `0xDC21`, `0xDC37`, `0xDC47`, `0xDC63`, `0xDC79`, `0xDCCF`, `0xDCD9`, `0xDCF3`, `0xDD05`, `0xDD0F`, `0xDD21`, `0xDD89`, `0xDD9B`, `0xDE6D`, `0xDE7F`, `0xDF4D`, `0xDF5F`, `0xE044`, `0xE065`, `0xE0B3`, `0xE0DA`, `0xE364`, `0xE372`, `0xE37E`, `0xE388`
 
-Unproven absolute: `0xD23D`
+Unproven absolute: _none_
+
+Resolved XDF mislabels: `0xD23D`→`0xD23C[16bit] via CMP @0x52E3 (RW6A+0x136)`
 
 ## Fuel Ti `0xD030`
 
@@ -199,8 +203,9 @@ Signature `050605070a05070b0909090f12130860` — exactly 8 hits (exclusive); ign
 ## What is *not* claimed
 
 - Shipping promotion from Bosch PDF or retracted geometry
-- Absolute coverage of all 69 (currently 68/69)
+- Absolute coverage of all 69 (currently 69/69; D23D via XDF-mislabel reconcile only)
 - End-to-end HFM→ti→ign control closed-loop proof
+- Auto-promotion of reconciled XDF mislabels to shipping maps
 
 ---
 Research-only. Verification gates for promotion unchanged.

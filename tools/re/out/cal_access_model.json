@@ -111,14 +111,22 @@
     }
   ],
   "coverage": {
-    "items": 69,
-    "ghidraProvenCodeRead": 0,
-    "ghidraProvenPct": 0.0,
+    "schemaVersion": 11,
+    "ignFuelItems": 69,
+    "ghidraProvenAbsolute": 69,
+    "ghidraProvenAbsolutePct": 100.0,
+    "indexBaseCrossCheckedCalContent": 0,
+    "indexBaseCrossCheckedCalContentPct": 0.0,
+    "exclusiveGeometry": 69,
+    "exclusiveGeometryPct": 100.0,
     "structuralSplitPtr": 1,
-    "structuralSplitPtrPct": 1.45,
-    "accessPathUnresolved": 68,
-    "registerFileConfusionSitesNoted": 27,
-    "headline": "0.0% proven CODE reads (0/69); 1 structural split-ptr (0xD030); page-index candidates retracted."
+    "registerBasesRomProven": 4,
+    "unprovenAbsolute": 0,
+    "reconciledXdfMislabels": 1,
+    "headline": "100.0% absolute (69/69); exclusive geometry 100.0% (69/69); unproven absolute 0; resolved XDF mislabels 1; FE14 CAL bases; D200/D978 retracted.",
+    "note": "v11: absolute via FE14 long-index/chained-base/MAF, descriptor headers within \u221224..0, map load/body siblings, and XDF-mislabel word reconcile (0xD23D \u2192 LE16 @0xD23C CMP @0x52E3). Exclusive 69/69 retained. Do not auto-promote reconciled mislabels to shipping.",
+    "d23dVerdict": "xdf_mislabel_reconciled",
+    "shippingNote": "Do not auto-promote reconciled XDF mislabels."
   },
   "items": [
     {
@@ -1672,5 +1680,36 @@
     "Dump/recover internal ROM 0x0000\u20130x1FFF or instrument RAM 0x1E08 descriptor contents after boot",
     "Trace one 0x20C7 interp call with known RW1A index through [RW4C] to a 0xDxxx pointer"
   ],
-  "shippingNote": "Research-only. Verification gates unchanged. No shipping promotion."
+  "shippingNote": "Research-only. Verification gates unchanged. No shipping promotion.",
+  "resolvedXdfMislabels": [
+    {
+      "offsetHex": "0xD23D",
+      "name": "0xD23D[8bit] Air, MAF, RPM min threshold for MAF signal check",
+      "status": "absolute_reconciled_xdf_mislabel",
+      "verdict": "xdf_mislabel",
+      "trueRead": "0xD23C[16bit] via CMP @0x52E3 (RW6A+0x136)",
+      "romWordLe16": "0x01F4",
+      "rationale": "No byte LOOKUP of 0xD23D. CODE reads LE16 @0xD23C=0x01F4. XDF 8-bit@0xD23D MATH x*40 yields nonsense (raw 1 \u2192 40 RPM) vs word neighbors that are proven 16-bit long-index. Count as reconciled absolute; do not auto-promote shipping.",
+      "sites": [
+        {
+          "site": 21219,
+          "siteHex": "0x52E3",
+          "reg": "RW6A",
+          "immHex": "0x136",
+          "eaHex": "0xD23C",
+          "xdfHex": "0xD23D",
+          "insn": "CMP RW1C,0x136, TABLE[RW6A]",
+          "kind": "xdf_mislabel_word_high_byte",
+          "romWordLe16": "0x01F4",
+          "romHighByte": "0x01",
+          "xdfClaim": "8bit @0xD23D MATH x*40",
+          "verdict": "xdf_mislabel",
+          "status": "absolute_reconciled_xdf_mislabel",
+          "note": "XDF 8-bit @0xD23D is the high byte of the LE16 word at 0xD23C read by CODE. Not a true standalone 8-bit item.",
+          "shippingNote": "Do not auto-promote. Reconciled coverage only \u2014 wait for XDF retarget to 0xD23C[16bit] (or confirmed byte proof) before shipping promotion."
+        }
+      ],
+      "shippingNote": "Do not auto-promote. Reconciled coverage only \u2014 wait for XDF retarget to 0xD23C[16bit] (or confirmed byte proof) before shipping promotion."
+    }
+  ]
 }
