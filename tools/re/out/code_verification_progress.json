@@ -32,7 +32,8 @@
       "Do not claim full CODE+DATA control; verification gates unchanged",
       "Trace descriptor slot 0xD0/0x30 after load (0x1566) to Ti/fuel map pointers",
       "Engine control: 0% absolute; exclusive geometry 9/69 (Ti+VANOS axes) \u2014 chase descriptor\u21920xDxxx deref",
-      "Compose island D000+|0030 and [deref] Ti; CODE-walk one VANOS RPM axis"
+      "Compose island D000+|0030 and [deref] Ti; CODE-walk one VANOS RPM axis",
+      "Engine control: 0% absolute; exclusive geometry growing \u2014 chase descriptor\u21920xDxxx deref"
     ]
   },
   "artifacts": [
@@ -56,6 +57,7 @@
       "tools/re/out/theory_vs_rom_bosch_ti.md",
       "tools/re/out/rw68_cal_index_base.md",
       "tools/re/out/ref_pdf_bosch_m_motronic_technical_instruction.md",
+      "tools/re/out/register_bases_fe24.md",
       "tools/re/out/register_bases_fe24.md"
     ],
     "ignitionFuelCoverage": {
@@ -64,22 +66,22 @@
       "ghidraProvenPct": 0.0,
       "indexBaseCrossCheckedCalContent": 0,
       "indexBaseCrossCheckedCalContentPct": 0.0,
-      "exclusiveGeometry": 9,
-      "exclusiveGeometryPct": 13.04,
+      "exclusiveGeometry": 23,
+      "exclusiveGeometryPct": 33.33,
       "structuralSplitPtr": 1,
       "registerBasesRomProven": 4,
-      "headline": "0.0% absolute (0/69); 0% CAL-content index-base (D200/D978 retracted); 13.04% exclusive geometry (9/69: Ti structural + 8 VANOS RPM axes); 4 ROM-proven FE24 bases.",
-      "note": "v5: retracted false D200/D978 XDF-geometry xrefs. Raised exclusive-geometry proofs for \u22651 fuel (Ti 0xD030) and \u22651 ignition (VANOS RPM axes e.g. 0xDD0F). Absolute CODE content reads still 0."
+      "headline": "0.0% absolute (0/69); 0% CAL-content index-base (D200/D978 retracted); 33.33% exclusive geometry (23/69); 4 ROM-proven FE24 bases.",
+      "note": "v6: grew exclusive geometry via signature axes, island\u2194CAL twins, BE/LE unique immediates, and unique span chains. D200/D978 remain retracted. Absolute CODE content reads still 0."
     },
     "priorityTraces": {
       "irqRamPublications": "done_v1",
       "sfrHsoHsiAudit": "cross_checked",
       "calAccessModel": "corrected_v2",
       "firstProvenIgnFuelXref": false,
-      "boschTiTheoryVsRom": "done_v5_exclusive_geometry",
+      "boschTiTheoryVsRom": "done_v6_exclusive_geometry",
       "rw68IndexBase": "retracted_d200_false_positive",
       "registerBasesFe24": "rom_proven",
-      "exclusiveGeometryFuelIgn": "ti_plus_vanos_rpm_axes"
+      "exclusiveGeometryFuelIgn": "ti_vanos_maf_idle_enrich_v6"
     }
   }
 }

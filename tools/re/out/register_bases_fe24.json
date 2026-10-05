@@ -78,6 +78,7 @@
   },
   "vanosRpmAxisExclusive": {
     "id": "vanos_rpm_axis_sig_v1",
+    "method": "signature_axis",
     "signatureHex": "050605070a05070b0909090f12130860",
     "signatureLen": 16,
     "exclusiveLocations": [
@@ -90,31 +91,45 @@
       "0xDE6D",
       "0xDF4D"
     ],
+    "offsets": [
+      55684,
+      55718,
+      55752,
+      55976,
+      56591,
+      56713,
+      56941,
+      57165
+    ],
     "count": 8,
     "fuelAxes": [
       {
         "offset": 55684,
         "offsetHex": "0xD984",
         "name": "0xD984 RPM axis for Fuel, WOT, Vanos retarded",
-        "category": "Fuel"
+        "category": "Fuel",
+        "domain": "fuel"
       },
       {
         "offset": 55718,
         "offsetHex": "0xD9A6",
         "name": "0xD9A6 RPM axis for Fuel, WOT, Vanos advanced",
-        "category": "Fuel"
+        "category": "Fuel",
+        "domain": "fuel"
       },
       {
         "offset": 55752,
         "offsetHex": "0xD9C8",
         "name": "0xD9C8 RPM axis for Fuel, PT, Vanos retarded",
-        "category": "Fuel"
+        "category": "Fuel",
+        "domain": "fuel"
       },
       {
         "offset": 55976,
         "offsetHex": "0xDAA8",
         "name": "0xDAA8 RPM axis for Fuel, PT, Vanos advanced",
-        "category": "Fuel"
+        "category": "Fuel",
+        "domain": "fuel"
       }
     ],
     "ignitionAxes": [
@@ -122,42 +137,189 @@
         "offset": 56591,
         "offsetHex": "0xDD0F",
         "name": "0xDD0F RPM axis for Ignition, WOT, Vanos retarded",
-        "category": "Ignition"
+        "category": "Ignition",
+        "domain": "ignition"
       },
       {
         "offset": 56713,
         "offsetHex": "0xDD89",
         "name": "0xDD89 RPM axis for Ignition, WOT, Vanos advanced",
-        "category": "Ignition"
+        "category": "Ignition",
+        "domain": "ignition"
       },
       {
         "offset": 56941,
         "offsetHex": "0xDE6D",
         "name": "0xDE6D RPM axis for Ignition, PT, Vanos retarded",
-        "category": "Ignition"
+        "category": "Ignition",
+        "domain": "ignition"
       },
       {
         "offset": 57165,
         "offsetHex": "0xDF4D",
         "name": "0xDF4D RPM axis for Ignition, PT, Vanos advanced",
-        "category": "Ignition"
+        "category": "Ignition",
+        "domain": "ignition"
+      }
+    ],
+    "items": [
+      {
+        "offset": 55684,
+        "offsetHex": "0xD984",
+        "name": "0xD984 RPM axis for Fuel, WOT, Vanos retarded",
+        "category": "Fuel",
+        "domain": "fuel"
+      },
+      {
+        "offset": 55718,
+        "offsetHex": "0xD9A6",
+        "name": "0xD9A6 RPM axis for Fuel, WOT, Vanos advanced",
+        "category": "Fuel",
+        "domain": "fuel"
+      },
+      {
+        "offset": 55752,
+        "offsetHex": "0xD9C8",
+        "name": "0xD9C8 RPM axis for Fuel, PT, Vanos retarded",
+        "category": "Fuel",
+        "domain": "fuel"
+      },
+      {
+        "offset": 55976,
+        "offsetHex": "0xDAA8",
+        "name": "0xDAA8 RPM axis for Fuel, PT, Vanos advanced",
+        "category": "Fuel",
+        "domain": "fuel"
+      },
+      {
+        "offset": 56591,
+        "offsetHex": "0xDD0F",
+        "name": "0xDD0F RPM axis for Ignition, WOT, Vanos retarded",
+        "category": "Ignition",
+        "domain": "ignition"
+      },
+      {
+        "offset": 56713,
+        "offsetHex": "0xDD89",
+        "name": "0xDD89 RPM axis for Ignition, WOT, Vanos advanced",
+        "category": "Ignition",
+        "domain": "ignition"
+      },
+      {
+        "offset": 56941,
+        "offsetHex": "0xDE6D",
+        "name": "0xDE6D RPM axis for Ignition, PT, Vanos retarded",
+        "category": "Ignition",
+        "domain": "ignition"
+      },
+      {
+        "offset": 57165,
+        "offsetHex": "0xDF4D",
+        "name": "0xDF4D RPM axis for Ignition, PT, Vanos advanced",
+        "category": "Ignition",
+        "domain": "ignition"
       }
     ],
     "representativeIgnition": {
       "offset": 56591,
       "offsetHex": "0xDD0F",
       "name": "0xDD0F RPM axis for Ignition, WOT, Vanos retarded",
-      "category": "Ignition"
+      "category": "Ignition",
+      "domain": "ignition"
     },
     "representativeFuel": {
       "offset": 55684,
       "offsetHex": "0xD984",
       "name": "0xD984 RPM axis for Fuel, WOT, Vanos retarded",
-      "category": "Fuel"
+      "category": "Fuel",
+      "domain": "fuel"
     },
     "exclusiveGeometry": true,
     "codeDerefProven": false,
-    "note": "Exclusive content geometry: this 16-byte RPM-axis preamble appears exactly 8 times in the image \u2014 precisely the XDF Fuel/Ign PT|WOT VANOS RPM axes. Proves table geometry for \u22651 fuel and \u22651 ignition axis (all 8). Not a CODE LOOKUP[ZR] content read.",
+    "note": "Exclusive content geometry: 16-byte RPM-axis preamble appears exactly 8 times \u2014 XDF Fuel/Ign PT|WOT VANOS RPM axes.",
     "evidenceStrength": "high_content_exclusive"
-  }
+  },
+  "exclusiveFamilies": [
+    {
+      "id": "vanos_wot_dwell_axis_sig_v1",
+      "title": "VANOS WOT dwell RPM axes",
+      "offsets": [
+        "0xD67C",
+        "0xD69E"
+      ]
+    },
+    {
+      "id": "vanos_pt_load_axis_sig_v1",
+      "title": "VANOS PT load axes (fuel+ign)",
+      "offsets": [
+        "0xD9DA",
+        "0xDABA",
+        "0xDE7F",
+        "0xDF5F"
+      ]
+    },
+    {
+      "id": "ign_idle_timing_sig_v1",
+      "title": "Ign idle timing (Manual / A/T)",
+      "offsets": [
+        "0xDCF3",
+        "0xDD05"
+      ]
+    },
+    {
+      "id": "soft_fuel_cut_island_twin_v1",
+      "title": "Soft fuel cut (Ti neighborhood twin)",
+      "offsets": [
+        "0xD032"
+      ]
+    },
+    {
+      "id": "maf_d28e_be_le_twin_v1",
+      "title": "MAF transfer anchor (D28E BE\u2194LE)",
+      "offsets": [
+        "0xD290"
+      ]
+    },
+    {
+      "id": "ign_idle_cold_chain_v1",
+      "title": "Ign idle cold timing corrections",
+      "offsets": [
+        "0xDCCF",
+        "0xDCD9"
+      ]
+    },
+    {
+      "id": "fuel_cold_enrich_chain_v1",
+      "title": "Fuel cold engine enrich (Manual / A/T)",
+      "offsets": [
+        "0xD8EF",
+        "0xD8FD"
+      ]
+    }
+  ],
+  "exclusiveOffsets": [
+    "0xD030",
+    "0xD032",
+    "0xD290",
+    "0xD67C",
+    "0xD69E",
+    "0xD8EF",
+    "0xD8FD",
+    "0xD984",
+    "0xD9A6",
+    "0xD9C8",
+    "0xD9DA",
+    "0xDAA8",
+    "0xDABA",
+    "0xDCCF",
+    "0xDCD9",
+    "0xDCF3",
+    "0xDD05",
+    "0xDD0F",
+    "0xDD89",
+    "0xDE6D",
+    "0xDE7F",
+    "0xDF4D",
+    "0xDF5F"
+  ]
 }

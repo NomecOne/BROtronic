@@ -299,29 +299,30 @@ Cross-check of Bosch M-Motronic TI (PRIMARY extract) against MCS-96 listing / XD
 
 ### 7.1 Bosch T1–T8 checklist
 
-See [`theory_vs_rom_bosch_ti.md`](theory_vs_rom_bosch_ti.md). Headline: T3 Ti = `exclusive_structural`; T5/T8 VANOS axes = `exclusive_geometry_axes`; prior D200/D978 index-base claims **retracted**.
+See [`theory_vs_rom_bosch_ti.md`](theory_vs_rom_bosch_ti.md). Headline: exclusive geometry **23/69**; T1 MAF exclusive; T3 Ti exclusive; T5/T8 VANOS axes; D200/D978 **retracted**.
 
-### 7.2 Access-model update (v5)
+### 7.2 Access-model update (v6)
 
 `LDB Rx,0xd0, LOOKUP[ZR]` remains register file `0x00D0`.
 
 **ROM-proven bases (FE24):** `RW68=0x42EC`, `RW6A=0x43F0`, `RW6C=0x1A08`, `RW6E=0x1E08`.
 
-**Retracted:** `RW68=0xD200` (13 items) and `RW6A=0xD978` (6 fuel axes) — false XDF-geometry positives.
+**Retracted:** `RW68=0xD200` / `RW6A=0xD978` — do not revive.
 
-**Exclusive geometry:**
-- Fuel Ti `0xD030` — unique `D000|0030` @`0x432A` + island↔CAL body twins; CODE CMP `0x8B13, 0x8C17, 0x8C2E`
-- Ign/fuel VANOS RPM axes — signature `050605070a05070b0909090f12130860` at exactly 8 XDF offsets (rep ign `0xDD0F`)
+**Exclusive geometry (23/69):**
+- Fuel Ti `0xD030` — unique split @`0x432A`; CODE CMP `0x8B13, 0x8C17, 0x8C2E`
+- VANOS RPM axes — `050605070a05070b0909090f12130860` @ 8 offsets
+- Plus: WOT dwell axes, PT load axes, MAF D28E twin, ign idle timing/cold, soft fuel cut, cold enrich
 
 ### 7.3 Artifacts
 
 - `tools/re/out/theory_vs_rom_bosch_ti.{md,json}`
 - `tools/re/out/register_bases_fe24.{md,json}`
-- Coverage: **0.0% absolute (0/69); 0% CAL-content index-base (D200/D978 retracted); 13.04% exclusive geometry (9/69: Ti structural + 8 VANOS RPM axes); 4 ROM-proven FE24 bases.**
+- Coverage: **0.0% absolute (0/69); 0% CAL-content index-base (D200/D978 retracted); 33.33% exclusive geometry (23/69); 4 ROM-proven FE24 bases.**
 
 ### 7.4 First absolute / CAL-content ign/fuel XDF CODE read — status
 
-**None yet** (`0/69` absolute; `0/69` CAL-content index-base after retraction). Exclusive geometry: **9/69**. Closest CODE: Ti split CMPs + interp `0x20C7`.
+**None yet** (`0/69` absolute; `0/69` CAL-content index-base after retraction). Exclusive geometry: **23/69**. Closest CODE: Ti split CMPs + interp `0x20C7`.
 
 ## 8. Research session notes
 

@@ -3,18 +3,18 @@
   "id": "ignition_fuel_dataflow_v2",
   "rom": "BMW DME413 SW623 D466.29 C16x900A 94 RedLabel.bin",
   "coverage": {
-    "schemaVersion": 5,
+    "schemaVersion": 6,
     "ignFuelItems": 69,
     "ghidraProvenAbsolute": 0,
     "ghidraProvenAbsolutePct": 0.0,
     "indexBaseCrossCheckedCalContent": 0,
     "indexBaseCrossCheckedCalContentPct": 0.0,
-    "exclusiveGeometry": 9,
-    "exclusiveGeometryPct": 13.04,
+    "exclusiveGeometry": 23,
+    "exclusiveGeometryPct": 33.33,
     "structuralSplitPtr": 1,
     "registerBasesRomProven": 4,
-    "headline": "0.0% absolute (0/69); 0% CAL-content index-base (D200/D978 retracted); 13.04% exclusive geometry (9/69: Ti structural + 8 VANOS RPM axes); 4 ROM-proven FE24 bases.",
-    "note": "v5: retracted false D200/D978 XDF-geometry xrefs. Raised exclusive-geometry proofs for \u22651 fuel (Ti 0xD030) and \u22651 ignition (VANOS RPM axes e.g. 0xDD0F). Absolute CODE content reads still 0."
+    "headline": "0.0% absolute (0/69); 0% CAL-content index-base (D200/D978 retracted); 33.33% exclusive geometry (23/69); 4 ROM-proven FE24 bases.",
+    "note": "v6: grew exclusive geometry via signature axes, island\u2194CAL twins, BE/LE unique immediates, and unique span chains. D200/D978 remain retracted. Absolute CODE content reads still 0."
   },
   "seeAlso": [
     "tools/re/out/cal_access_model.json",
@@ -57,8 +57,8 @@
       "dataSize": 16,
       "category": "Fuel",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_soft_fuel_cut_island_twin_v1",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 208,
@@ -66,7 +66,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
         "CODE has LOOKUP[ZR] immed 0x00D0 (= register RD0), NOT ROM page \u2014 do not treat as CAL read."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 53354,
@@ -448,8 +449,8 @@
       "dataSize": 16,
       "category": "Sensors",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_maf_d28e_be_le_twin_v1",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 210,
@@ -457,7 +458,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
         "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page \u2014 do not treat as CAL read."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 54694,
@@ -539,15 +541,16 @@
       "dataSize": 8,
       "category": "XDF",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_vanos_wot_dwell_axis_sig_v1",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 214,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD6), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 54942,
@@ -561,15 +564,16 @@
       "dataSize": 8,
       "category": "XDF",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_vanos_wot_dwell_axis_sig_v1",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 214,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD6), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 54958,
@@ -786,8 +790,8 @@
       "dataSize": 8,
       "category": "Fuel",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_fuel_cold_enrich_chain_v1",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 2,
       "pageByte": 216,
@@ -795,7 +799,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
         "CODE has LOOKUP[ZR] immed 0x00D8 (= register RD8), NOT ROM page \u2014 do not treat as CAL read."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 55549,
@@ -809,8 +814,8 @@
       "dataSize": 8,
       "category": "Fuel",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_fuel_cold_enrich_chain_v1",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 216,
@@ -818,7 +823,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
         "CODE has LOOKUP[ZR] immed 0x00D8 (= register RD8), NOT ROM page \u2014 do not treat as CAL read."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 55583,
@@ -945,15 +951,16 @@
       "dataSize": 8,
       "category": "Fuel",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_vanos_pt_load_axis_sig_v1",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 217,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD9), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 55976,
@@ -990,15 +997,16 @@
       "dataSize": 8,
       "category": "Fuel",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_vanos_pt_load_axis_sig_v1",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 218,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xDA), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 56259,
@@ -1144,15 +1152,16 @@
       "dataSize": 8,
       "category": "Ignition",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_ign_idle_cold_chain_v1",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 220,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xDC), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 56537,
@@ -1166,15 +1175,16 @@
       "dataSize": 16,
       "category": "Ignition",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_ign_idle_cold_chain_v1",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 220,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xDC), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 56563,
@@ -1188,15 +1198,16 @@
       "dataSize": 8,
       "category": "Ignition",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_ign_idle_timing_sig_v1",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 220,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xDC), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 56581,
@@ -1210,15 +1221,16 @@
       "dataSize": 8,
       "category": "Ignition",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_ign_idle_timing_sig_v1",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 221,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xDD), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 56591,
@@ -1345,15 +1357,16 @@
       "dataSize": 8,
       "category": "Ignition",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_vanos_pt_load_axis_sig_v1",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 222,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xDE), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 57165,
@@ -1390,15 +1403,16 @@
       "dataSize": 8,
       "category": "Ignition",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_vanos_pt_load_axis_sig_v1",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 223,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xDF), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 57412,
@@ -1628,6 +1642,7 @@
     },
     "vanosRpmAxes": {
       "id": "vanos_rpm_axis_sig_v1",
+      "method": "signature_axis",
       "signatureHex": "050605070a05070b0909090f12130860",
       "signatureLen": 16,
       "exclusiveLocations": [
@@ -1640,31 +1655,45 @@
         "0xDE6D",
         "0xDF4D"
       ],
+      "offsets": [
+        55684,
+        55718,
+        55752,
+        55976,
+        56591,
+        56713,
+        56941,
+        57165
+      ],
       "count": 8,
       "fuelAxes": [
         {
           "offset": 55684,
           "offsetHex": "0xD984",
           "name": "0xD984 RPM axis for Fuel, WOT, Vanos retarded",
-          "category": "Fuel"
+          "category": "Fuel",
+          "domain": "fuel"
         },
         {
           "offset": 55718,
           "offsetHex": "0xD9A6",
           "name": "0xD9A6 RPM axis for Fuel, WOT, Vanos advanced",
-          "category": "Fuel"
+          "category": "Fuel",
+          "domain": "fuel"
         },
         {
           "offset": 55752,
           "offsetHex": "0xD9C8",
           "name": "0xD9C8 RPM axis for Fuel, PT, Vanos retarded",
-          "category": "Fuel"
+          "category": "Fuel",
+          "domain": "fuel"
         },
         {
           "offset": 55976,
           "offsetHex": "0xDAA8",
           "name": "0xDAA8 RPM axis for Fuel, PT, Vanos advanced",
-          "category": "Fuel"
+          "category": "Fuel",
+          "domain": "fuel"
         }
       ],
       "ignitionAxes": [
@@ -1672,44 +1701,336 @@
           "offset": 56591,
           "offsetHex": "0xDD0F",
           "name": "0xDD0F RPM axis for Ignition, WOT, Vanos retarded",
-          "category": "Ignition"
+          "category": "Ignition",
+          "domain": "ignition"
         },
         {
           "offset": 56713,
           "offsetHex": "0xDD89",
           "name": "0xDD89 RPM axis for Ignition, WOT, Vanos advanced",
-          "category": "Ignition"
+          "category": "Ignition",
+          "domain": "ignition"
         },
         {
           "offset": 56941,
           "offsetHex": "0xDE6D",
           "name": "0xDE6D RPM axis for Ignition, PT, Vanos retarded",
-          "category": "Ignition"
+          "category": "Ignition",
+          "domain": "ignition"
         },
         {
           "offset": 57165,
           "offsetHex": "0xDF4D",
           "name": "0xDF4D RPM axis for Ignition, PT, Vanos advanced",
-          "category": "Ignition"
+          "category": "Ignition",
+          "domain": "ignition"
+        }
+      ],
+      "items": [
+        {
+          "offset": 55684,
+          "offsetHex": "0xD984",
+          "name": "0xD984 RPM axis for Fuel, WOT, Vanos retarded",
+          "category": "Fuel",
+          "domain": "fuel"
+        },
+        {
+          "offset": 55718,
+          "offsetHex": "0xD9A6",
+          "name": "0xD9A6 RPM axis for Fuel, WOT, Vanos advanced",
+          "category": "Fuel",
+          "domain": "fuel"
+        },
+        {
+          "offset": 55752,
+          "offsetHex": "0xD9C8",
+          "name": "0xD9C8 RPM axis for Fuel, PT, Vanos retarded",
+          "category": "Fuel",
+          "domain": "fuel"
+        },
+        {
+          "offset": 55976,
+          "offsetHex": "0xDAA8",
+          "name": "0xDAA8 RPM axis for Fuel, PT, Vanos advanced",
+          "category": "Fuel",
+          "domain": "fuel"
+        },
+        {
+          "offset": 56591,
+          "offsetHex": "0xDD0F",
+          "name": "0xDD0F RPM axis for Ignition, WOT, Vanos retarded",
+          "category": "Ignition",
+          "domain": "ignition"
+        },
+        {
+          "offset": 56713,
+          "offsetHex": "0xDD89",
+          "name": "0xDD89 RPM axis for Ignition, WOT, Vanos advanced",
+          "category": "Ignition",
+          "domain": "ignition"
+        },
+        {
+          "offset": 56941,
+          "offsetHex": "0xDE6D",
+          "name": "0xDE6D RPM axis for Ignition, PT, Vanos retarded",
+          "category": "Ignition",
+          "domain": "ignition"
+        },
+        {
+          "offset": 57165,
+          "offsetHex": "0xDF4D",
+          "name": "0xDF4D RPM axis for Ignition, PT, Vanos advanced",
+          "category": "Ignition",
+          "domain": "ignition"
         }
       ],
       "representativeIgnition": {
         "offset": 56591,
         "offsetHex": "0xDD0F",
         "name": "0xDD0F RPM axis for Ignition, WOT, Vanos retarded",
-        "category": "Ignition"
+        "category": "Ignition",
+        "domain": "ignition"
       },
       "representativeFuel": {
         "offset": 55684,
         "offsetHex": "0xD984",
         "name": "0xD984 RPM axis for Fuel, WOT, Vanos retarded",
-        "category": "Fuel"
+        "category": "Fuel",
+        "domain": "fuel"
       },
       "exclusiveGeometry": true,
       "codeDerefProven": false,
-      "note": "Exclusive content geometry: this 16-byte RPM-axis preamble appears exactly 8 times in the image \u2014 precisely the XDF Fuel/Ign PT|WOT VANOS RPM axes. Proves table geometry for \u22651 fuel and \u22651 ignition axis (all 8). Not a CODE LOOKUP[ZR] content read.",
+      "note": "Exclusive content geometry: 16-byte RPM-axis preamble appears exactly 8 times \u2014 XDF Fuel/Ign PT|WOT VANOS RPM axes.",
       "evidenceStrength": "high_content_exclusive"
-    }
+    },
+    "families": [
+      {
+        "id": "vanos_wot_dwell_axis_sig_v1",
+        "method": "signature_axis",
+        "title": "VANOS WOT dwell RPM axes",
+        "signatureHex": "050605070a05070b0909090f12130b5d",
+        "offsets": [
+          54908,
+          54942
+        ],
+        "items": [
+          {
+            "offset": 54908,
+            "offsetHex": "0xD67C",
+            "name": "0xD67C[D0|R16|A] VANOS, WOT, Dwell Retarded, Axis, RPM",
+            "category": "XDF",
+            "domain": "fuel"
+          },
+          {
+            "offset": 54942,
+            "offsetHex": "0xD69E",
+            "name": "0xD69E[D0|R16|A] VANOS, WOT, Dwell Advanced, Axis, RPM",
+            "category": "XDF",
+            "domain": "fuel"
+          }
+        ],
+        "note": "Exclusive 16-byte axis sig \u2014 exactly D67C/D69E (WOT dwell ret/adv)."
+      },
+      {
+        "id": "vanos_pt_load_axis_sig_v1",
+        "method": "signature_axis",
+        "title": "VANOS PT load axes (fuel+ign)",
+        "signatureHex": "0a0a0c0c0e0e0e0e0c10105c",
+        "offsets": [
+          55770,
+          55994,
+          56959,
+          57183
+        ],
+        "items": [
+          {
+            "offset": 55770,
+            "offsetHex": "0xD9DA",
+            "name": "0xD9DA Load axis for Fuel, PT, Vanos retarded",
+            "category": "Fuel",
+            "domain": "fuel"
+          },
+          {
+            "offset": 55994,
+            "offsetHex": "0xDABA",
+            "name": "0xDABA Load axis for Fuel, PT, Vanos advanced",
+            "category": "Fuel",
+            "domain": "fuel"
+          },
+          {
+            "offset": 56959,
+            "offsetHex": "0xDE7F",
+            "name": "0xDE7F Load axis for Ignition, PT, Vanos retarded",
+            "category": "Ignition",
+            "domain": "ignition"
+          },
+          {
+            "offset": 57183,
+            "offsetHex": "0xDF5F",
+            "name": "0xDF5F Load axis for Ignition, PT, Vanos advanced",
+            "category": "Ignition",
+            "domain": "ignition"
+          }
+        ],
+        "note": "Exclusive 12-byte load-axis preamble \u2014 fuel PT + ign PT load axes."
+      },
+      {
+        "id": "ign_idle_timing_sig_v1",
+        "method": "signature_axis",
+        "title": "Ign idle timing (Manual / A/T)",
+        "signatureHex": "505051555a5d",
+        "signatureAt": [
+          "0xDCF5 (+2 into table)",
+          "0xDD07 (+2 into table)"
+        ],
+        "offsets": [
+          56563,
+          56581
+        ],
+        "items": [
+          {
+            "offset": 56563,
+            "offsetHex": "0xDCF3",
+            "name": "0XDCF3[|8x1] Ign., Idle, Timing (Manual | A/T in P|N)",
+            "category": "Ignition",
+            "domain": "ignition"
+          },
+          {
+            "offset": 56581,
+            "offsetHex": "0xDD05",
+            "name": "0xDD05[|8x1] Ign., Idle, Timing (A/T in D or R)",
+            "category": "Ignition",
+            "domain": "ignition"
+          }
+        ],
+        "note": "Exclusive 6-byte mid-table sig at DCF3+2 / DD05+2 only."
+      },
+      {
+        "id": "soft_fuel_cut_island_twin_v1",
+        "method": "island_cal_twin",
+        "title": "Soft fuel cut (Ti neighborhood twin)",
+        "signatureHex": "90655046",
+        "offsets": [
+          53298
+        ],
+        "items": [
+          {
+            "offset": 53298,
+            "offsetHex": "0xD032",
+            "name": "0xD032[16bit] RPM, Rev Limit, Soft Fuel Cut",
+            "category": "Fuel",
+            "domain": "fuel"
+          }
+        ],
+        "twins": [
+          "0x431C (island)",
+          "0xD032 (CAL)"
+        ],
+        "note": "Exclusive island\u2194CAL twin of D032 Soft Fuel Cut header bytes."
+      },
+      {
+        "id": "maf_d28e_be_le_twin_v1",
+        "method": "unique_immediate_twin",
+        "title": "MAF transfer anchor (D28E BE\u2194LE)",
+        "offsets": [
+          53904
+        ],
+        "items": [
+          {
+            "offset": 53904,
+            "offsetHex": "0xD290",
+            "name": "0xD290[Func|5V|256]MAF Cal. kg/h",
+            "category": "Sensors",
+            "domain": "fuel"
+          }
+        ],
+        "twins": [
+          "BE 0xD28E @0xFE18 (unique)",
+          "LE 0xD28E @0xD28E (unique)"
+        ],
+        "composed": "0xD28E+2 \u2192 0xD290 MAF Cal",
+        "note": "Exclusive BE/LE twin of 0xD28E anchors MAF cal at D290 (FE struct region + CAL self-word)."
+      },
+      {
+        "id": "ign_idle_cold_chain_v1",
+        "method": "unique_span_chain",
+        "title": "Ign idle cold timing corrections",
+        "signatureHex": "48443e3cd7041c3528704a46403cd7052301",
+        "offsets": [
+          56527,
+          56537
+        ],
+        "items": [
+          {
+            "offset": 56527,
+            "offsetHex": "0xDCCF",
+            "name": "0xDCCF[|4x1] Ign., Idle, Cold Engine Timing Correction (Manual | A/T in P or N)",
+            "category": "Ignition",
+            "domain": "ignition"
+          },
+          {
+            "offset": 56537,
+            "offsetHex": "0xDCD9",
+            "name": "0xDCD9[|4x1] Ign., Idle, Cold Engine Timing Correction (A/T in D or R)",
+            "category": "Ignition",
+            "domain": "ignition"
+          }
+        ],
+        "note": "Unique contiguous span DCCF..DCD9+8 chains both cold-idle ign tables."
+      },
+      {
+        "id": "fuel_cold_enrich_chain_v1",
+        "method": "unique_span_chain",
+        "title": "Fuel cold engine enrich (Manual / A/T)",
+        "signatureHex": "a050200d0500d7061b1b1b28214f45210d05",
+        "offsets": [
+          55535,
+          55549
+        ],
+        "items": [
+          {
+            "offset": 55535,
+            "offsetHex": "0xD8EF",
+            "name": "0xD8EF[D7|6x1]Fuel, Cold Engine Enrich (Manual | A/T in P|N)",
+            "category": "Fuel",
+            "domain": "fuel"
+          },
+          {
+            "offset": 55549,
+            "offsetHex": "0xD8FD",
+            "name": "0xD8FD[D7|6x1] Fuel, Cold Engine Enrich (A/T in D|R)",
+            "category": "Fuel",
+            "domain": "fuel"
+          }
+        ],
+        "note": "Unique contiguous span D8EF..D8FD+4 chains both cold-enrich tables."
+      }
+    ],
+    "allOffsets": [
+      "0xD030",
+      "0xD032",
+      "0xD290",
+      "0xD67C",
+      "0xD69E",
+      "0xD8EF",
+      "0xD8FD",
+      "0xD984",
+      "0xD9A6",
+      "0xD9C8",
+      "0xD9DA",
+      "0xDAA8",
+      "0xDABA",
+      "0xDCCF",
+      "0xDCD9",
+      "0xDCF3",
+      "0xDD05",
+      "0xDD0F",
+      "0xDD89",
+      "0xDE6D",
+      "0xDE7F",
+      "0xDF4D",
+      "0xDF5F"
+    ]
   },
   "keyCodeSites": {
     "fe24Loader": "0x2EDB via 0x20B5 / 0x412C",
@@ -1735,6 +2056,83 @@
       "0xDD89",
       "0xDE6D",
       "0xDF4D"
+    ],
+    "mafAnchor": [
+      "BE 0xD28E @0xFE18",
+      "LE 0xD28E @0xD28E",
+      "MAF 0xD290"
+    ],
+    "newFamilySummaries": [
+      {
+        "id": "vanos_wot_dwell_axis_sig_v1",
+        "title": "VANOS WOT dwell RPM axes",
+        "method": "signature_axis",
+        "offsets": [
+          "0xD67C",
+          "0xD69E"
+        ],
+        "note": "Exclusive 16-byte axis sig \u2014 exactly D67C/D69E (WOT dwell ret/adv)."
+      },
+      {
+        "id": "vanos_pt_load_axis_sig_v1",
+        "title": "VANOS PT load axes (fuel+ign)",
+        "method": "signature_axis",
+        "offsets": [
+          "0xD9DA",
+          "0xDABA",
+          "0xDE7F",
+          "0xDF5F"
+        ],
+        "note": "Exclusive 12-byte load-axis preamble \u2014 fuel PT + ign PT load axes."
+      },
+      {
+        "id": "ign_idle_timing_sig_v1",
+        "title": "Ign idle timing (Manual / A/T)",
+        "method": "signature_axis",
+        "offsets": [
+          "0xDCF3",
+          "0xDD05"
+        ],
+        "note": "Exclusive 6-byte mid-table sig at DCF3+2 / DD05+2 only."
+      },
+      {
+        "id": "soft_fuel_cut_island_twin_v1",
+        "title": "Soft fuel cut (Ti neighborhood twin)",
+        "method": "island_cal_twin",
+        "offsets": [
+          "0xD032"
+        ],
+        "note": "Exclusive island\u2194CAL twin of D032 Soft Fuel Cut header bytes."
+      },
+      {
+        "id": "maf_d28e_be_le_twin_v1",
+        "title": "MAF transfer anchor (D28E BE\u2194LE)",
+        "method": "unique_immediate_twin",
+        "offsets": [
+          "0xD290"
+        ],
+        "note": "Exclusive BE/LE twin of 0xD28E anchors MAF cal at D290 (FE struct region + CAL self-word)."
+      },
+      {
+        "id": "ign_idle_cold_chain_v1",
+        "title": "Ign idle cold timing corrections",
+        "method": "unique_span_chain",
+        "offsets": [
+          "0xDCCF",
+          "0xDCD9"
+        ],
+        "note": "Unique contiguous span DCCF..DCD9+8 chains both cold-idle ign tables."
+      },
+      {
+        "id": "fuel_cold_enrich_chain_v1",
+        "title": "Fuel cold engine enrich (Manual / A/T)",
+        "method": "unique_span_chain",
+        "offsets": [
+          "0xD8EF",
+          "0xD8FD"
+        ],
+        "note": "Unique contiguous span D8EF..D8FD+4 chains both cold-enrich tables."
+      }
     ]
   }
 }

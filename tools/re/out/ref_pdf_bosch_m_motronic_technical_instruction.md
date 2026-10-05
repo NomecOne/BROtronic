@@ -147,16 +147,16 @@ Use this PDF as **expected structure**; prove or refute in MCS-96 CODE:
 
 | # | Theory (this PDF) | ROM / XDF target | Status |
 |---|-------------------|------------------|--------|
-| T1 | Primary load = air-mass kg/h (HFM) | MAF 0xD290; ADC→lookup | `partial_code` — ADC schedule @0x427A (ch 0x0A→0x1454 hyp). Prior RW68→0xD290 claim retracted. MAF cal CODE read still open (descriptor path). |
+| T1 | Primary load = air-mass kg/h (HFM) | MAF 0xD290; ADC→lookup | `exclusive_geometry_maf` — ADC @0x427A hyp intact. MAF exclusive BE↔LE twin 0xD28E @FE18/D28E → D290. Prior D200 index claim remains retracted. |
 | T2 | Load = air mass per stroke from mass + speed | D5 filtered load | `partial_code` — 0x5AEB DIVU by 0x14CC → 0x1566; D5 axis link open. |
-| T3 | ti_base = f(load, injector_constant), λ≈1 | Ti 0xD030 | `exclusive_structural` — Exclusive structural geometry: unique D000|0030 split under FE24 RW68, plus Ti body fragments that exist only as island↔CAL twins. CODE CMP @RW68+0x3E/+0x40 touches the split words (as bounds), not a content deref of 0xD030. |
-| T4 | Correction stack + Vbat + lambda + overrun cut | Enrich / O2 / voltage / cut | `xdf_only` — XDF present; CODE stack order TBD. |
-| T5 | zw_base = map(load, rpm) + corrections − knock | PT/WOT ign VANOS; knock | `exclusive_geometry_axes` — VANOS RPM axis signature exclusive @ 0xDD0F (+7 siblings). Main zw map body CODE read still open. |
-| T6 | Dwell = f(Vbat, rpm) | 0xE0DA | `xdf_only` — XDF named; no CODE read this pass. |
+| T3 | ti_base = f(load, injector_constant), λ≈1 | Ti 0xD030 + fuel maps | `exclusive_structural` — Exclusive structural geometry: unique D000|0030 split under FE24 RW68, plus Ti body fragments that exist only as island↔CAL twins. CODE CMP @RW68+0x3E/+0x40 touches the split words (as bounds), not a content deref of 0xD030. Also: soft-fuel-cut twin D032; cold-enrich chain D8EF/D8FD; PT load axes D9DA/DABA. |
+| T4 | Correction stack + Vbat + lambda + overrun cut | Enrich / O2 / voltage / cut | `partial_exclusive` — Cold enrich Manual/AT exclusive chain; accel stack CODE TBD. |
+| T5 | zw_base = map(load, rpm) + corrections − knock | PT/WOT ign VANOS; knock | `exclusive_geometry_axes` — VANOS RPM axes @ 0xDD0F+sibs; PT load axes DE7F/DF5F; ign idle timing DCF3/DD05; idle cold DCCF/DCD9. |
+| T6 | Dwell = f(Vbat, rpm) | 0xE0DA + VANOS dwell | `partial_exclusive` — VANOS WOT dwell axes D67C/D69E exclusive sig; main dwell 0xE0DA body CODE read still open. |
 | T7 | TPS secondary / limp load | Alpha-N 0xDBC3 | `xdf_only` — Strong XDF; fault path CODE TBD. |
-| T8 | Camshaft control expander | VANOS dual maps | `exclusive_geometry_axes` — PT/WOT fuel+ign VANOS RPM axes share exclusive 16-byte signature (8/8 XDF match). Selector CODE TBD. |
+| T8 | Camshaft control expander | VANOS dual maps | `exclusive_geometry_axes` — PT/WOT fuel+ign VANOS RPM + PT load + WOT dwell axes exclusive. Selector CODE TBD. |
 
-**Coverage (CODE×XDF, not book):** 0.0% absolute (0/69); 0% CAL-content index-base (D200/D978 retracted); 13.04% exclusive geometry (9/69: Ti structural + 8 VANOS RPM axes); 4 ROM-proven FE24 bases.
+**Coverage (CODE×XDF, not book):** 0.0% absolute (0/69); 0% CAL-content index-base (D200/D978 retracted); 33.33% exclusive geometry (23/69); 4 ROM-proven FE24 bases.
 
 **Do not** promote shipping maps from this PDF alone.
 
