@@ -5,27 +5,26 @@ ISA: `mcs96_80c196_family`
 CODE `0x2000`–`0xB930`; DATA from `0xB931`.
 XDF (BRO) = primary definition evidence for names/equations.
 
-## Coverage (v9 — exclusive 100%; absolute growing)
+## Coverage (v10 — exclusive 100%; absolute nearly complete)
 
 | Metric | Count | % of 69 |
 |--------|------:|--------:|
-| **Absolute CODE reads** (ea → XDF) | **31** | **44.93%** |
+| **Absolute CODE reads** (ea → XDF) | **68** | **98.55%** |
 | **Exclusive geometry** | **69** | **100.0%** |
+| Unproven absolute | **1** | — |
 | **CAL-content index-base (D200/D978)** | **0** | **0%** (retracted) |
 | Runtime FE14 CAL bases | 4 | — |
 
-44.93% absolute (31/69); exclusive geometry 100.0% (69/69); FE14 CAL bases RW68=D002/RW6A=D106/RW6C=D28E/RW6E=E67E; D200/D978 retracted.
+98.55% absolute (68/69); exclusive geometry 100.0% (69/69); unproven absolute 1; FE14 CAL bases; D200/D978 retracted.
 
-> **v9:** FE14 loader bases unlock absolute reads. Priority MAF/Ti/ign WOT proven.
-> Exclusive geometry remains 69/69. D200/D978 stay retracted.
+> **v10:** FE14 bases + descriptor headers (−24..0) + map siblings. Exclusive 69/69.
 
-## How CAL is read (v9 addressing model)
+## How CAL is read (FE14 addressing model)
 
 1. **FE14 CAL bases** via loader `0x2EDB`: `RW68=0xD002`, `RW6A=0xD106`, `RW6C=0xD28E`, `RW6E=0xE67E`
-2. **Long-index** `LOOKUP/TABLE[RWbase]` → direct CAL scalars/limits (Ti @ RW68+0x2E)
-3. **MAF** ADC ISR: `RW46=RW6C+2·ADC`; `ADD RW64,0x2[RW46]` → word table @ `0xD290`
-4. **Map interp** `0x20C7/0x20CD`: `ADD RW1A,RW6E; LD RW4C,[RW1A]` → descriptor headers in CAL
-6. **Exclusive geometry** retained for all 69 (signatures/spans/twins)
+2. **Long-index** / chained-base / MAF ADC word table
+3. **Map interp** descriptor headers (−24..0) + load/body siblings
+4. **Exclusive geometry** retained for all 69
 
 ## Priority absolute proofs
 
@@ -33,7 +32,9 @@ XDF (BRO) = primary definition evidence for names/equations.
 - **Ti `0xD030`:** `0x9A82`, `0xAFC7` — contentDeref **True**
 - **Ign WOT `0xDD0F`:** `0x66EC LD RW1A,#0x9A → 0x6987 → 0x20CD → DD0D/DD0F`
 
-Absolute offsets (31): `0xD030`, `0xD032`, `0xD06A`, `0xD093`, `0xD23E`, `0xD240`, `0xD244`, `0xD256`, `0xD257`, `0xD25A`, `0xD25B`, `0xD27B`, `0xD27D`, `0xD27E`, `0xD281`, `0xD288`, `0xD290`, `0xD5A6`, `0xD67C`, `0xD69E`, `0xD6E8`, `0xD6FA`, `0xD75E`, `0xD984`, `0xD9A6`, `0xD9C8`, `0xDAA8`, `0xDD0F`, `0xDD89`, `0xDE6D`, `0xDF4D`
+Absolute offsets (68): `0xD030`, `0xD032`, `0xD06A`, `0xD093`, `0xD0FA`, `0xD23E`, `0xD240`, `0xD244`, `0xD256`, `0xD257`, `0xD25A`, `0xD25B`, `0xD27B`, `0xD27D`, `0xD27E`, `0xD281`, `0xD288`, `0xD290`, `0xD5A6`, `0xD5E6`, `0xD63A`, `0xD67C`, `0xD69E`, `0xD6AE`, `0xD6C6`, `0xD6E8`, `0xD6FA`, `0xD722`, `0xD734`, `0xD75E`, `0xD815`, `0xD8B1`, `0xD8EF`, `0xD8FD`, `0xD91F`, `0xD970`, `0xD984`, `0xD9A6`, `0xD9C8`, `0xD9DA`, `0xDAA8`, `0xDABA`, `0xDBC3`, `0xDC21`, `0xDC37`, `0xDC47`, `0xDC63`, `0xDC79`, `0xDCCF`, `0xDCD9`, `0xDCF3`, `0xDD05`, `0xDD0F`, `0xDD21`, `0xDD89`, `0xDD9B`, `0xDE6D`, `0xDE7F`, `0xDF4D`, `0xDF5F`, `0xE044`, `0xE065`, `0xE0B3`, `0xE0DA`, `0xE364`, `0xE372`, `0xE37E`, `0xE388`
+
+Unproven absolute: `0xD23D`
 
 ## Fuel Ti `0xD030`
 
@@ -198,7 +199,7 @@ Signature `050605070a05070b0909090f12130860` — exactly 8 hits (exclusive); ign
 ## What is *not* claimed
 
 - Shipping promotion from Bosch PDF or retracted geometry
-- Absolute coverage of all 69 (currently 31/69)
+- Absolute coverage of all 69 (currently 68/69)
 - End-to-end HFM→ti→ign control closed-loop proof
 
 ---

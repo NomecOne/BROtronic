@@ -154,28 +154,28 @@
         "offset": 55684,
         "offsetHex": "0xD984",
         "name": "0xD984 RPM axis for Fuel, WOT, Vanos retarded",
-        "category": "Fuel",
+        "category": null,
         "domain": "fuel"
       },
       {
         "offset": 55718,
         "offsetHex": "0xD9A6",
         "name": "0xD9A6 RPM axis for Fuel, WOT, Vanos advanced",
-        "category": "Fuel",
+        "category": null,
         "domain": "fuel"
       },
       {
         "offset": 55752,
         "offsetHex": "0xD9C8",
         "name": "0xD9C8 RPM axis for Fuel, PT, Vanos retarded",
-        "category": "Fuel",
+        "category": null,
         "domain": "fuel"
       },
       {
         "offset": 55976,
         "offsetHex": "0xDAA8",
         "name": "0xDAA8 RPM axis for Fuel, PT, Vanos advanced",
-        "category": "Fuel",
+        "category": null,
         "domain": "fuel"
       }
     ],
@@ -184,28 +184,28 @@
         "offset": 56591,
         "offsetHex": "0xDD0F",
         "name": "0xDD0F RPM axis for Ignition, WOT, Vanos retarded",
-        "category": "Ignition",
+        "category": null,
         "domain": "ignition"
       },
       {
         "offset": 56713,
         "offsetHex": "0xDD89",
         "name": "0xDD89 RPM axis for Ignition, WOT, Vanos advanced",
-        "category": "Ignition",
+        "category": null,
         "domain": "ignition"
       },
       {
         "offset": 56941,
         "offsetHex": "0xDE6D",
         "name": "0xDE6D RPM axis for Ignition, PT, Vanos retarded",
-        "category": "Ignition",
+        "category": null,
         "domain": "ignition"
       },
       {
         "offset": 57165,
         "offsetHex": "0xDF4D",
         "name": "0xDF4D RPM axis for Ignition, PT, Vanos advanced",
-        "category": "Ignition",
+        "category": null,
         "domain": "ignition"
       }
     ],
@@ -214,56 +214,56 @@
         "offset": 55684,
         "offsetHex": "0xD984",
         "name": "0xD984 RPM axis for Fuel, WOT, Vanos retarded",
-        "category": "Fuel",
+        "category": null,
         "domain": "fuel"
       },
       {
         "offset": 55718,
         "offsetHex": "0xD9A6",
         "name": "0xD9A6 RPM axis for Fuel, WOT, Vanos advanced",
-        "category": "Fuel",
+        "category": null,
         "domain": "fuel"
       },
       {
         "offset": 55752,
         "offsetHex": "0xD9C8",
         "name": "0xD9C8 RPM axis for Fuel, PT, Vanos retarded",
-        "category": "Fuel",
+        "category": null,
         "domain": "fuel"
       },
       {
         "offset": 55976,
         "offsetHex": "0xDAA8",
         "name": "0xDAA8 RPM axis for Fuel, PT, Vanos advanced",
-        "category": "Fuel",
+        "category": null,
         "domain": "fuel"
       },
       {
         "offset": 56591,
         "offsetHex": "0xDD0F",
         "name": "0xDD0F RPM axis for Ignition, WOT, Vanos retarded",
-        "category": "Ignition",
+        "category": null,
         "domain": "ignition"
       },
       {
         "offset": 56713,
         "offsetHex": "0xDD89",
         "name": "0xDD89 RPM axis for Ignition, WOT, Vanos advanced",
-        "category": "Ignition",
+        "category": null,
         "domain": "ignition"
       },
       {
         "offset": 56941,
         "offsetHex": "0xDE6D",
         "name": "0xDE6D RPM axis for Ignition, PT, Vanos retarded",
-        "category": "Ignition",
+        "category": null,
         "domain": "ignition"
       },
       {
         "offset": 57165,
         "offsetHex": "0xDF4D",
         "name": "0xDF4D RPM axis for Ignition, PT, Vanos advanced",
-        "category": "Ignition",
+        "category": null,
         "domain": "ignition"
       }
     ],
@@ -271,14 +271,14 @@
       "offset": 56591,
       "offsetHex": "0xDD0F",
       "name": "0xDD0F RPM axis for Ignition, WOT, Vanos retarded",
-      "category": "Ignition",
+      "category": null,
       "domain": "ignition"
     },
     "representativeFuel": {
       "offset": 55684,
       "offsetHex": "0xD984",
       "name": "0xD984 RPM axis for Fuel, WOT, Vanos retarded",
-      "category": "Fuel",
+      "category": null,
       "domain": "fuel"
     },
     "exclusiveGeometry": true,

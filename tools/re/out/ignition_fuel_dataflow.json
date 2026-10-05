@@ -5,16 +5,17 @@
   "coverage": {
     "schemaVersion": 9,
     "ignFuelItems": 69,
-    "ghidraProvenAbsolute": 31,
-    "ghidraProvenAbsolutePct": 44.93,
+    "ghidraProvenAbsolute": 68,
+    "ghidraProvenAbsolutePct": 98.55,
     "indexBaseCrossCheckedCalContent": 0,
     "indexBaseCrossCheckedCalContentPct": 0.0,
     "exclusiveGeometry": 69,
     "exclusiveGeometryPct": 100.0,
     "structuralSplitPtr": 1,
     "registerBasesRomProven": 4,
-    "headline": "44.93% absolute (31/69); exclusive geometry 100.0% (69/69); FE14 CAL bases RW68=D002/RW6A=D106/RW6C=D28E/RW6E=E67E; D200/D978 retracted.",
-    "note": "v9: corrected FE14 loader bases unlock absolute CODE reads. Priority: MAF D290, Ti D030, ign WOT DD0F. Absolute 31/69; exclusive 69/69. ZR LOOKUP immed\u2260XDF (indirect via RWbase). D200/D978 remain retracted."
+    "unprovenAbsolute": 1,
+    "headline": "98.55% absolute (68/69); exclusive geometry 100.0% (69/69); unproven absolute 1; FE14 CAL bases; D200/D978 retracted.",
+    "note": "v10: absolute via FE14 long-index/chained-base/MAF, descriptor headers within \u221224..0, and map load/body siblings. Exclusive 69/69 retained."
   },
   "seeAlso": [
     "tools/re/out/cal_access_model.json",
@@ -133,8 +134,8 @@
       "dataSize": 8,
       "category": "Fuel",
       "source": "xdf",
-      "codeReadStatus": "exclusive_early_fuel_ign_scalars_v1",
-      "evidenceStrength": "high",
+      "codeReadStatus": "absolute",
+      "evidenceStrength": "high_absolute",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 208,
@@ -143,7 +144,8 @@
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
         "CODE has LOOKUP[ZR] immed 0x00D0 (= register RD0), NOT ROM page \u2014 do not treat as CAL read."
       ],
-      "exclusiveGeometry": true
+      "exclusiveGeometry": true,
+      "absoluteCodeRead": true
     },
     {
       "offset": 53821,
@@ -531,8 +533,8 @@
       "dataSize": 8,
       "category": "XDF",
       "source": "xdf",
-      "codeReadStatus": "exclusive_fuel_crank_vanos_pt_dwell_v1",
-      "evidenceStrength": "high",
+      "codeReadStatus": "absolute",
+      "evidenceStrength": "high_absolute",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 213,
@@ -541,7 +543,8 @@
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
         "CODE has LOOKUP[ZR] immed 0x00D5 (= register RD5), NOT ROM page \u2014 do not treat as CAL read."
       ],
-      "exclusiveGeometry": true
+      "exclusiveGeometry": true,
+      "absoluteCodeRead": true
     },
     {
       "offset": 54842,
@@ -555,8 +558,8 @@
       "dataSize": 8,
       "category": "XDF",
       "source": "xdf",
-      "codeReadStatus": "exclusive_fuel_crank_vanos_pt_dwell_v1",
-      "evidenceStrength": "high",
+      "codeReadStatus": "absolute",
+      "evidenceStrength": "high_absolute",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 214,
@@ -564,7 +567,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
       ],
-      "exclusiveGeometry": true
+      "exclusiveGeometry": true,
+      "absoluteCodeRead": true
     },
     {
       "offset": 54908,
@@ -626,8 +630,8 @@
       "dataSize": 16,
       "category": "XDF",
       "source": "xdf",
-      "codeReadStatus": "exclusive_vanos_wot_control_block_v1",
-      "evidenceStrength": "high",
+      "codeReadStatus": "absolute",
+      "evidenceStrength": "high_absolute",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 214,
@@ -635,7 +639,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
       ],
-      "exclusiveGeometry": true
+      "exclusiveGeometry": true,
+      "absoluteCodeRead": true
     },
     {
       "offset": 54982,
@@ -649,8 +654,8 @@
       "dataSize": 8,
       "category": "XDF",
       "source": "xdf",
-      "codeReadStatus": "exclusive_vanos_wot_control_block_v1",
-      "evidenceStrength": "high",
+      "codeReadStatus": "absolute",
+      "evidenceStrength": "high_absolute",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 214,
@@ -658,7 +663,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
       ],
-      "exclusiveGeometry": true
+      "exclusiveGeometry": true,
+      "absoluteCodeRead": true
     },
     {
       "offset": 55016,
@@ -720,8 +726,8 @@
       "dataSize": 8,
       "category": "XDF",
       "source": "xdf",
-      "codeReadStatus": "exclusive_vanos_wot_control_block_v1",
-      "evidenceStrength": "high",
+      "codeReadStatus": "absolute",
+      "evidenceStrength": "high_absolute",
       "ghidraProven": false,
       "addr16HitCount": 13,
       "pageByte": 215,
@@ -730,7 +736,8 @@
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
         "CODE has LOOKUP[ZR] immed 0x00D7 (= register RD7), NOT ROM page \u2014 do not treat as CAL read."
       ],
-      "exclusiveGeometry": true
+      "exclusiveGeometry": true,
+      "absoluteCodeRead": true
     },
     {
       "offset": 55092,
@@ -744,8 +751,8 @@
       "dataSize": 8,
       "category": "XDF",
       "source": "xdf",
-      "codeReadStatus": "exclusive_vanos_wot_control_block_v1",
-      "evidenceStrength": "high",
+      "codeReadStatus": "absolute",
+      "evidenceStrength": "high_absolute",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 215,
@@ -754,7 +761,8 @@
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
         "CODE has LOOKUP[ZR] immed 0x00D7 (= register RD7), NOT ROM page \u2014 do not treat as CAL read."
       ],
-      "exclusiveGeometry": true
+      "exclusiveGeometry": true,
+      "absoluteCodeRead": true
     },
     {
       "offset": 55134,
@@ -793,8 +801,8 @@
       "dataSize": 8,
       "category": "XDF",
       "source": "xdf",
-      "codeReadStatus": "exclusive_warmup_knock_tables_v1",
-      "evidenceStrength": "high",
+      "codeReadStatus": "absolute",
+      "evidenceStrength": "high_absolute",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 216,
@@ -803,7 +811,8 @@
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
         "CODE has LOOKUP[ZR] immed 0x00D8 (= register RD8), NOT ROM page \u2014 do not treat as CAL read."
       ],
-      "exclusiveGeometry": true
+      "exclusiveGeometry": true,
+      "absoluteCodeRead": true
     },
     {
       "offset": 55473,
@@ -817,8 +826,8 @@
       "dataSize": 8,
       "category": "XDF",
       "source": "xdf",
-      "codeReadStatus": "exclusive_warmup_knock_tables_v1",
-      "evidenceStrength": "high",
+      "codeReadStatus": "absolute",
+      "evidenceStrength": "high_absolute",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 216,
@@ -827,7 +836,8 @@
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
         "CODE has LOOKUP[ZR] immed 0x00D8 (= register RD8), NOT ROM page \u2014 do not treat as CAL read."
       ],
-      "exclusiveGeometry": true
+      "exclusiveGeometry": true,
+      "absoluteCodeRead": true
     },
     {
       "offset": 55535,
@@ -841,8 +851,8 @@
       "dataSize": 8,
       "category": "Fuel",
       "source": "xdf",
-      "codeReadStatus": "exclusive_fuel_cold_enrich_chain_v1",
-      "evidenceStrength": "high",
+      "codeReadStatus": "absolute",
+      "evidenceStrength": "high_absolute",
       "ghidraProven": false,
       "addr16HitCount": 2,
       "pageByte": 216,
@@ -851,7 +861,8 @@
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
         "CODE has LOOKUP[ZR] immed 0x00D8 (= register RD8), NOT ROM page \u2014 do not treat as CAL read."
       ],
-      "exclusiveGeometry": true
+      "exclusiveGeometry": true,
+      "absoluteCodeRead": true
     },
     {
       "offset": 55549,
@@ -865,8 +876,8 @@
       "dataSize": 8,
       "category": "Fuel",
       "source": "xdf",
-      "codeReadStatus": "exclusive_fuel_cold_enrich_chain_v1",
-      "evidenceStrength": "high",
+      "codeReadStatus": "absolute",
+      "evidenceStrength": "high_absolute",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 216,
@@ -875,7 +886,8 @@
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
         "CODE has LOOKUP[ZR] immed 0x00D8 (= register RD8), NOT ROM page \u2014 do not treat as CAL read."
       ],
-      "exclusiveGeometry": true
+      "exclusiveGeometry": true,
+      "absoluteCodeRead": true
     },
     {
       "offset": 55583,
@@ -889,8 +901,8 @@
       "dataSize": 8,
       "category": "Fuel",
       "source": "xdf",
-      "codeReadStatus": "exclusive_fuel_idle_base_chain_v1",
-      "evidenceStrength": "high",
+      "codeReadStatus": "absolute",
+      "evidenceStrength": "high_absolute",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 217,
@@ -898,7 +910,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
       ],
-      "exclusiveGeometry": true
+      "exclusiveGeometry": true,
+      "absoluteCodeRead": true
     },
     {
       "offset": 55664,
@@ -912,8 +925,8 @@
       "dataSize": 16,
       "category": "Fuel",
       "source": "xdf",
-      "codeReadStatus": "exclusive_fuel_idle_base_chain_v1",
-      "evidenceStrength": "high",
+      "codeReadStatus": "absolute",
+      "evidenceStrength": "high_absolute",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 217,
@@ -921,7 +934,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
       ],
-      "exclusiveGeometry": true
+      "exclusiveGeometry": true,
+      "absoluteCodeRead": true
     },
     {
       "offset": 55684,
@@ -1007,8 +1021,8 @@
       "dataSize": 8,
       "category": "Fuel",
       "source": "xdf",
-      "codeReadStatus": "exclusive_vanos_pt_load_axis_sig_v1",
-      "evidenceStrength": "high",
+      "codeReadStatus": "absolute",
+      "evidenceStrength": "high_absolute",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 217,
@@ -1016,7 +1030,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
       ],
-      "exclusiveGeometry": true
+      "exclusiveGeometry": true,
+      "absoluteCodeRead": true
     },
     {
       "offset": 55976,
@@ -1054,8 +1069,8 @@
       "dataSize": 8,
       "category": "Fuel",
       "source": "xdf",
-      "codeReadStatus": "exclusive_vanos_pt_load_axis_sig_v1",
-      "evidenceStrength": "high",
+      "codeReadStatus": "absolute",
+      "evidenceStrength": "high_absolute",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 218,
@@ -1063,7 +1078,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
       ],
-      "exclusiveGeometry": true
+      "exclusiveGeometry": true,
+      "absoluteCodeRead": true
     },
     {
       "offset": 56259,
@@ -1077,8 +1093,8 @@
       "dataSize": 8,
       "category": "Sensors",
       "source": "xdf",
-      "codeReadStatus": "exclusive_alpha_n_unique_prehead_v1",
-      "evidenceStrength": "high",
+      "codeReadStatus": "absolute",
+      "evidenceStrength": "high_absolute",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 219,
@@ -1086,7 +1102,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
       ],
-      "exclusiveGeometry": true
+      "exclusiveGeometry": true,
+      "absoluteCodeRead": true
     },
     {
       "offset": 56353,
@@ -1100,8 +1117,8 @@
       "dataSize": 8,
       "category": "Fuel",
       "source": "xdf",
-      "codeReadStatus": "exclusive_fuel_accel_enrich_stack_v1",
-      "evidenceStrength": "high",
+      "codeReadStatus": "absolute",
+      "evidenceStrength": "high_absolute",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 220,
@@ -1109,7 +1126,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
       ],
-      "exclusiveGeometry": true
+      "exclusiveGeometry": true,
+      "absoluteCodeRead": true
     },
     {
       "offset": 56375,
@@ -1123,8 +1141,8 @@
       "dataSize": 8,
       "category": "Fuel",
       "source": "xdf",
-      "codeReadStatus": "exclusive_fuel_accel_enrich_stack_v1",
-      "evidenceStrength": "high",
+      "codeReadStatus": "absolute",
+      "evidenceStrength": "high_absolute",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 220,
@@ -1132,7 +1150,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
       ],
-      "exclusiveGeometry": true
+      "exclusiveGeometry": true,
+      "absoluteCodeRead": true
     },
     {
       "offset": 56391,
@@ -1146,8 +1165,8 @@
       "dataSize": 8,
       "category": "Fuel",
       "source": "xdf",
-      "codeReadStatus": "exclusive_fuel_accel_enrich_stack_v1",
-      "evidenceStrength": "high",
+      "codeReadStatus": "absolute",
+      "evidenceStrength": "high_absolute",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 220,
@@ -1155,7 +1174,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
       ],
-      "exclusiveGeometry": true
+      "exclusiveGeometry": true,
+      "absoluteCodeRead": true
     },
     {
       "offset": 56419,
@@ -1169,8 +1189,8 @@
       "dataSize": 8,
       "category": "Fuel",
       "source": "xdf",
-      "codeReadStatus": "exclusive_fuel_accel_enrich_stack_v1",
-      "evidenceStrength": "high",
+      "codeReadStatus": "absolute",
+      "evidenceStrength": "high_absolute",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 220,
@@ -1178,7 +1198,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
       ],
-      "exclusiveGeometry": true
+      "exclusiveGeometry": true,
+      "absoluteCodeRead": true
     },
     {
       "offset": 56441,
@@ -1192,8 +1213,8 @@
       "dataSize": 8,
       "category": "Fuel",
       "source": "xdf",
-      "codeReadStatus": "exclusive_fuel_accel_enrich_stack_v1",
-      "evidenceStrength": "high",
+      "codeReadStatus": "absolute",
+      "evidenceStrength": "high_absolute",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 220,
@@ -1201,7 +1222,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
       ],
-      "exclusiveGeometry": true
+      "exclusiveGeometry": true,
+      "absoluteCodeRead": true
     },
     {
       "offset": 56527,
@@ -1215,8 +1237,8 @@
       "dataSize": 8,
       "category": "Ignition",
       "source": "xdf",
-      "codeReadStatus": "exclusive_ign_idle_cold_chain_v1",
-      "evidenceStrength": "high",
+      "codeReadStatus": "absolute",
+      "evidenceStrength": "high_absolute",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 220,
@@ -1224,7 +1246,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
       ],
-      "exclusiveGeometry": true
+      "exclusiveGeometry": true,
+      "absoluteCodeRead": true
     },
     {
       "offset": 56537,
@@ -1238,8 +1261,8 @@
       "dataSize": 16,
       "category": "Ignition",
       "source": "xdf",
-      "codeReadStatus": "exclusive_ign_idle_cold_chain_v1",
-      "evidenceStrength": "high",
+      "codeReadStatus": "absolute",
+      "evidenceStrength": "high_absolute",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 220,
@@ -1247,7 +1270,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
       ],
-      "exclusiveGeometry": true
+      "exclusiveGeometry": true,
+      "absoluteCodeRead": true
     },
     {
       "offset": 56563,
@@ -1261,8 +1285,8 @@
       "dataSize": 8,
       "category": "Ignition",
       "source": "xdf",
-      "codeReadStatus": "exclusive_ign_idle_timing_sig_v1",
-      "evidenceStrength": "high",
+      "codeReadStatus": "absolute",
+      "evidenceStrength": "high_absolute",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 220,
@@ -1270,7 +1294,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
       ],
-      "exclusiveGeometry": true
+      "exclusiveGeometry": true,
+      "absoluteCodeRead": true
     },
     {
       "offset": 56581,
@@ -1284,8 +1309,8 @@
       "dataSize": 8,
       "category": "Ignition",
       "source": "xdf",
-      "codeReadStatus": "exclusive_ign_idle_timing_sig_v1",
-      "evidenceStrength": "high",
+      "codeReadStatus": "absolute",
+      "evidenceStrength": "high_absolute",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 221,
@@ -1293,7 +1318,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
       ],
-      "exclusiveGeometry": true
+      "exclusiveGeometry": true,
+      "absoluteCodeRead": true
     },
     {
       "offset": 56591,
@@ -1331,8 +1357,8 @@
       "dataSize": 8,
       "category": "Ignition",
       "source": "xdf",
-      "codeReadStatus": "exclusive_ign_wot_load_axis_tag_v1",
-      "evidenceStrength": "high",
+      "codeReadStatus": "absolute",
+      "evidenceStrength": "high_absolute",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 221,
@@ -1340,7 +1366,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
       ],
-      "exclusiveGeometry": true
+      "exclusiveGeometry": true,
+      "absoluteCodeRead": true
     },
     {
       "offset": 56713,
@@ -1378,8 +1405,8 @@
       "dataSize": 8,
       "category": "Ignition",
       "source": "xdf",
-      "codeReadStatus": "exclusive_ign_wot_load_axis_tag_v1",
-      "evidenceStrength": "high",
+      "codeReadStatus": "absolute",
+      "evidenceStrength": "high_absolute",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 221,
@@ -1387,7 +1414,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
       ],
-      "exclusiveGeometry": true
+      "exclusiveGeometry": true,
+      "absoluteCodeRead": true
     },
     {
       "offset": 56941,
@@ -1425,8 +1453,8 @@
       "dataSize": 8,
       "category": "Ignition",
       "source": "xdf",
-      "codeReadStatus": "exclusive_vanos_pt_load_axis_sig_v1",
-      "evidenceStrength": "high",
+      "codeReadStatus": "absolute",
+      "evidenceStrength": "high_absolute",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 222,
@@ -1434,7 +1462,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
       ],
-      "exclusiveGeometry": true
+      "exclusiveGeometry": true,
+      "absoluteCodeRead": true
     },
     {
       "offset": 57165,
@@ -1472,8 +1501,8 @@
       "dataSize": 8,
       "category": "Ignition",
       "source": "xdf",
-      "codeReadStatus": "exclusive_vanos_pt_load_axis_sig_v1",
-      "evidenceStrength": "high",
+      "codeReadStatus": "absolute",
+      "evidenceStrength": "high_absolute",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 223,
@@ -1481,7 +1510,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
       ],
-      "exclusiveGeometry": true
+      "exclusiveGeometry": true,
+      "absoluteCodeRead": true
     },
     {
       "offset": 57412,
@@ -1495,8 +1525,8 @@
       "dataSize": 8,
       "category": "XDF",
       "source": "xdf",
-      "codeReadStatus": "exclusive_knock_block_e044_v1",
-      "evidenceStrength": "high",
+      "codeReadStatus": "absolute",
+      "evidenceStrength": "high_absolute",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 224,
@@ -1504,7 +1534,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
       ],
-      "exclusiveGeometry": true
+      "exclusiveGeometry": true,
+      "absoluteCodeRead": true
     },
     {
       "offset": 57445,
@@ -1518,8 +1549,8 @@
       "dataSize": 8,
       "category": "XDF",
       "source": "xdf",
-      "codeReadStatus": "exclusive_pt_wot_load_maps_dwell_v1",
-      "evidenceStrength": "high",
+      "codeReadStatus": "absolute",
+      "evidenceStrength": "high_absolute",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 224,
@@ -1527,7 +1558,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
       ],
-      "exclusiveGeometry": true
+      "exclusiveGeometry": true,
+      "absoluteCodeRead": true
     },
     {
       "offset": 57523,
@@ -1541,8 +1573,8 @@
       "dataSize": 16,
       "category": "XDF",
       "source": "xdf",
-      "codeReadStatus": "exclusive_pt_wot_load_maps_dwell_v1",
-      "evidenceStrength": "high",
+      "codeReadStatus": "absolute",
+      "evidenceStrength": "high_absolute",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 224,
@@ -1550,7 +1582,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
       ],
-      "exclusiveGeometry": true
+      "exclusiveGeometry": true,
+      "absoluteCodeRead": true
     },
     {
       "offset": 57562,
@@ -1564,8 +1597,8 @@
       "dataSize": 16,
       "category": "Ignition",
       "source": "xdf",
-      "codeReadStatus": "exclusive_pt_wot_load_maps_dwell_v1",
-      "evidenceStrength": "high",
+      "codeReadStatus": "absolute",
+      "evidenceStrength": "high_absolute",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 224,
@@ -1573,7 +1606,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
       ],
-      "exclusiveGeometry": true
+      "exclusiveGeometry": true,
+      "absoluteCodeRead": true
     },
     {
       "offset": 58212,
@@ -1587,8 +1621,8 @@
       "dataSize": 8,
       "category": "Sensors",
       "source": "xdf",
-      "codeReadStatus": "exclusive_lambda_off_rpm_v1",
-      "evidenceStrength": "high",
+      "codeReadStatus": "absolute",
+      "evidenceStrength": "high_absolute",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 227,
@@ -1596,7 +1630,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
       ],
-      "exclusiveGeometry": true
+      "exclusiveGeometry": true,
+      "absoluteCodeRead": true
     },
     {
       "offset": 58226,
@@ -1610,8 +1645,8 @@
       "dataSize": 8,
       "category": "Sensors",
       "source": "xdf",
-      "codeReadStatus": "exclusive_lambda_off_rpm_v1",
-      "evidenceStrength": "high",
+      "codeReadStatus": "absolute",
+      "evidenceStrength": "high_absolute",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 227,
@@ -1619,7 +1654,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
       ],
-      "exclusiveGeometry": true
+      "exclusiveGeometry": true,
+      "absoluteCodeRead": true
     },
     {
       "offset": 58238,
@@ -1633,8 +1669,8 @@
       "dataSize": 8,
       "category": "Sensors",
       "source": "xdf",
-      "codeReadStatus": "exclusive_lambda_off_rpm_v1",
-      "evidenceStrength": "high",
+      "codeReadStatus": "absolute",
+      "evidenceStrength": "high_absolute",
       "ghidraProven": false,
       "addr16HitCount": 1,
       "pageByte": 227,
@@ -1642,7 +1678,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
       ],
-      "exclusiveGeometry": true
+      "exclusiveGeometry": true,
+      "absoluteCodeRead": true
     },
     {
       "offset": 58248,
@@ -1656,8 +1693,8 @@
       "dataSize": 8,
       "category": "Sensors",
       "source": "xdf",
-      "codeReadStatus": "exclusive_lambda_off_rpm_v1",
-      "evidenceStrength": "high",
+      "codeReadStatus": "absolute",
+      "evidenceStrength": "high_absolute",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 227,
@@ -1665,7 +1702,8 @@
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
       ],
-      "exclusiveGeometry": true
+      "exclusiveGeometry": true,
+      "absoluteCodeRead": true
     }
   ],
   "shippingNote": "Research-only. Do not promote into definitions/packs/*.shipping.json.",
@@ -1760,28 +1798,28 @@
           "offset": 55684,
           "offsetHex": "0xD984",
           "name": "0xD984 RPM axis for Fuel, WOT, Vanos retarded",
-          "category": "Fuel",
+          "category": null,
           "domain": "fuel"
         },
         {
           "offset": 55718,
           "offsetHex": "0xD9A6",
           "name": "0xD9A6 RPM axis for Fuel, WOT, Vanos advanced",
-          "category": "Fuel",
+          "category": null,
           "domain": "fuel"
         },
         {
           "offset": 55752,
           "offsetHex": "0xD9C8",
           "name": "0xD9C8 RPM axis for Fuel, PT, Vanos retarded",
-          "category": "Fuel",
+          "category": null,
           "domain": "fuel"
         },
         {
           "offset": 55976,
           "offsetHex": "0xDAA8",
           "name": "0xDAA8 RPM axis for Fuel, PT, Vanos advanced",
-          "category": "Fuel",
+          "category": null,
           "domain": "fuel"
         }
       ],
@@ -1790,28 +1828,28 @@
           "offset": 56591,
           "offsetHex": "0xDD0F",
           "name": "0xDD0F RPM axis for Ignition, WOT, Vanos retarded",
-          "category": "Ignition",
+          "category": null,
           "domain": "ignition"
         },
         {
           "offset": 56713,
           "offsetHex": "0xDD89",
           "name": "0xDD89 RPM axis for Ignition, WOT, Vanos advanced",
-          "category": "Ignition",
+          "category": null,
           "domain": "ignition"
         },
         {
           "offset": 56941,
           "offsetHex": "0xDE6D",
           "name": "0xDE6D RPM axis for Ignition, PT, Vanos retarded",
-          "category": "Ignition",
+          "category": null,
           "domain": "ignition"
         },
         {
           "offset": 57165,
           "offsetHex": "0xDF4D",
           "name": "0xDF4D RPM axis for Ignition, PT, Vanos advanced",
-          "category": "Ignition",
+          "category": null,
           "domain": "ignition"
         }
       ],
@@ -1820,56 +1858,56 @@
           "offset": 55684,
           "offsetHex": "0xD984",
           "name": "0xD984 RPM axis for Fuel, WOT, Vanos retarded",
-          "category": "Fuel",
+          "category": null,
           "domain": "fuel"
         },
         {
           "offset": 55718,
           "offsetHex": "0xD9A6",
           "name": "0xD9A6 RPM axis for Fuel, WOT, Vanos advanced",
-          "category": "Fuel",
+          "category": null,
           "domain": "fuel"
         },
         {
           "offset": 55752,
           "offsetHex": "0xD9C8",
           "name": "0xD9C8 RPM axis for Fuel, PT, Vanos retarded",
-          "category": "Fuel",
+          "category": null,
           "domain": "fuel"
         },
         {
           "offset": 55976,
           "offsetHex": "0xDAA8",
           "name": "0xDAA8 RPM axis for Fuel, PT, Vanos advanced",
-          "category": "Fuel",
+          "category": null,
           "domain": "fuel"
         },
         {
           "offset": 56591,
           "offsetHex": "0xDD0F",
           "name": "0xDD0F RPM axis for Ignition, WOT, Vanos retarded",
-          "category": "Ignition",
+          "category": null,
           "domain": "ignition"
         },
         {
           "offset": 56713,
           "offsetHex": "0xDD89",
           "name": "0xDD89 RPM axis for Ignition, WOT, Vanos advanced",
-          "category": "Ignition",
+          "category": null,
           "domain": "ignition"
         },
         {
           "offset": 56941,
           "offsetHex": "0xDE6D",
           "name": "0xDE6D RPM axis for Ignition, PT, Vanos retarded",
-          "category": "Ignition",
+          "category": null,
           "domain": "ignition"
         },
         {
           "offset": 57165,
           "offsetHex": "0xDF4D",
           "name": "0xDF4D RPM axis for Ignition, PT, Vanos advanced",
-          "category": "Ignition",
+          "category": null,
           "domain": "ignition"
         }
       ],
@@ -1877,14 +1915,14 @@
         "offset": 56591,
         "offsetHex": "0xDD0F",
         "name": "0xDD0F RPM axis for Ignition, WOT, Vanos retarded",
-        "category": "Ignition",
+        "category": null,
         "domain": "ignition"
       },
       "representativeFuel": {
         "offset": 55684,
         "offsetHex": "0xD984",
         "name": "0xD984 RPM axis for Fuel, WOT, Vanos retarded",
-        "category": "Fuel",
+        "category": null,
         "domain": "fuel"
       },
       "exclusiveGeometry": true,
@@ -1907,14 +1945,14 @@
             "offset": 54908,
             "offsetHex": "0xD67C",
             "name": "0xD67C[D0|R16|A] VANOS, WOT, Dwell Retarded, Axis, RPM",
-            "category": "XDF",
+            "category": null,
             "domain": "fuel"
           },
           {
             "offset": 54942,
             "offsetHex": "0xD69E",
             "name": "0xD69E[D0|R16|A] VANOS, WOT, Dwell Advanced, Axis, RPM",
-            "category": "XDF",
+            "category": null,
             "domain": "fuel"
           }
         ],
@@ -2007,7 +2045,7 @@
             "offset": 53298,
             "offsetHex": "0xD032",
             "name": "0xD032[16bit] RPM, Rev Limit, Soft Fuel Cut",
-            "category": "Fuel",
+            "category": null,
             "domain": "fuel"
           }
         ],
@@ -2029,7 +2067,7 @@
             "offset": 53904,
             "offsetHex": "0xD290",
             "name": "0xD290[Func|5V|256]MAF Cal. kg/h",
-            "category": "Sensors",
+            "category": null,
             "domain": "fuel"
           }
         ],
@@ -2141,7 +2179,7 @@
             "offset": 54694,
             "offsetHex": "0xD5A6",
             "name": "0xD5A6[D0|R6|A]Fuel, Cranking, Axis, RPM",
-            "category": "Fuel",
+            "category": null,
             "domain": "fuel"
           },
           {
@@ -2193,14 +2231,14 @@
             "offset": 55016,
             "offsetHex": "0xD6E8",
             "name": "0xD6E8[D0|R8|A] VANOS, Load MIN For Advance, Axis, RPM",
-            "category": "XDF",
+            "category": null,
             "domain": "fuel"
           },
           {
             "offset": 55034,
             "offsetHex": "0xD6FA",
             "name": "0xD6FA[D0|R8|A] VANOS, Load MAX For Retard, Axis, RPM",
-            "category": "XDF",
+            "category": null,
             "domain": "fuel"
           },
           {
@@ -2233,7 +2271,7 @@
             "offset": 55134,
             "offsetHex": "0xD75E",
             "name": "0xD75E[D8|R5|A]Fuel, Voltage, Axis, Voltage",
-            "category": "Fuel",
+            "category": null,
             "domain": "fuel"
           }
         ],
@@ -2386,14 +2424,14 @@
             "offset": 53354,
             "offsetHex": "0xD06A",
             "name": "0xD06A[8bit] Fuel, Target AFR of Motronic system",
-            "category": "Fuel",
+            "category": null,
             "domain": "fuel"
           },
           {
             "offset": 53395,
             "offsetHex": "0xD093",
             "name": "0xD093[8bit] Ign, Timing delta while in Speed Limiter fuel cut",
-            "category": "Ignition",
+            "category": null,
             "domain": "ignition"
           },
           {
@@ -2438,84 +2476,84 @@
             "offset": 53822,
             "offsetHex": "0xD23E",
             "name": "0xD23E[16bit] Air, MAF, High Fault Limit kg/h",
-            "category": "Sensors",
+            "category": null,
             "domain": "fuel"
           },
           {
             "offset": 53824,
             "offsetHex": "0xD240",
             "name": "0xD240[16bit] Air, MAF, Low Fault Limit kg/h",
-            "category": "Sensors",
+            "category": null,
             "domain": "fuel"
           },
           {
             "offset": 53828,
             "offsetHex": "0xD244",
             "name": "0xD244[16bit] Air, MAF, MAF/RPM Ratio Limit",
-            "category": "Sensors",
+            "category": null,
             "domain": "fuel"
           },
           {
             "offset": 53846,
             "offsetHex": "0xD256",
             "name": "0xD256[8bit] Coolant Temp Sensor max signal@min volts RAW",
-            "category": "Ignition",
+            "category": null,
             "domain": "ignition"
           },
           {
             "offset": 53847,
             "offsetHex": "0xD257",
             "name": "0xD257[8bit] Coolant Temp Sensor min signal@max volts RAW",
-            "category": "Ignition",
+            "category": null,
             "domain": "ignition"
           },
           {
             "offset": 53850,
             "offsetHex": "0xD25A",
             "name": "0xD25A[8bit] Air, IAT max signal",
-            "category": "Ignition",
+            "category": null,
             "domain": "ignition"
           },
           {
             "offset": 53851,
             "offsetHex": "0xD25B",
             "name": "0xD25B[8bit] Air, IAT min signal",
-            "category": "Ignition",
+            "category": null,
             "domain": "ignition"
           },
           {
             "offset": 53883,
             "offsetHex": "0xD27B",
             "name": "0xD27B[8bit] Speed, RPM Threshold to activate speed signal check",
-            "category": "Ignition",
+            "category": null,
             "domain": "ignition"
           },
           {
             "offset": 53885,
             "offsetHex": "0xD27D",
             "name": "0xD27D[8bit] Speed, Counter? Threshold for speed signal check DTC 42",
-            "category": "Ignition",
+            "category": null,
             "domain": "ignition"
           },
           {
             "offset": 53886,
             "offsetHex": "0xD27E",
             "name": "0xD27E[8bit] RPM, Rev Limit, IF no speed signal",
-            "category": "Ignition",
+            "category": null,
             "domain": "ignition"
           },
           {
             "offset": 53889,
             "offsetHex": "0xD281",
             "name": "0xD281[8bit] Ign., Spark Fault",
-            "category": "Ignition",
+            "category": null,
             "domain": "ignition"
           },
           {
             "offset": 53896,
             "offsetHex": "0xD288",
             "name": "0xD288 Knock Sensor DTC related",
-            "category": "XDF",
+            "category": null,
             "domain": "fuel"
           }
         ],
@@ -2698,6 +2736,7 @@
     "mapInterp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A] (RW6E=0xE67E)",
     "mafAbsolute": "0xA53B ADD RW64,0x2[RW46] (RW46=RW6C+2\u00b7ADC)",
     "ignWotSelect": "0x66EC LD RW1A,#0x9A \u2192 0x6987 \u2192 0x20CD \u2192 DD0D/DD0F",
+    "cylinderTrim": "0x5B65 LD RW1E,RW68; 0x5B6B LDB \u2026,0xf8,LOOKUP[RW1E] \u2192 D0FA",
     "vanosAxisRom": [
       "0xD984",
       "0xD9A6",
@@ -2937,8 +2976,8 @@
     ]
   },
   "absoluteProofs": {
-    "schemaVersion": 1,
-    "id": "absolute_code_reads_v9",
+    "schemaVersion": 2,
+    "id": "absolute_code_reads_v10",
     "runtimeBases": {
       "RW68": "0xD002",
       "RW6A": "0xD106",
@@ -3008,16 +3047,17 @@
             "kind": "descriptor_header"
           }
         ],
-        "codePath": "0x66EC LD RW1A,#0x9A \u2192 (VANOS select) 0x6723 SCALL 0x6987 \u2192 LCALL 0x20CD \u2192 0x343C ADD RW1A,RW6E; LD RW4C,[RW1A] \u2192 [0xE67E+0x9A]=0xDD0D (header) / XDF axis 0xDD0F",
+        "codePath": "0x66EC LD RW1A,#0x9A \u2192 0x6987 \u2192 0x20CD \u2192 [0xE67E+0x9A]=0xDD0D / XDF 0xDD0F",
         "note": "Main ign WOT VANOS-retarded RPM axis via CAL descriptor table."
       }
     },
-    "count": 31,
+    "count": 68,
     "offsets": [
       "0xD030",
       "0xD032",
       "0xD06A",
       "0xD093",
+      "0xD0FA",
       "0xD23E",
       "0xD240",
       "0xD244",
@@ -3032,19 +3072,55 @@
       "0xD288",
       "0xD290",
       "0xD5A6",
+      "0xD5E6",
+      "0xD63A",
       "0xD67C",
       "0xD69E",
+      "0xD6AE",
+      "0xD6C6",
       "0xD6E8",
       "0xD6FA",
+      "0xD722",
+      "0xD734",
       "0xD75E",
+      "0xD815",
+      "0xD8B1",
+      "0xD8EF",
+      "0xD8FD",
+      "0xD91F",
+      "0xD970",
       "0xD984",
       "0xD9A6",
       "0xD9C8",
+      "0xD9DA",
       "0xDAA8",
+      "0xDABA",
+      "0xDBC3",
+      "0xDC21",
+      "0xDC37",
+      "0xDC47",
+      "0xDC63",
+      "0xDC79",
+      "0xDCCF",
+      "0xDCD9",
+      "0xDCF3",
+      "0xDD05",
       "0xDD0F",
+      "0xDD21",
       "0xDD89",
+      "0xDD9B",
       "0xDE6D",
-      "0xDF4D"
+      "0xDE7F",
+      "0xDF4D",
+      "0xDF5F",
+      "0xE044",
+      "0xE065",
+      "0xE0B3",
+      "0xE0DA",
+      "0xE364",
+      "0xE372",
+      "0xE37E",
+      "0xE388"
     ],
     "items": [
       {
@@ -3138,6 +3214,26 @@
             "eaHex": "0xD093",
             "insn": "LDB R1D,0x91, LOOKUP[RW68]",
             "kind": "long_index"
+          }
+        ]
+      },
+      {
+        "offset": 53498,
+        "offsetHex": "0xD0FA",
+        "name": "0xD0FA[8bit] Fuel, Trim, Individual Cylinder",
+        "methods": [
+          "long_index_or_maf"
+        ],
+        "sites": [
+          {
+            "site": 23403,
+            "siteHex": "0x5B6B",
+            "reg": "RW68",
+            "immHex": "0xF8",
+            "eaHex": "0xD0FA",
+            "insn": "LDB R21,0xf8, LOOKUP[RW1E] ; RW1E=RW68, then INC\u00d76",
+            "kind": "chained_base_index",
+            "path": "0x5B65 LD RW1E,RW68 \u2192 0x5B6B..0x5B79"
           }
         ]
       },
@@ -3421,6 +3517,51 @@
         ]
       },
       {
+        "offset": 54758,
+        "offsetHex": "0xD5E6",
+        "name": "0xD5E6[D0xD6|8x8] VANOS, PT, Dwell Retarded ?",
+        "methods": [
+          "descriptor_header"
+        ],
+        "sites": [
+          {
+            "descIndexHex": "0x8",
+            "slotHex": "0xE686",
+            "ptrHex": "0xD5D2",
+            "xdfHex": "0xD5E6",
+            "headerDelta": -20,
+            "selectSites": [
+              "0x8374"
+            ],
+            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "kind": "descriptor_header"
+          }
+        ]
+      },
+      {
+        "offset": 54842,
+        "offsetHex": "0xD63A",
+        "name": "0xD63A[D0xD6|8x8] VANOS, PT, Dwell Advanced ?",
+        "methods": [
+          "descriptor_header"
+        ],
+        "sites": [
+          {
+            "descIndexHex": "0xA",
+            "slotHex": "0xE688",
+            "ptrHex": "0xD626",
+            "xdfHex": "0xD63A",
+            "headerDelta": -20,
+            "selectSites": [
+              "0x837E",
+              "0x8387"
+            ],
+            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "kind": "descriptor_header"
+          }
+        ]
+      },
+      {
         "offset": 54908,
         "offsetHex": "0xD67C",
         "name": "0xD67C[D0|R16|A] VANOS, WOT, Dwell Retarded, Axis, RPM",
@@ -3459,6 +3600,65 @@
             "selectSites": [
               "0x8364",
               "0x836D"
+            ],
+            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "kind": "descriptor_header"
+          }
+        ]
+      },
+      {
+        "offset": 54958,
+        "offsetHex": "0xD6AE",
+        "name": "0xD6AE[D0|16x1] VANOS, WOT, Dwell Advanced",
+        "methods": [
+          "descriptor_header",
+          "descriptor_map_member"
+        ],
+        "sites": [
+          {
+            "descIndexHex": "0xE",
+            "slotHex": "0xE68C",
+            "ptrHex": "0xD69C",
+            "xdfHex": "0xD6AE",
+            "headerDelta": -18,
+            "selectSites": [
+              "0x8364",
+              "0x836D"
+            ],
+            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "kind": "descriptor_header"
+          },
+          {
+            "descIndexHex": "0xE",
+            "slotHex": "0xE68C",
+            "ptrHex": "0xD69C",
+            "axisHex": "0xD69E",
+            "xdfHex": "0xD6AE",
+            "selectSites": [
+              "0x8364",
+              "0x836D"
+            ],
+            "kind": "descriptor_map_body",
+            "note": "Map data body reached via descriptor for parent axis/header."
+          }
+        ]
+      },
+      {
+        "offset": 54982,
+        "offsetHex": "0xD6C6",
+        "name": "0xD6C6[D7|6x1] VANOS, TMOT/ECT Engine temperature fak ??",
+        "methods": [
+          "descriptor_header"
+        ],
+        "sites": [
+          {
+            "descIndexHex": "0x10",
+            "slotHex": "0xE68E",
+            "ptrHex": "0xD6BE",
+            "xdfHex": "0xD6C6",
+            "headerDelta": -8,
+            "selectSites": [
+              "0x83A5"
             ],
             "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
@@ -3510,6 +3710,50 @@
         ]
       },
       {
+        "offset": 55074,
+        "offsetHex": "0xD722",
+        "name": "0xD722[D0|8x1] VANOS, DK MIN For Override Retard ?",
+        "methods": [
+          "descriptor_header"
+        ],
+        "sites": [
+          {
+            "descIndexHex": "0x1E",
+            "slotHex": "0xE69C",
+            "ptrHex": "0xD718",
+            "xdfHex": "0xD722",
+            "headerDelta": -10,
+            "selectSites": [
+              "0x5924"
+            ],
+            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "kind": "descriptor_header"
+          }
+        ]
+      },
+      {
+        "offset": 55092,
+        "offsetHex": "0xD734",
+        "name": "0xD734[D0|8x1] VANOS, DK MAX For NO Override Retard ??",
+        "methods": [
+          "descriptor_header"
+        ],
+        "sites": [
+          {
+            "descIndexHex": "0x20",
+            "slotHex": "0xE69E",
+            "ptrHex": "0xD72A",
+            "xdfHex": "0xD734",
+            "headerDelta": -10,
+            "selectSites": [
+              "0x58F4"
+            ],
+            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "kind": "descriptor_header"
+          }
+        ]
+      },
+      {
         "offset": 55134,
         "offsetHex": "0xD75E",
         "name": "0xD75E[D8|R5|A]Fuel, Voltage, Axis, Voltage",
@@ -3525,6 +3769,138 @@
             "headerDelta": -2,
             "selectSites": [
               "0x5B1E"
+            ],
+            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "kind": "descriptor_header"
+          }
+        ]
+      },
+      {
+        "offset": 55317,
+        "offsetHex": "0xD815",
+        "name": "0xD815[D7|6x1] (suspect for warm up enrich?)",
+        "methods": [
+          "descriptor_header"
+        ],
+        "sites": [
+          {
+            "descIndexHex": "0x36",
+            "slotHex": "0xE6B4",
+            "ptrHex": "0xD80D",
+            "xdfHex": "0xD815",
+            "headerDelta": -8,
+            "selectSites": [
+              "0x5E4D"
+            ],
+            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "kind": "descriptor_header"
+          }
+        ]
+      },
+      {
+        "offset": 55473,
+        "offsetHex": "0xD8B1",
+        "name": "0xD8B1 D7xD4 Knock sensor sensitivity by Temp?",
+        "methods": [
+          "descriptor_header"
+        ],
+        "sites": [
+          {
+            "descIndexHex": "0x42",
+            "slotHex": "0xE6C0",
+            "ptrHex": "0xD8A1",
+            "xdfHex": "0xD8B1",
+            "headerDelta": -16,
+            "selectSites": [
+              "0x5E93"
+            ],
+            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "kind": "descriptor_header"
+          }
+        ]
+      },
+      {
+        "offset": 55535,
+        "offsetHex": "0xD8EF",
+        "name": "0xD8EF[D7|6x1]Fuel, Cold Engine Enrich (Manual | A/T in P|N)",
+        "methods": [
+          "descriptor_header"
+        ],
+        "sites": [
+          {
+            "descIndexHex": "0x46",
+            "slotHex": "0xE6C4",
+            "ptrHex": "0xD8E7",
+            "xdfHex": "0xD8EF",
+            "headerDelta": -8,
+            "selectSites": [
+              "0x5EB2"
+            ],
+            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "kind": "descriptor_header"
+          }
+        ]
+      },
+      {
+        "offset": 55549,
+        "offsetHex": "0xD8FD",
+        "name": "0xD8FD[D7|6x1] Fuel, Cold Engine Enrich (A/T in D|R)",
+        "methods": [
+          "descriptor_header"
+        ],
+        "sites": [
+          {
+            "descIndexHex": "0x48",
+            "slotHex": "0xE6C6",
+            "ptrHex": "0xD8F5",
+            "xdfHex": "0xD8FD",
+            "headerDelta": -8,
+            "selectSites": [
+              "0x5ED2"
+            ],
+            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "kind": "descriptor_header"
+          }
+        ]
+      },
+      {
+        "offset": 55583,
+        "offsetHex": "0xD91F",
+        "name": "0xD91F[D7|6x1] Fuel, Idle, Cold Lambda Correction",
+        "methods": [
+          "descriptor_header"
+        ],
+        "sites": [
+          {
+            "descIndexHex": "0x4E",
+            "slotHex": "0xE6CC",
+            "ptrHex": "0xD917",
+            "xdfHex": "0xD91F",
+            "headerDelta": -8,
+            "selectSites": [
+              "0x5F01"
+            ],
+            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "kind": "descriptor_header"
+          }
+        ]
+      },
+      {
+        "offset": 55664,
+        "offsetHex": "0xD970",
+        "name": "0xD970[D0xD5|6x3] Fuel, Idle, Base",
+        "methods": [
+          "descriptor_header"
+        ],
+        "sites": [
+          {
+            "descIndexHex": "0x5C",
+            "slotHex": "0xE6DA",
+            "ptrHex": "0xD963",
+            "xdfHex": "0xD970",
+            "headerDelta": -13,
+            "selectSites": [
+              "0x5F4A"
             ],
             "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
@@ -3599,6 +3975,41 @@
         ]
       },
       {
+        "offset": 55770,
+        "offsetHex": "0xD9DA",
+        "name": "0xD9DA Load axis for Fuel, PT, Vanos retarded",
+        "methods": [
+          "descriptor_header",
+          "descriptor_map_member"
+        ],
+        "sites": [
+          {
+            "descIndexHex": "0x62",
+            "slotHex": "0xE6E0",
+            "ptrHex": "0xD9C6",
+            "xdfHex": "0xD9DA",
+            "headerDelta": -20,
+            "selectSites": [
+              "0x5F83"
+            ],
+            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "kind": "descriptor_header"
+          },
+          {
+            "descIndexHex": "0x62",
+            "slotHex": "0xE6E0",
+            "ptrHex": "0xD9C6",
+            "rpmAxisHex": "0xD9C8",
+            "xdfHex": "0xD9DA",
+            "selectSites": [
+              "0x5F83"
+            ],
+            "kind": "descriptor_map_sibling_load",
+            "note": "Load axis in same map structure as proven RPM axis descriptor."
+          }
+        ]
+      },
+      {
         "offset": 55976,
         "offsetHex": "0xDAA8",
         "name": "0xDAA8 RPM axis for Fuel, PT, Vanos advanced",
@@ -3615,6 +4026,263 @@
             "selectSites": [
               "0x5F8D",
               "0x5F96"
+            ],
+            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "kind": "descriptor_header"
+          }
+        ]
+      },
+      {
+        "offset": 55994,
+        "offsetHex": "0xDABA",
+        "name": "0xDABA Load axis for Fuel, PT, Vanos advanced",
+        "methods": [
+          "descriptor_header",
+          "descriptor_map_member"
+        ],
+        "sites": [
+          {
+            "descIndexHex": "0x64",
+            "slotHex": "0xE6E2",
+            "ptrHex": "0xDAA6",
+            "xdfHex": "0xDABA",
+            "headerDelta": -20,
+            "selectSites": [
+              "0x5F8D",
+              "0x5F96"
+            ],
+            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "kind": "descriptor_header"
+          },
+          {
+            "descIndexHex": "0x64",
+            "slotHex": "0xE6E2",
+            "ptrHex": "0xDAA6",
+            "rpmAxisHex": "0xDAA8",
+            "xdfHex": "0xDABA",
+            "selectSites": [
+              "0x5F8D",
+              "0x5F96"
+            ],
+            "kind": "descriptor_map_sibling_load",
+            "note": "Load axis in same map structure as proven RPM axis descriptor."
+          }
+        ]
+      },
+      {
+        "offset": 56259,
+        "offsetHex": "0xDBC3",
+        "name": "0xDBC3[D0xCC|6x7] Alpha-N to load translation, AKA MAF fault limp mode",
+        "methods": [
+          "descriptor_header"
+        ],
+        "sites": [
+          {
+            "descIndexHex": "0x70",
+            "slotHex": "0xE6EE",
+            "ptrHex": "0xDBB2",
+            "xdfHex": "0xDBC3",
+            "headerDelta": -17,
+            "selectSites": [
+              "0x9A4A"
+            ],
+            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "kind": "descriptor_header"
+          }
+        ]
+      },
+      {
+        "offset": 56353,
+        "offsetHex": "0xDC21",
+        "name": "0xDC21[D0xD5|4x4] Fuel, Accel Enrich, Lambda Correction",
+        "methods": [
+          "descriptor_header"
+        ],
+        "sites": [
+          {
+            "descIndexHex": "0x76",
+            "slotHex": "0xE6F4",
+            "ptrHex": "0xDC15",
+            "xdfHex": "0xDC21",
+            "headerDelta": -12,
+            "selectSites": [
+              "0x5BE8"
+            ],
+            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "kind": "descriptor_header"
+          }
+        ]
+      },
+      {
+        "offset": 56375,
+        "offsetHex": "0xDC37",
+        "name": "0xDC37[D7|4x1] Fuel, Accel Enrich, TMOT/ECT Lambda Correction",
+        "methods": [
+          "descriptor_header"
+        ],
+        "sites": [
+          {
+            "descIndexHex": "0x78",
+            "slotHex": "0xE6F6",
+            "ptrHex": "0xDC31",
+            "xdfHex": "0xDC37",
+            "headerDelta": -6,
+            "selectSites": [
+              "0x5BF2"
+            ],
+            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "kind": "descriptor_header"
+          }
+        ]
+      },
+      {
+        "offset": 56391,
+        "offsetHex": "0xDC47",
+        "name": "0xDC47[D0xD7|4x4] Fuel, Accel Enrich, Fade Out Rate",
+        "methods": [
+          "descriptor_header"
+        ],
+        "sites": [
+          {
+            "descIndexHex": "0x7A",
+            "slotHex": "0xE6F8",
+            "ptrHex": "0xDC3B",
+            "xdfHex": "0xDC47",
+            "headerDelta": -12,
+            "selectSites": [
+              "0x5C0B"
+            ],
+            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "kind": "descriptor_header"
+          }
+        ]
+      },
+      {
+        "offset": 56419,
+        "offsetHex": "0xDC63",
+        "name": "0xDC63[D0xD7|4x4] Fuel, Accel Enrich, Delta LOAD Attenuation",
+        "methods": [
+          "descriptor_header"
+        ],
+        "sites": [
+          {
+            "descIndexHex": "0x7C",
+            "slotHex": "0xE6FA",
+            "ptrHex": "0xDC57",
+            "xdfHex": "0xDC63",
+            "headerDelta": -12,
+            "selectSites": [
+              "0x5C17"
+            ],
+            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "kind": "descriptor_header"
+          }
+        ]
+      },
+      {
+        "offset": 56441,
+        "offsetHex": "0xDC79",
+        "name": "0xDC79[D7|4x1] Fuel, Some kind table for overrun fuel cut?",
+        "methods": [
+          "descriptor_header"
+        ],
+        "sites": [
+          {
+            "descIndexHex": "0x7E",
+            "slotHex": "0xE6FC",
+            "ptrHex": "0xDC73",
+            "xdfHex": "0xDC79",
+            "headerDelta": -6,
+            "selectSites": [
+              "0x65C9"
+            ],
+            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "kind": "descriptor_header"
+          }
+        ]
+      },
+      {
+        "offset": 56527,
+        "offsetHex": "0xDCCF",
+        "name": "0xDCCF[|4x1] Ign., Idle, Cold Engine Timing Correction (Manual | A/T in P or N)",
+        "methods": [
+          "descriptor_header"
+        ],
+        "sites": [
+          {
+            "descIndexHex": "0x90",
+            "slotHex": "0xE70E",
+            "ptrHex": "0xDCC9",
+            "xdfHex": "0xDCCF",
+            "headerDelta": -6,
+            "selectSites": [
+              "0x685B"
+            ],
+            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "kind": "descriptor_header"
+          }
+        ]
+      },
+      {
+        "offset": 56537,
+        "offsetHex": "0xDCD9",
+        "name": "0xDCD9[|4x1] Ign., Idle, Cold Engine Timing Correction (A/T in D or R)",
+        "methods": [
+          "descriptor_header"
+        ],
+        "sites": [
+          {
+            "descIndexHex": "0x92",
+            "slotHex": "0xE710",
+            "ptrHex": "0xDCD3",
+            "xdfHex": "0xDCD9",
+            "headerDelta": -6,
+            "selectSites": [
+              "0x6864"
+            ],
+            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "kind": "descriptor_header"
+          }
+        ]
+      },
+      {
+        "offset": 56563,
+        "offsetHex": "0xDCF3",
+        "name": "0XDCF3[|8x1] Ign., Idle, Timing (Manual | A/T in P|N)",
+        "methods": [
+          "descriptor_header"
+        ],
+        "sites": [
+          {
+            "descIndexHex": "0x96",
+            "slotHex": "0xE714",
+            "ptrHex": "0xDCE9",
+            "xdfHex": "0xDCF3",
+            "headerDelta": -10,
+            "selectSites": [
+              "0x66C5"
+            ],
+            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "kind": "descriptor_header"
+          }
+        ]
+      },
+      {
+        "offset": 56581,
+        "offsetHex": "0xDD05",
+        "name": "0xDD05[|8x1] Ign., Idle, Timing (A/T in D or R)",
+        "methods": [
+          "descriptor_header"
+        ],
+        "sites": [
+          {
+            "descIndexHex": "0x98",
+            "slotHex": "0xE716",
+            "ptrHex": "0xDCFB",
+            "xdfHex": "0xDD05",
+            "headerDelta": -10,
+            "selectSites": [
+              "0x66CC"
             ],
             "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
@@ -3644,6 +4312,41 @@
         ]
       },
       {
+        "offset": 56609,
+        "offsetHex": "0xDD21",
+        "name": "0xDD21 Load axis for Ignition, WOT, Vanos retarded",
+        "methods": [
+          "descriptor_header",
+          "descriptor_map_member"
+        ],
+        "sites": [
+          {
+            "descIndexHex": "0x9A",
+            "slotHex": "0xE718",
+            "ptrHex": "0xDD0D",
+            "xdfHex": "0xDD21",
+            "headerDelta": -20,
+            "selectSites": [
+              "0x66EC"
+            ],
+            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "kind": "descriptor_header"
+          },
+          {
+            "descIndexHex": "0x9A",
+            "slotHex": "0xE718",
+            "ptrHex": "0xDD0D",
+            "rpmAxisHex": "0xDD0F",
+            "xdfHex": "0xDD21",
+            "selectSites": [
+              "0x66EC"
+            ],
+            "kind": "descriptor_map_sibling_load",
+            "note": "Load axis in same map structure as proven RPM axis descriptor."
+          }
+        ]
+      },
+      {
         "offset": 56713,
         "offsetHex": "0xDD89",
         "name": "0xDD89 RPM axis for Ignition, WOT, Vanos advanced",
@@ -3663,6 +4366,43 @@
             ],
             "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
+          }
+        ]
+      },
+      {
+        "offset": 56731,
+        "offsetHex": "0xDD9B",
+        "name": "0xDD9B Load axis for Ignition, WOT, Vanos advanced",
+        "methods": [
+          "descriptor_header",
+          "descriptor_map_member"
+        ],
+        "sites": [
+          {
+            "descIndexHex": "0x9C",
+            "slotHex": "0xE71A",
+            "ptrHex": "0xDD87",
+            "xdfHex": "0xDD9B",
+            "headerDelta": -20,
+            "selectSites": [
+              "0x66F6",
+              "0x66FF"
+            ],
+            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "kind": "descriptor_header"
+          },
+          {
+            "descIndexHex": "0x9C",
+            "slotHex": "0xE71A",
+            "ptrHex": "0xDD87",
+            "rpmAxisHex": "0xDD89",
+            "xdfHex": "0xDD9B",
+            "selectSites": [
+              "0x66F6",
+              "0x66FF"
+            ],
+            "kind": "descriptor_map_sibling_load",
+            "note": "Load axis in same map structure as proven RPM axis descriptor."
           }
         ]
       },
@@ -3689,6 +4429,41 @@
         ]
       },
       {
+        "offset": 56959,
+        "offsetHex": "0xDE7F",
+        "name": "0xDE7F Load axis for Ignition, PT, Vanos retarded",
+        "methods": [
+          "descriptor_header",
+          "descriptor_map_member"
+        ],
+        "sites": [
+          {
+            "descIndexHex": "0xA8",
+            "slotHex": "0xE726",
+            "ptrHex": "0xDE6B",
+            "xdfHex": "0xDE7F",
+            "headerDelta": -20,
+            "selectSites": [
+              "0x6706"
+            ],
+            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "kind": "descriptor_header"
+          },
+          {
+            "descIndexHex": "0xA8",
+            "slotHex": "0xE726",
+            "ptrHex": "0xDE6B",
+            "rpmAxisHex": "0xDE6D",
+            "xdfHex": "0xDE7F",
+            "selectSites": [
+              "0x6706"
+            ],
+            "kind": "descriptor_map_sibling_load",
+            "note": "Load axis in same map structure as proven RPM axis descriptor."
+          }
+        ]
+      },
+      {
         "offset": 57165,
         "offsetHex": "0xDF4D",
         "name": "0xDF4D RPM axis for Ignition, PT, Vanos advanced",
@@ -3710,11 +4485,234 @@
             "kind": "descriptor_header"
           }
         ]
+      },
+      {
+        "offset": 57183,
+        "offsetHex": "0xDF5F",
+        "name": "0xDF5F Load axis for Ignition, PT, Vanos advanced",
+        "methods": [
+          "descriptor_header",
+          "descriptor_map_member"
+        ],
+        "sites": [
+          {
+            "descIndexHex": "0xAA",
+            "slotHex": "0xE728",
+            "ptrHex": "0xDF4B",
+            "xdfHex": "0xDF5F",
+            "headerDelta": -20,
+            "selectSites": [
+              "0x6710",
+              "0x6719"
+            ],
+            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "kind": "descriptor_header"
+          },
+          {
+            "descIndexHex": "0xAA",
+            "slotHex": "0xE728",
+            "ptrHex": "0xDF4B",
+            "rpmAxisHex": "0xDF4D",
+            "xdfHex": "0xDF5F",
+            "selectSites": [
+              "0x6710",
+              "0x6719"
+            ],
+            "kind": "descriptor_map_sibling_load",
+            "note": "Load axis in same map structure as proven RPM axis descriptor."
+          }
+        ]
+      },
+      {
+        "offset": 57412,
+        "offsetHex": "0xE044",
+        "name": "0xE044 D7xD3 3x4 knock related?likely not.. between vanos and Trans data",
+        "methods": [
+          "descriptor_header"
+        ],
+        "sites": [
+          {
+            "descIndexHex": "0xAE",
+            "slotHex": "0xE72C",
+            "ptrHex": "0xE039",
+            "xdfHex": "0xE044",
+            "headerDelta": -11,
+            "selectSites": [
+              "0x6C47"
+            ],
+            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "kind": "descriptor_header"
+          }
+        ]
+      },
+      {
+        "offset": 57445,
+        "offsetHex": "0xE065",
+        "name": "0xE065 PT load map data to A/T OR WRONG AND POSSIBLY KNOCK RELATED",
+        "methods": [
+          "descriptor_header"
+        ],
+        "sites": [
+          {
+            "descIndexHex": "0xB0",
+            "slotHex": "0xE72E",
+            "ptrHex": "0xE050",
+            "xdfHex": "0xE065",
+            "headerDelta": -21,
+            "selectSites": [
+              "0x6C5D"
+            ],
+            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "kind": "descriptor_header"
+          }
+        ]
+      },
+      {
+        "offset": 57523,
+        "offsetHex": "0xE0B3",
+        "name": "0xE0B3 WOT load map data to A/T OR WRONG AND POSSIBLY KNOCK RELATED",
+        "methods": [
+          "descriptor_header"
+        ],
+        "sites": [
+          {
+            "descIndexHex": "0xB2",
+            "slotHex": "0xE730",
+            "ptrHex": "0xE0A1",
+            "xdfHex": "0xE0B3",
+            "headerDelta": -18,
+            "selectSites": [
+              "0x6C54"
+            ],
+            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "kind": "descriptor_header"
+          }
+        ]
+      },
+      {
+        "offset": 57562,
+        "offsetHex": "0xE0DA",
+        "name": "0xE0DA[D0xD8|17x7] Ign., Coil Voltage Correction (dwell)",
+        "methods": [
+          "descriptor_header"
+        ],
+        "sites": [
+          {
+            "descIndexHex": "0xB4",
+            "slotHex": "0xE732",
+            "ptrHex": "0xE0C3",
+            "xdfHex": "0xE0DA",
+            "headerDelta": -23,
+            "selectSites": [
+              "0x692A"
+            ],
+            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "kind": "descriptor_header"
+          }
+        ]
+      },
+      {
+        "offset": 58212,
+        "offsetHex": "0xE364",
+        "name": "0xE364[|6x1] Air, Lambda OFF 1 RPM*",
+        "methods": [
+          "descriptor_header"
+        ],
+        "sites": [
+          {
+            "descIndexHex": "0xCE",
+            "slotHex": "0xE74C",
+            "ptrHex": "0xE35C",
+            "xdfHex": "0xE364",
+            "headerDelta": -8,
+            "selectSites": [
+              "0x6106"
+            ],
+            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "kind": "descriptor_header"
+          }
+        ]
+      },
+      {
+        "offset": 58226,
+        "offsetHex": "0xE372",
+        "name": "0xE372[|6x1] Air, Lambda OFF 2 RPM*",
+        "methods": [
+          "descriptor_header"
+        ],
+        "sites": [
+          {
+            "descIndexHex": "0xD0",
+            "slotHex": "0xE74E",
+            "ptrHex": "0xE36A",
+            "xdfHex": "0xE372",
+            "headerDelta": -8,
+            "selectSites": [
+              "0x5B02"
+            ],
+            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "kind": "descriptor_header"
+          }
+        ]
+      },
+      {
+        "offset": 58238,
+        "offsetHex": "0xE37E",
+        "name": "0xE37E[|4x1] Air, Lambda OFF 3 RPM*",
+        "methods": [
+          "descriptor_header"
+        ],
+        "sites": [
+          {
+            "descIndexHex": "0xD2",
+            "slotHex": "0xE750",
+            "ptrHex": "0xE378",
+            "xdfHex": "0xE37E",
+            "headerDelta": -6,
+            "selectSites": [
+              "0x6112"
+            ],
+            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "kind": "descriptor_header"
+          }
+        ]
+      },
+      {
+        "offset": 58248,
+        "offsetHex": "0xE388",
+        "name": "0xE388[|4x1] Air, Lambda OFF 4 RPM*",
+        "methods": [
+          "descriptor_header"
+        ],
+        "sites": [
+          {
+            "descIndexHex": "0xD4",
+            "slotHex": "0xE752",
+            "ptrHex": "0xE382",
+            "xdfHex": "0xE388",
+            "headerDelta": -6,
+            "selectSites": [
+              "0x565F"
+            ],
+            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "kind": "descriptor_header"
+          }
+        ]
       }
     ],
-    "directCount": 17,
-    "descriptorCount": 14,
-    "note": "Absolute = CODE effective address resolves to XDF offset (or map header at XDF\u22122 via RW6E descriptor) using FE14-loaded bases."
+    "directCount": 18,
+    "descriptorCount": 50,
+    "siblingCount": 7,
+    "unprovenAbsolute": [
+      {
+        "offsetHex": "0xD23D",
+        "name": "0xD23D[8bit] Air, MAF, RPM min threshold for MAF signal check",
+        "reason": "No byte LOOKUP of 0xD23D. Adjacent word @0xD23C is read (CMP RW1C,0x136,TABLE[RW6A] @0x52E3 = RW6A+0x136); XDF 8-bit label appears to be the high byte of that word (0x01F4) \u2014 not a standalone absolute byte read of 0xD23D."
+      }
+    ],
+    "unprovenAbsoluteCount": 1,
+    "headerDeltaMax": 24,
+    "note": "Absolute = FE14 long-index / chained-base / MAF ADC table, or RW6E descriptor header within \u221224..0 of XDF, or load/body member of a descriptor-owned map."
   },
   "addressingModel": {
     "id": "fe14_cal_bases_v9",

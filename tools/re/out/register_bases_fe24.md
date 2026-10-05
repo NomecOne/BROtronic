@@ -20,9 +20,9 @@ With FE14 CAL bases, descriptor RAM fill @0x4ECC is skipped; interp uses ROM tab
 
 ## Absolute unlock
 
-- Direct long-index / MAF: **17** XDF items
-- Descriptor header (XDF or XDF−2): **14** XDF items
-- Union absolute: **31/69**
+- Direct long-index / MAF: **18** XDF items
+- Descriptor header (XDF or XDF−2): **50** XDF items
+- Union absolute: **68/69**
 
 Do **not** revive `RW68=0xD200` / `RW6A=0xD978`.
 

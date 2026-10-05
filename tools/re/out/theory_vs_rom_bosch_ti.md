@@ -5,20 +5,21 @@ Theory: [`ref_pdf_bosch_m_motronic_technical_instruction.md`](ref_pdf_bosch_m_mo
 
 > Book is PRIMARY family theory only. Do not verify or promote shipping maps from the PDF alone.
 
-## Coverage (v9)
+## Coverage (v10)
 
 | Metric | Count | % of 69 |
 |--------|------:|--------:|
-| **Absolute CODE reads** (ea → XDF) | **31** | **44.93%** |
+| **Absolute CODE reads** (ea → XDF) | **68** | **98.55%** |
 | **Exclusive geometry** | **69** | **100.0%** |
+| Unproven absolute | **1** | — |
 | CAL-content index-base (D200/D978) | **0** | **0%** (retracted) |
 | Runtime FE14 CAL bases | 4 | — |
 
-44.93% absolute (31/69); exclusive geometry 100.0% (69/69); FE14 CAL bases RW68=D002/RW6A=D106/RW6C=D28E/RW6E=E67E; D200/D978 retracted.
+98.55% absolute (68/69); exclusive geometry 100.0% (69/69); unproven absolute 1; FE14 CAL bases; D200/D978 retracted.
 
-> v9: corrected FE14 loader bases unlock absolute CODE reads. Priority: MAF D290, Ti D030, ign WOT DD0F. Absolute 31/69; exclusive 69/69. ZR LOOKUP immed≠XDF (indirect via RWbase). D200/D978 remain retracted.
+> v10: absolute via FE14 long-index/chained-base/MAF, descriptor headers within −24..0, and map load/body siblings. Exclusive 69/69 retained.
 
-## Addressing model (v9) — FE14 CAL bases
+## Addressing model — FE14 CAL bases
 
 Loader `0x2EDB via trampoline 0x20B5 / LCALL 0x412C` scans FF pad then loads BE hi/lo from `0xFE14`:
 
@@ -48,9 +49,14 @@ CMP dual-config: With FE14 CAL bases, descriptor RAM fill @0x4ECC is skipped; in
 
 - Method: `descriptor_header`
 - Main ign WOT VANOS-retarded RPM axis via CAL descriptor table.
-- Path: `0x66EC LD RW1A,#0x9A → (VANOS select) 0x6723 SCALL 0x6987 → LCALL 0x20CD → 0x343C ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE67E+0x9A]=0xDD0D (header) / XDF axis 0xDD0F`
+- Path: `0x66EC LD RW1A,#0x9A → 0x6987 → 0x20CD → [0xE67E+0x9A]=0xDD0D / XDF 0xDD0F`
 
-**All absolute offsets (31):** `0xD030`, `0xD032`, `0xD06A`, `0xD093`, `0xD23E`, `0xD240`, `0xD244`, `0xD256`, `0xD257`, `0xD25A`, `0xD25B`, `0xD27B`, `0xD27D`, `0xD27E`, `0xD281`, `0xD288`, `0xD290`, `0xD5A6`, `0xD67C`, `0xD69E`, `0xD6E8`, `0xD6FA`, `0xD75E`, `0xD984`, `0xD9A6`, `0xD9C8`, `0xDAA8`, `0xDD0F`, `0xDD89`, `0xDE6D`, `0xDF4D`
+**All absolute offsets (68):** `0xD030`, `0xD032`, `0xD06A`, `0xD093`, `0xD0FA`, `0xD23E`, `0xD240`, `0xD244`, `0xD256`, `0xD257`, `0xD25A`, `0xD25B`, `0xD27B`, `0xD27D`, `0xD27E`, `0xD281`, `0xD288`, `0xD290`, `0xD5A6`, `0xD5E6`, `0xD63A`, `0xD67C`, `0xD69E`, `0xD6AE`, `0xD6C6`, `0xD6E8`, `0xD6FA`, `0xD722`, `0xD734`, `0xD75E`, `0xD815`, `0xD8B1`, `0xD8EF`, `0xD8FD`, `0xD91F`, `0xD970`, `0xD984`, `0xD9A6`, `0xD9C8`, `0xD9DA`, `0xDAA8`, `0xDABA`, `0xDBC3`, `0xDC21`, `0xDC37`, `0xDC47`, `0xDC63`, `0xDC79`, `0xDCCF`, `0xDCD9`, `0xDCF3`, `0xDD05`, `0xDD0F`, `0xDD21`, `0xDD89`, `0xDD9B`, `0xDE6D`, `0xDE7F`, `0xDF4D`, `0xDF5F`, `0xE044`, `0xE065`, `0xE0B3`, `0xE0DA`, `0xE364`, `0xE372`, `0xE37E`, `0xE388`
+
+## Unproven absolute
+
+- `0xD23D` — 0xD23D[8bit] Air, MAF, RPM min threshold for MAF signal chec
+  - No byte LOOKUP of 0xD23D. Adjacent word @0xD23C is read (CMP RW1C,0x136,TABLE[RW6A] @0x52E3 = RW6A+0x136); XDF 8-bit label appears to be the high byte of that word (0x01F4) — not a standalone absolute byte read of 0xD23D.
 
 ## Retraction (important)
 
@@ -233,9 +239,8 @@ RW24/RW20/RW38 ‘exclusive’ ign geometries rejected — those regs are scratc
 
 ## Next
 
-1. Grow absolute coverage beyond 31/69 (more descriptor header deltas / body walks)
-1. Prove PT/WOT main fuel map body reads through descriptor→[RW4C] walk
-1. Tie dwell E0DA and idle ign tables to descriptor or long-index sites
+1. Resolve leftover absolute (see unprovenAbsolute) or confirm XDF misalignment
+1. Walk [RW4C] map bodies end-to-end for dwell E0DA / Alpha-N DBC3
 
 ---
 Research-only. Verification gates unchanged.

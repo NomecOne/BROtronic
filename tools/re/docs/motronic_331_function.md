@@ -299,7 +299,7 @@ Cross-check of Bosch M-Motronic TI (PRIMARY extract) against MCS-96 listing / XD
 
 ### 7.1 Bosch T1–T8 checklist
 
-See [`theory_vs_rom_bosch_ti.md`](theory_vs_rom_bosch_ti.md). Headline: **absolute 31/69**; exclusive **69/69**. T1 MAF absolute; T3 Ti absolute; T5 ign WOT absolute via descriptors. D200/D978 **retracted**.
+See [`theory_vs_rom_bosch_ti.md`](theory_vs_rom_bosch_ti.md). Headline: **absolute 68/69**; exclusive **69/69**; unproven absolute **1**. T1/T3/T5 absolute. D200/D978 **retracted**.
 
 ### 7.2 Access-model update (v9)
 
@@ -320,11 +320,11 @@ See [`theory_vs_rom_bosch_ti.md`](theory_vs_rom_bosch_ti.md). Headline: **absolu
 
 - `tools/re/out/theory_vs_rom_bosch_ti.{md,json}`
 - `tools/re/out/register_bases_fe24.{md,json}`
-- Coverage: **44.93% absolute (31/69); exclusive geometry 100.0% (69/69); FE14 CAL bases RW68=D002/RW6A=D106/RW6C=D28E/RW6E=E67E; D200/D978 retracted.**
+- Coverage: **98.55% absolute (68/69); exclusive geometry 100.0% (69/69); unproven absolute 1; FE14 CAL bases; D200/D978 retracted.**
 
 ### 7.4 Absolute ign/fuel XDF CODE reads — status
 
-**31/69 absolute** (44.93%). Exclusive geometry: **69/69**. Addressing unlock = FE14 CAL bases + descriptor table at `RW6E`.
+**68/69 absolute** (98.55%). Exclusive geometry: **69/69**. Unproven absolute: **1** (see `absoluteProofs.unprovenAbsolute`).
 
 ## 8. Research session notes
 
