@@ -30,9 +30,9 @@
       "Do not promote CODE-derived maps to shipping until map-level cross_checked/verified",
       "Trace HSI_*/PORT outputs to spark vs injector (SFR naming audit)",
       "Do not claim full CODE+DATA control; verification gates unchanged",
-      "Engine control: 0% absolute ign/fuel CODE reads; 18.84% RW68 index-base cross_checked \u2014 confirm LD RW68 in internal ROM",
       "Trace descriptor slot 0xD0/0x30 after load (0x1566) to Ti/fuel map pointers",
-      "Do not claim full CODE+DATA control; verification gates unchanged"
+      "Engine control: 0% absolute; exclusive geometry 9/69 (Ti+VANOS axes) \u2014 chase descriptor\u21920xDxxx deref",
+      "Compose island D000+|0030 and [deref] Ti; CODE-walk one VANOS RPM axis"
     ]
   },
   "artifacts": [
@@ -55,25 +55,31 @@
       "tools/re/out/motronic_331_function.md",
       "tools/re/out/theory_vs_rom_bosch_ti.md",
       "tools/re/out/rw68_cal_index_base.md",
-      "tools/re/out/ref_pdf_bosch_m_motronic_technical_instruction.md"
+      "tools/re/out/ref_pdf_bosch_m_motronic_technical_instruction.md",
+      "tools/re/out/register_bases_fe24.md"
     ],
     "ignitionFuelCoverage": {
       "items": 69,
       "ghidraProvenCodeRead": 0,
       "ghidraProvenPct": 0.0,
-      "indexBaseCrossChecked": 13,
-      "indexBaseCrossCheckedPct": 18.84,
+      "indexBaseCrossCheckedCalContent": 0,
+      "indexBaseCrossCheckedCalContentPct": 0.0,
+      "exclusiveGeometry": 9,
+      "exclusiveGeometryPct": 13.04,
       "structuralSplitPtr": 1,
-      "headline": "0.0% absolute proven (0/69); 18.84% index-base cross_checked (13/69 via RW68=0xD200); 1 structural (0xD030).",
-      "note": "v3: absolute proven still 0; new RW68=0xD200 index-base cross_checked xrefs (unique MAF offset quartet). Not shipping."
+      "registerBasesRomProven": 4,
+      "headline": "0.0% absolute (0/69); 0% CAL-content index-base (D200/D978 retracted); 13.04% exclusive geometry (9/69: Ti structural + 8 VANOS RPM axes); 4 ROM-proven FE24 bases.",
+      "note": "v5: retracted false D200/D978 XDF-geometry xrefs. Raised exclusive-geometry proofs for \u22651 fuel (Ti 0xD030) and \u22651 ignition (VANOS RPM axes e.g. 0xDD0F). Absolute CODE content reads still 0."
     },
     "priorityTraces": {
       "irqRamPublications": "done_v1",
       "sfrHsoHsiAudit": "cross_checked",
       "calAccessModel": "corrected_v2",
       "firstProvenIgnFuelXref": false,
-      "boschTiTheoryVsRom": "done_v1",
-      "rw68IndexBase": "cross_checked_d200"
+      "boschTiTheoryVsRom": "done_v5_exclusive_geometry",
+      "rw68IndexBase": "retracted_d200_false_positive",
+      "registerBasesFe24": "rom_proven",
+      "exclusiveGeometryFuelIgn": "ti_plus_vanos_rpm_axes"
     }
   }
 }

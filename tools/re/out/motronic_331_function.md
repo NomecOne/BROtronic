@@ -294,42 +294,34 @@ Use these as search targets in MCS-96 listing / CFG (`tools/re/out/ghidra/`, `mc
 
 ## 7. Theory vs RedLabel ROM (this RE pass)
 
-Cross-check of Bosch M-Motronic TI (PRIMARY extract) + §§3–5 against MCS-96 listing / XDF.
+Cross-check of Bosch M-Motronic TI (PRIMARY extract) against MCS-96 listing / XDF.
 **Still not end-to-end CODE+DATA control. Book alone does not verify shipping.**
 
 ### 7.1 Bosch T1–T8 checklist
 
-See [`theory_vs_rom_bosch_ti.md`](theory_vs_rom_bosch_ti.md) for full table. Headline statuses:
+See [`theory_vs_rom_bosch_ti.md`](theory_vs_rom_bosch_ti.md). Headline: T3 Ti = `exclusive_structural`; T5/T8 VANOS axes = `exclusive_geometry_axes`; prior D200/D978 index-base claims **retracted**.
 
-| ID | Status |
-|----|--------|
-| T1 HFM/MAF | `partial_code` — ADC schedule + RW68→MAF region |
-| T2 load/stroke | `partial_code` — 0x14CC→DIVU→0x1566 |
-| T3 ti_base | `structural_only` — 0xD030 island; interp #0xD0/#0x30 |
-| T4 corrections | `xdf_only` |
-| T5 zw/knock | `partial_code` — 0xD288/0xD281 via RW68 |
-| T6 dwell | `xdf_only` |
-| T7 Alpha-N | `xdf_only` |
-| T8 VANOS | `xdf_only` |
+### 7.2 Access-model update (v5)
 
-### 7.2 Access-model update (RW68 index base)
+`LDB Rx,0xd0, LOOKUP[ZR]` remains register file `0x00D0`.
 
-`LDB Rx,0xd0, LOOKUP[ZR]` remains **register file `0x00D0`**, not ROM page `0xD0`.
+**ROM-proven bases (FE24):** `RW68=0x42EC`, `RW6A=0x43F0`, `RW6C=0x1A08`, `RW6E=0x1E08`.
 
-**New:** `LOOKUP/TABLE[RW68]` with base **`RW68 = 0xD200`** is **cross_checked** by unique XDF geometry (MAF offset quartet `+0x3E/+0x40/+0x44/+0x90` → `0xD23E/D240/D244/D290` only for that base). External image has no `LD RW68,#imm` (low ROM erased).
+**Retracted:** `RW68=0xD200` (13 items) and `RW6A=0xD978` (6 fuel axes) — false XDF-geometry positives.
+
+**Exclusive geometry:**
+- Fuel Ti `0xD030` — unique `D000|0030` @`0x432A` + island↔CAL body twins; CODE CMP `0x8B13, 0x8C17, 0x8C2E`
+- Ign/fuel VANOS RPM axes — signature `050605070a05070b0909090f12130860` at exactly 8 XDF offsets (rep ign `0xDD0F`)
 
 ### 7.3 Artifacts
 
 - `tools/re/out/theory_vs_rom_bosch_ti.{md,json}`
-- `tools/re/out/rw68_cal_index_base.{md,json}`
-- `tools/re/out/irq_ram_publications.{md,json}`
-- `tools/re/out/sfr_hso_hsi_audit.{md,json}`
-- `tools/re/out/cal_access_model.{md,json}`
-- Coverage: **0.0% absolute proven (0/69); 18.84% index-base cross_checked (13/69 via RW68=0xD200); 1 structural (0xD030).**
+- `tools/re/out/register_bases_fe24.{md,json}`
+- Coverage: **0.0% absolute (0/69); 0% CAL-content index-base (D200/D978 retracted); 13.04% exclusive geometry (9/69: Ti structural + 8 VANOS RPM axes); 4 ROM-proven FE24 bases.**
 
-### 7.4 First absolute ign/fuel XDF CODE read — status
+### 7.4 First absolute / CAL-content ign/fuel XDF CODE read — status
 
-**None yet** (`0/69` absolute). **New cross_checked index-base xrefs:** 13 targets / 19 sites via `RW68+0xD200` (includes MAF cal `0xD290` @`0x68CD`, MAF fault limits, IAT/coolant mins/maxes, knock `0xD288`).
+**None yet** (`0/69` absolute; `0/69` CAL-content index-base after retraction). Exclusive geometry: **9/69**. Closest CODE: Ti split CMPs + interp `0x20C7`.
 
 ## 8. Research session notes
 

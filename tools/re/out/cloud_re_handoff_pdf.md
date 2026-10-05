@@ -20,9 +20,11 @@ Richard added a **local PRIMARY** Bosch *M-Motronic Engine Management* Technical
 2. Prove or refute T1–T8 / H1–H7 in MCS-96 CODE against RedLabel + XDF.
 3. Do not promote shipping maps from the PDF alone.
 
-## Status after theory-vs-ROM pass
+## Status after theory-vs-ROM pass (v5)
 
-- Checklist: `theory_vs_rom_bosch_ti.md` (T1–T8)
-- **Coverage:** 0.0% absolute proven (0/69); **18.84%** index-base cross_checked (13/69 via `RW68=0xD200`); 1 structural (`0xD030`)
-- New xrefs: `rw68_cal_index_base.md` (MAF `0xD290` @`0x68CD`, fault limits, IAT/coolant, knock)
-- Next: confirm `LD RW68,#imm` in internal ROM; chase descriptor `#0xD0`/`#0x30` after `0x1566` load product
+- **Retraction:** D200 (13) / D978 (6) index-base claims were false positives.
+- **ROM-proven bases (FE24):** RW68=`0x42EC`, RW6A=`0x43F0`, RW6C=`0x1A08`, RW6E=`0x1E08`
+- **Coverage:** 0.0% absolute (0/69); 0% CAL-content index-base (D200/D978 retracted); 13.04% exclusive geometry (9/69: Ti structural + 8 VANOS RPM axes); 4 ROM-proven FE24 bases.
+- **Fuel exclusive:** Ti `0xD030` — unique split @`0x432A`; CODE CMP ['0x8B13', '0x8C17', '0x8C2E']
+- **Ign exclusive:** VANOS RPM axes sig @ ['0xD984', '0xD9A6', '0xD9C8', '0xDAA8', '0xDD0F', '0xDD89', '0xDE6D', '0xDF4D'] (rep `0xDD0F`)
+- **Next:** descriptor → 0xDxxx deref; compose+deref Ti; CODE-walk one VANOS axis

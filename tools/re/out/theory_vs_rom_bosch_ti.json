@@ -1,17 +1,181 @@
 {
-  "schemaVersion": 1,
-  "id": "bosch_ti_theory_vs_rom_v1",
+  "schemaVersion": 5,
+  "id": "bosch_ti_theory_vs_rom_v5",
   "rom": "BMW DME413 SW623 D466.29 C16x900A 94 RedLabel.bin",
   "primaryTheory": "tools/re/out/ref_pdf_bosch_m_motronic_technical_instruction.md",
   "shippingNote": "Book is PRIMARY family theory only. Do not verify or promote shipping maps from the PDF alone.",
+  "registerBasesRomProven": {
+    "structAt": "0xFE24",
+    "layout": "LDB Rhi,-off-1[RW1C]; LDB Rlo,-off[RW1C] (hi byte at lower addr)",
+    "words": {
+      "RW68": "0x42EC",
+      "RW6A": "0x43F0",
+      "RW6C": "0x1A08",
+      "RW6E": "0x1E08"
+    },
+    "cmpCrossCheck": {
+      "RW6C": "CMP RW6C,#0x1a08 @0x4D60",
+      "RW6E": "CMP RW6E,#0x1e08 @0x481B/0x4D66"
+    },
+    "loader": "0x2EDB via trampoline 0x20B5 / LCALL 0x412C",
+    "uniqueInRom": true
+  },
+  "retraction": {
+    "retractedClaims": [
+      {
+        "claim": "RW68=0xD200 index-base cross_checked for 13 MAF/sensor XDF items",
+        "reason": "False positive: offsets under RW68 land in CODE island 0x42EC+, not CAL 0xD200+. CMP RW24,0x3e[RW68] reads island word 0xD000, not MAF high limit at 0xD23E."
+      },
+      {
+        "claim": "RW6A=0xD978 exclusive geometry for 6 fuel PT/WOT axis XDF items",
+        "reason": "False positive: RW6A=0x43F0 island holds small fault/descriptor indices (e.g. +0x2E \u2192 0x0006), not CAL addresses. Same sites feed LCALL 0x6efd/0x6f69 fault packaging."
+      }
+    ],
+    "scratchRegExclusivesAlsoRejected": "RW24/RW20/RW38 \u2018exclusive\u2019 ign geometries rejected \u2014 those regs are scratch (e.g. ADD RW24,RW6A,#imm; LD RW38,RW6C)."
+  },
+  "tiStructural": {
+    "target": "0xD030",
+    "xdfName": "Inj. Constant(Ti)",
+    "domain": "fuel",
+    "pageWordAt": "0x432A (RW68+0x3E) = 0xD000",
+    "offsetWordAt": "0x432C (RW68+0x40) = 0x0030",
+    "composed": "0xD030",
+    "exclusiveSplitPattern": "00D03000 unique @0x432A",
+    "exclusiveBodyTwins": {
+      "90655046": [
+        "0x431C (island)",
+        "0xD032 (CAL)"
+      ],
+      "0080c05d00000020": [
+        "0x4322 (island)",
+        "0xD038 (CAL)"
+      ]
+    },
+    "codeReadsPageVia": [
+      {
+        "siteHex": "0x8B13",
+        "insn": "CMP RW24,0x3e, TABLE[RW68]",
+        "reads": "0xD000"
+      },
+      {
+        "siteHex": "0x8C17",
+        "insn": "CMP RW1C,0x3e, TABLE[RW68]",
+        "reads": "0xD000"
+      },
+      {
+        "siteHex": "0x8C2E",
+        "insn": "CMP RW1C,0x3e, TABLE[RW68]",
+        "reads": "0xD000"
+      }
+    ],
+    "codeReadsOffsetVia": [
+      {
+        "siteHex": "0x8BCC",
+        "insn": "CMP RW8A,0x40, TABLE[RW68]",
+        "reads": "0x0030"
+      }
+    ],
+    "contentDerefProven": false,
+    "exclusiveGeometry": true,
+    "note": "Exclusive structural geometry: unique D000|0030 split under FE24 RW68, plus Ti body fragments that exist only as island\u2194CAL twins. CODE CMP @RW68+0x3E/+0x40 touches the split words (as bounds), not a content deref of 0xD030.",
+    "evidenceStrength": "high_structural_exclusive"
+  },
+  "vanosRpmAxisExclusive": {
+    "id": "vanos_rpm_axis_sig_v1",
+    "signatureHex": "050605070a05070b0909090f12130860",
+    "signatureLen": 16,
+    "exclusiveLocations": [
+      "0xD984",
+      "0xD9A6",
+      "0xD9C8",
+      "0xDAA8",
+      "0xDD0F",
+      "0xDD89",
+      "0xDE6D",
+      "0xDF4D"
+    ],
+    "count": 8,
+    "fuelAxes": [
+      {
+        "offset": 55684,
+        "offsetHex": "0xD984",
+        "name": "0xD984 RPM axis for Fuel, WOT, Vanos retarded",
+        "category": "Fuel"
+      },
+      {
+        "offset": 55718,
+        "offsetHex": "0xD9A6",
+        "name": "0xD9A6 RPM axis for Fuel, WOT, Vanos advanced",
+        "category": "Fuel"
+      },
+      {
+        "offset": 55752,
+        "offsetHex": "0xD9C8",
+        "name": "0xD9C8 RPM axis for Fuel, PT, Vanos retarded",
+        "category": "Fuel"
+      },
+      {
+        "offset": 55976,
+        "offsetHex": "0xDAA8",
+        "name": "0xDAA8 RPM axis for Fuel, PT, Vanos advanced",
+        "category": "Fuel"
+      }
+    ],
+    "ignitionAxes": [
+      {
+        "offset": 56591,
+        "offsetHex": "0xDD0F",
+        "name": "0xDD0F RPM axis for Ignition, WOT, Vanos retarded",
+        "category": "Ignition"
+      },
+      {
+        "offset": 56713,
+        "offsetHex": "0xDD89",
+        "name": "0xDD89 RPM axis for Ignition, WOT, Vanos advanced",
+        "category": "Ignition"
+      },
+      {
+        "offset": 56941,
+        "offsetHex": "0xDE6D",
+        "name": "0xDE6D RPM axis for Ignition, PT, Vanos retarded",
+        "category": "Ignition"
+      },
+      {
+        "offset": 57165,
+        "offsetHex": "0xDF4D",
+        "name": "0xDF4D RPM axis for Ignition, PT, Vanos advanced",
+        "category": "Ignition"
+      }
+    ],
+    "representativeIgnition": {
+      "offset": 56591,
+      "offsetHex": "0xDD0F",
+      "name": "0xDD0F RPM axis for Ignition, WOT, Vanos retarded",
+      "category": "Ignition"
+    },
+    "representativeFuel": {
+      "offset": 55684,
+      "offsetHex": "0xD984",
+      "name": "0xD984 RPM axis for Fuel, WOT, Vanos retarded",
+      "category": "Fuel"
+    },
+    "exclusiveGeometry": true,
+    "codeDerefProven": false,
+    "note": "Exclusive content geometry: this 16-byte RPM-axis preamble appears exactly 8 times in the image \u2014 precisely the XDF Fuel/Ign PT|WOT VANOS RPM axes. Proves table geometry for \u22651 fuel and \u22651 ignition axis (all 8). Not a CODE LOOKUP[ZR] content read.",
+    "evidenceStrength": "high_content_exclusive"
+  },
   "coverage": {
     "ignFuelItems": 69,
     "ghidraProvenAbsolute": 0,
     "ghidraProvenAbsolutePct": 0.0,
-    "indexBaseCrossChecked": 13,
-    "indexBaseCrossCheckedPct": 18.84,
+    "indexBaseCrossCheckedCalContent": 0,
+    "indexBaseCrossCheckedCalContentPct": 0.0,
+    "exclusiveGeometry": 9,
+    "exclusiveGeometryPct": 13.04,
     "structuralSplitPtr": 1,
-    "headline": "0.0% absolute proven (0/69); 18.84% index-base cross_checked (13/69 via RW68=0xD200); 1 structural (0xD030)."
+    "registerBasesRomProven": 4,
+    "headline": "0.0% absolute (0/69); 0% CAL-content index-base (D200/D978 retracted); 13.04% exclusive geometry (9/69: Ti structural + 8 VANOS RPM axes); 4 ROM-proven FE24 bases.",
+    "note": "v5: retracted false D200/D978 XDF-geometry xrefs. Raised exclusive-geometry proofs for \u22651 fuel (Ti 0xD030) and \u22651 ignition (VANOS RPM axes e.g. 0xDD0F). Absolute CODE content reads still 0."
   },
   "checklist": [
     {
@@ -19,42 +183,42 @@
       "theory": "Primary load = air-mass kg/h (HFM)",
       "romTarget": "MAF 0xD290; ADC\u2192lookup",
       "status": "partial_code",
-      "evidence": "ADC schedule @0x427A (ch 0x0A\u21920x1454 high-rate hyp); RW68+0x90\u21920xD290 CODE site @0x68CD (index-base cross_checked); MAF fault limits 0xD23E/D240/D244 via RW68."
+      "evidence": "ADC schedule @0x427A (ch 0x0A\u21920x1454 hyp). Prior RW68\u21920xD290 claim retracted. MAF cal CODE read still open (descriptor path)."
     },
     {
       "id": "T2",
       "theory": "Load = air mass per stroke from mass + speed",
-      "romTarget": "D5 filtered load (inj-time referred)",
+      "romTarget": "D5 filtered load",
       "status": "partial_code",
-      "evidence": "vec2 0x14CC period \u2192 DIVU @0x5AEB \u2192 ST 0x1566 @0x5AFD; consumer @0xB212. XDF D5 axis link still open."
+      "evidence": "0x5AEB DIVU by 0x14CC \u2192 0x1566; D5 axis link open."
     },
     {
       "id": "T3",
       "theory": "ti_base = f(load, injector_constant), \u03bb\u22481",
-      "romTarget": "Ti 0xD030 + PT/WOT fuel maps",
-      "status": "structural_only",
-      "evidence": "Structural 0xD000+0x0030 @0x432A; post-load LCALL 0x20C7 RW1A=#0xD0/#0x30. No CODE deref of 0xD030 yet."
+      "romTarget": "Ti 0xD030",
+      "status": "exclusive_structural",
+      "evidence": "Exclusive structural geometry: unique D000|0030 split under FE24 RW68, plus Ti body fragments that exist only as island\u2194CAL twins. CODE CMP @RW68+0x3E/+0x40 touches the split words (as bounds), not a content deref of 0xD030."
     },
     {
       "id": "T4",
       "theory": "Correction stack + Vbat + lambda + overrun cut",
-      "romTarget": "Enrich / O2 / voltage / cut tables",
+      "romTarget": "Enrich / O2 / voltage / cut",
       "status": "xdf_only",
-      "evidence": "Partial XDF; CODE stack order not mapped this pass."
+      "evidence": "XDF present; CODE stack order TBD."
     },
     {
       "id": "T5",
       "theory": "zw_base = map(load, rpm) + corrections \u2212 knock",
-      "romTarget": "PT/WOT ign VANOS maps; knock",
-      "status": "partial_code",
-      "evidence": "Knock-related 0xD288 via RW68+0x88 @0x660C; spark-fault 0xD281 @0xB0AF. Main zw map reads still unresolved."
+      "romTarget": "PT/WOT ign VANOS; knock",
+      "status": "exclusive_geometry_axes",
+      "evidence": "VANOS RPM axis signature exclusive @ 0xDD0F (+7 siblings). Main zw map body CODE read still open."
     },
     {
       "id": "T6",
       "theory": "Dwell = f(Vbat, rpm)",
       "romTarget": "0xE0DA",
       "status": "xdf_only",
-      "evidence": "XDF named; no RW68/absolute CODE read this pass."
+      "evidence": "XDF named; no CODE read this pass."
     },
     {
       "id": "T7",
@@ -66,244 +230,72 @@
     {
       "id": "T8",
       "theory": "Camshaft control expander",
-      "romTarget": "VANOS dual fuel/ign maps",
-      "status": "xdf_only",
-      "evidence": "BMW app + XDF dual maps; selector CODE TBD."
+      "romTarget": "VANOS dual maps",
+      "status": "exclusive_geometry_axes",
+      "evidence": "PT/WOT fuel+ign VANOS RPM axes share exclusive 16-byte signature (8/8 XDF match). Selector CODE TBD."
     }
   ],
   "loadPath": {
     "t1_hfm_adc": {
       "scheduleBase": "0x427A",
-      "scheduleEnd": "0x42A0",
       "isr": "0xA4AA",
-      "mechanism": "vec5 loads channel word then dest word from schedule; LDB AD_resultlo,R44 kicks channel; STB AD_resulthi,[RW44] stores sample.",
-      "entries": [
-        {
-          "channel": "0x0E",
-          "destHex": "0x129A",
-          "note": null
-        },
-        {
-          "channel": "0x0B",
-          "destHex": "0x1453",
-          "note": null
-        },
-        {
-          "channel": "0x0A",
-          "destHex": "0x1454",
-          "note": "highest sample rate (\u00d74)"
-        },
-        {
-          "channel": "0x0D",
-          "destHex": "0x1451",
-          "note": null
-        },
-        {
-          "channel": "0x09",
-          "destHex": "0x1452",
-          "note": null
-        },
-        {
-          "channel": "0x0C",
-          "destHex": "0x12BE",
-          "note": null
-        },
-        {
-          "channel": "0x0A",
-          "destHex": "0x1454",
-          "note": "highest sample rate (\u00d74)"
-        },
-        {
-          "channel": "0x0A",
-          "destHex": "0x1454",
-          "note": "highest sample rate (\u00d74)"
-        },
-        {
-          "channel": "0x0A",
-          "destHex": "0x1454",
-          "note": "highest sample rate (\u00d74)"
-        },
-        {
-          "channel": "0x09",
-          "destHex": "0x1450",
-          "note": null
-        }
-      ],
       "mafChannelHypothesis": {
         "channel": "0x0A",
         "dest": "0x1454",
-        "reason": "most frequent schedule slot; consumers do range/fault checks",
         "evidenceStrength": "medium"
-      }
+      },
+      "note": "ADC path unchanged; MAF transfer 0xD290 CODE read still unresolved."
     },
     "t2_load_per_stroke": {
-      "periodPub": {
-        "ram": "0x14CC",
-        "writer": "0xAA8F (vec2)",
-        "role": "derived_period_scale"
-      },
       "divuSite": "0x5AEB",
-      "divuInsn": "DIVU RL48,0x14cc, TABLE[ZR]",
       "productRam": "0x1566",
-      "storeSite": "0x5AFD",
-      "consumer": "0xB212 LD RW38,0x1566",
-      "note": "Foreground scales a quantity by 1/period (\u00d70x9C40) into 0x1566 \u2014 candidate air-mass-per-stroke / load index (Bosch p.38). Not yet tied to XDF D5 filtered-load axis by CODE proof.",
       "evidenceStrength": "medium"
     },
     "t3_interp_after_load": {
       "sites": [
         {
-          "ld": "0x5B02",
           "index": "0xD0",
-          "call": "0x5B06 LCALL 0x20C7"
+          "call": "0x5B06"
         },
         {
-          "ld": "0x5B57",
           "index": "0x30",
-          "call": "0x5B5B LCALL 0x20C7"
+          "call": "0x5B5B"
         }
       ],
-      "interp": "0x20C7 \u2192 0x33C2; ADD RW1A,RW6E; LD RW4C,[RW1A]",
-      "descriptorTable": "RW6E=0x1E08 (default fill 0x42DF @0x4ED9)",
-      "note": "Post-load interp indices 0xD0 / 0x30 are descriptor slots, not ROM page bytes. CAL target behind slot still unresolved in external image.",
-      "evidenceStrength": "high_for_mechanism"
+      "interp": "0x20C7 \u2192 0x33C2 via RW6E=0x1E08 descriptors",
+      "note": "RW6A island values overlap many LD RW1A,#imm interp indices (fault/descriptor index table). CAL map targets behind descriptors still unresolved (default fill 0x42DF)."
     }
   },
-  "rw68": {
-    "baseHex": "0xD200",
-    "uniqueTargetCount": 13,
-    "siteCount": 19,
-    "targets": {
-      "0xD23E": {
-        "offset": 53822,
-        "name": "0xD23E[16bit] Air, MAF, High Fault Limit kg/h",
-        "siteCount": 3,
-        "sites": [
-          "0x8B13",
-          "0x8C17",
-          "0x8C2E"
-        ]
-      },
-      "0xD240": {
-        "offset": 53824,
-        "name": "0xD240[16bit] Air, MAF, Low Fault Limit kg/h",
-        "siteCount": 1,
-        "sites": [
-          "0x8BCC"
-        ]
-      },
-      "0xD244": {
-        "offset": 53828,
-        "name": "0xD244[16bit] Air, MAF, MAF/RPM Ratio Limit",
-        "siteCount": 2,
-        "sites": [
-          "0x8CD3",
-          "0x8CE7"
-        ]
-      },
-      "0xD256": {
-        "offset": 53846,
-        "name": "0xD256[8bit] Coolant Temp Sensor max signal@min volts RAW",
-        "siteCount": 3,
-        "sites": [
-          "0x498E",
-          "0x5162",
-          "0xAFAD"
-        ]
-      },
-      "0xD257": {
-        "offset": 53847,
-        "name": "0xD257[8bit] Coolant Temp Sensor min signal@max volts RAW",
-        "siteCount": 1,
-        "sites": [
-          "0x5A6C"
-        ]
-      },
-      "0xD25A": {
-        "offset": 53850,
-        "name": "0xD25A[8bit] Air, IAT max signal",
-        "siteCount": 1,
-        "sites": [
-          "0x5C73"
-        ]
-      },
-      "0xD25B": {
-        "offset": 53851,
-        "name": "0xD25B[8bit] Air, IAT min signal",
-        "siteCount": 1,
-        "sites": [
-          "0x5CEF"
-        ]
-      },
-      "0xD27B": {
-        "offset": 53883,
-        "name": "0xD27B[8bit] Speed, RPM Threshold to activate speed signal check",
-        "siteCount": 1,
-        "sites": [
-          "0x99BE"
-        ]
-      },
-      "0xD27D": {
-        "offset": 53885,
-        "name": "0xD27D[8bit] Speed, Counter? Threshold for speed signal check DTC 42",
-        "siteCount": 1,
-        "sites": [
-          "0x9974"
-        ]
-      },
-      "0xD27E": {
-        "offset": 53886,
-        "name": "0xD27E[8bit] RPM, Rev Limit, IF no speed signal",
-        "siteCount": 2,
-        "sites": [
-          "0x9758",
-          "0x9B7C"
-        ]
-      },
-      "0xD281": {
-        "offset": 53889,
-        "name": "0xD281[8bit] Ign., Spark Fault",
-        "siteCount": 1,
-        "sites": [
-          "0xB0AF"
-        ]
-      },
-      "0xD288": {
-        "offset": 53896,
-        "name": "0xD288 Knock Sensor DTC related",
-        "siteCount": 1,
-        "sites": [
-          "0x660C"
-        ]
-      },
-      "0xD290": {
-        "offset": 53904,
-        "name": "0xD290[Func|5V|256]MAF Cal. kg/h",
-        "siteCount": 1,
-        "sites": [
-          "0x68CD"
-        ]
-      }
-    },
-    "proof": {
-      "method": "unique_xdf_geometry",
-      "constraintOffsets": [
-        "0x3E",
-        "0x40",
-        "0x44",
-        "0x90"
-      ],
-      "constraintTargets": [
-        "0xD23E",
-        "0xD240",
-        "0xD244",
-        "0xD290"
-      ],
-      "uniqueBases": [
-        "0xD200"
-      ],
-      "note": "Only base 0xD200 makes RW68+{0x3E,0x40,0x44,0x90} land simultaneously on MAF high/low/ratio/cal XDF items. No LD RW68,#imm in external image (0x0000\u20130x1FFF erased); base is cross_checked by geometry, not by immediate load.",
-      "ldImmediateInExternalImage": false
-    }
-  }
+  "keyCodeSites": {
+    "fe24Loader": "0x2EDB via 0x20B5 / 0x412C",
+    "tiPageCmp": [
+      "0x8B13",
+      "0x8C17",
+      "0x8C2E"
+    ],
+    "tiOffCmp": [
+      "0x8BCC"
+    ],
+    "mapInterp": "0x20C7 \u2192 0x33C2 (RW6E descriptors)",
+    "postLoadTiSlots": [
+      "0x5B06 RW1A=#0xD0",
+      "0x5B5B RW1A=#0x30"
+    ],
+    "vanosAxisRom": [
+      "0xD984",
+      "0xD9A6",
+      "0xD9C8",
+      "0xDAA8",
+      "0xDD0F",
+      "0xDD89",
+      "0xDE6D",
+      "0xDF4D"
+    ]
+  },
+  "nextToProve": [
+    "Compose D000+|0030 from island into a pointer and [deref] Ti content",
+    "Find descriptor-table patches that replace 0x42DF with 0xDxxx map pointers",
+    "CODE walk of one VANOS RPM axis (sig @0xDD0F family) via interp",
+    "Absolute LOOKUP[ZR] for one fuel map body and one ign map body"
+  ]
 }

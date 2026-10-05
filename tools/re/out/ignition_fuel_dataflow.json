@@ -3,15 +3,18 @@
   "id": "ignition_fuel_dataflow_v2",
   "rom": "BMW DME413 SW623 D466.29 C16x900A 94 RedLabel.bin",
   "coverage": {
-    "schemaVersion": 3,
+    "schemaVersion": 5,
     "ignFuelItems": 69,
     "ghidraProvenAbsolute": 0,
     "ghidraProvenAbsolutePct": 0.0,
-    "indexBaseCrossChecked": 13,
-    "indexBaseCrossCheckedPct": 18.84,
+    "indexBaseCrossCheckedCalContent": 0,
+    "indexBaseCrossCheckedCalContentPct": 0.0,
+    "exclusiveGeometry": 9,
+    "exclusiveGeometryPct": 13.04,
     "structuralSplitPtr": 1,
-    "headline": "0.0% absolute proven (0/69); 18.84% index-base cross_checked (13/69 via RW68=0xD200); 1 structural (0xD030).",
-    "accessModel": "v3_rw68_index_base"
+    "registerBasesRomProven": 4,
+    "headline": "0.0% absolute (0/69); 0% CAL-content index-base (D200/D978 retracted); 13.04% exclusive geometry (9/69: Ti structural + 8 VANOS RPM axes); 4 ROM-proven FE24 bases.",
+    "note": "v5: retracted false D200/D978 XDF-geometry xrefs. Raised exclusive-geometry proofs for \u22651 fuel (Ti 0xD030) and \u22651 ignition (VANOS RPM axes e.g. 0xDD0F). Absolute CODE content reads still 0."
   },
   "seeAlso": [
     "tools/re/out/cal_access_model.json",
@@ -31,15 +34,16 @@
       "dataSize": 16,
       "category": "Fuel",
       "source": "xdf",
-      "codeReadStatus": "structural_split_ptr_in_data_island",
-      "evidenceStrength": "medium",
+      "codeReadStatus": "exclusive_structural_split_ptr",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 208,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD0), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
         "0xD000+offset adjacent in mid-CODE island; CODE deref TBD"
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 53298,
@@ -872,15 +876,16 @@
       "dataSize": 8,
       "category": "Fuel",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_content_geometry_axis",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 217,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD9), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 55718,
@@ -894,15 +899,16 @@
       "dataSize": 8,
       "category": "Fuel",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_content_geometry_axis",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 217,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD9), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 55752,
@@ -916,15 +922,16 @@
       "dataSize": 8,
       "category": "Fuel",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_content_geometry_axis",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 1,
       "pageByte": 217,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD9), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 55770,
@@ -960,15 +967,16 @@
       "dataSize": 8,
       "category": "Fuel",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_content_geometry_axis",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 218,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xDA), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 55994,
@@ -1224,15 +1232,16 @@
       "dataSize": 8,
       "category": "Ignition",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_content_geometry_axis",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 221,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xDD), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 56609,
@@ -1268,15 +1277,16 @@
       "dataSize": 8,
       "category": "Ignition",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_content_geometry_axis",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 221,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xDD), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 56731,
@@ -1312,15 +1322,16 @@
       "dataSize": 8,
       "category": "Ignition",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_content_geometry_axis",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 222,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xDE), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 56959,
@@ -1356,15 +1367,16 @@
       "dataSize": 8,
       "category": "Ignition",
       "source": "xdf",
-      "codeReadStatus": "access_path_unresolved",
-      "evidenceStrength": "low",
+      "codeReadStatus": "exclusive_content_geometry_axis",
+      "evidenceStrength": "high",
       "ghidraProven": false,
       "addr16HitCount": 0,
       "pageByte": 223,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xDF), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
         "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
-      ]
+      ],
+      "exclusiveGeometry": true
     },
     {
       "offset": 57183,
@@ -1565,5 +1577,164 @@
       ]
     }
   ],
-  "shippingNote": "Research-only. Do not promote into definitions/packs/*.shipping.json."
+  "shippingNote": "Research-only. Do not promote into definitions/packs/*.shipping.json.",
+  "exclusiveGeometry": {
+    "ti": {
+      "target": "0xD030",
+      "xdfName": "Inj. Constant(Ti)",
+      "domain": "fuel",
+      "pageWordAt": "0x432A (RW68+0x3E) = 0xD000",
+      "offsetWordAt": "0x432C (RW68+0x40) = 0x0030",
+      "composed": "0xD030",
+      "exclusiveSplitPattern": "00D03000 unique @0x432A",
+      "exclusiveBodyTwins": {
+        "90655046": [
+          "0x431C (island)",
+          "0xD032 (CAL)"
+        ],
+        "0080c05d00000020": [
+          "0x4322 (island)",
+          "0xD038 (CAL)"
+        ]
+      },
+      "codeReadsPageVia": [
+        {
+          "siteHex": "0x8B13",
+          "insn": "CMP RW24,0x3e, TABLE[RW68]",
+          "reads": "0xD000"
+        },
+        {
+          "siteHex": "0x8C17",
+          "insn": "CMP RW1C,0x3e, TABLE[RW68]",
+          "reads": "0xD000"
+        },
+        {
+          "siteHex": "0x8C2E",
+          "insn": "CMP RW1C,0x3e, TABLE[RW68]",
+          "reads": "0xD000"
+        }
+      ],
+      "codeReadsOffsetVia": [
+        {
+          "siteHex": "0x8BCC",
+          "insn": "CMP RW8A,0x40, TABLE[RW68]",
+          "reads": "0x0030"
+        }
+      ],
+      "contentDerefProven": false,
+      "exclusiveGeometry": true,
+      "note": "Exclusive structural geometry: unique D000|0030 split under FE24 RW68, plus Ti body fragments that exist only as island\u2194CAL twins. CODE CMP @RW68+0x3E/+0x40 touches the split words (as bounds), not a content deref of 0xD030.",
+      "evidenceStrength": "high_structural_exclusive"
+    },
+    "vanosRpmAxes": {
+      "id": "vanos_rpm_axis_sig_v1",
+      "signatureHex": "050605070a05070b0909090f12130860",
+      "signatureLen": 16,
+      "exclusiveLocations": [
+        "0xD984",
+        "0xD9A6",
+        "0xD9C8",
+        "0xDAA8",
+        "0xDD0F",
+        "0xDD89",
+        "0xDE6D",
+        "0xDF4D"
+      ],
+      "count": 8,
+      "fuelAxes": [
+        {
+          "offset": 55684,
+          "offsetHex": "0xD984",
+          "name": "0xD984 RPM axis for Fuel, WOT, Vanos retarded",
+          "category": "Fuel"
+        },
+        {
+          "offset": 55718,
+          "offsetHex": "0xD9A6",
+          "name": "0xD9A6 RPM axis for Fuel, WOT, Vanos advanced",
+          "category": "Fuel"
+        },
+        {
+          "offset": 55752,
+          "offsetHex": "0xD9C8",
+          "name": "0xD9C8 RPM axis for Fuel, PT, Vanos retarded",
+          "category": "Fuel"
+        },
+        {
+          "offset": 55976,
+          "offsetHex": "0xDAA8",
+          "name": "0xDAA8 RPM axis for Fuel, PT, Vanos advanced",
+          "category": "Fuel"
+        }
+      ],
+      "ignitionAxes": [
+        {
+          "offset": 56591,
+          "offsetHex": "0xDD0F",
+          "name": "0xDD0F RPM axis for Ignition, WOT, Vanos retarded",
+          "category": "Ignition"
+        },
+        {
+          "offset": 56713,
+          "offsetHex": "0xDD89",
+          "name": "0xDD89 RPM axis for Ignition, WOT, Vanos advanced",
+          "category": "Ignition"
+        },
+        {
+          "offset": 56941,
+          "offsetHex": "0xDE6D",
+          "name": "0xDE6D RPM axis for Ignition, PT, Vanos retarded",
+          "category": "Ignition"
+        },
+        {
+          "offset": 57165,
+          "offsetHex": "0xDF4D",
+          "name": "0xDF4D RPM axis for Ignition, PT, Vanos advanced",
+          "category": "Ignition"
+        }
+      ],
+      "representativeIgnition": {
+        "offset": 56591,
+        "offsetHex": "0xDD0F",
+        "name": "0xDD0F RPM axis for Ignition, WOT, Vanos retarded",
+        "category": "Ignition"
+      },
+      "representativeFuel": {
+        "offset": 55684,
+        "offsetHex": "0xD984",
+        "name": "0xD984 RPM axis for Fuel, WOT, Vanos retarded",
+        "category": "Fuel"
+      },
+      "exclusiveGeometry": true,
+      "codeDerefProven": false,
+      "note": "Exclusive content geometry: this 16-byte RPM-axis preamble appears exactly 8 times in the image \u2014 precisely the XDF Fuel/Ign PT|WOT VANOS RPM axes. Proves table geometry for \u22651 fuel and \u22651 ignition axis (all 8). Not a CODE LOOKUP[ZR] content read.",
+      "evidenceStrength": "high_content_exclusive"
+    }
+  },
+  "keyCodeSites": {
+    "fe24Loader": "0x2EDB via 0x20B5 / 0x412C",
+    "tiPageCmp": [
+      "0x8B13",
+      "0x8C17",
+      "0x8C2E"
+    ],
+    "tiOffCmp": [
+      "0x8BCC"
+    ],
+    "mapInterp": "0x20C7 \u2192 0x33C2 (RW6E descriptors)",
+    "postLoadTiSlots": [
+      "0x5B06 RW1A=#0xD0",
+      "0x5B5B RW1A=#0x30"
+    ],
+    "vanosAxisRom": [
+      "0xD984",
+      "0xD9A6",
+      "0xD9C8",
+      "0xDAA8",
+      "0xDD0F",
+      "0xDD89",
+      "0xDE6D",
+      "0xDF4D"
+    ]
+  }
 }

@@ -5,87 +5,100 @@ Theory: [`ref_pdf_bosch_m_motronic_technical_instruction.md`](ref_pdf_bosch_m_mo
 
 > Book is PRIMARY family theory only. Do not verify or promote shipping maps from the PDF alone.
 
-## Coverage
+## Coverage (v5)
 
 | Metric | Count | % of 69 |
 |--------|------:|--------:|
 | Absolute `LOOKUP[ZR]` proven (ea == XDF) | **0** | **0.0%** |
-| Index-base cross_checked (`RW68`=`0xD200`) | **13** | **18.84%** |
+| CAL-content index-base cross_checked | **0** | **0.0%** |
+| **Exclusive geometry** (fuel Ti + VANOS RPM axes) | **9** | **13.04%** |
 | Structural split-ptr (`0xD030`) | 1 | 1.45% |
+| ROM-proven register bases (FE24) | 4 | — |
 
-0.0% absolute proven (0/69); 18.84% index-base cross_checked (13/69 via RW68=0xD200); 1 structural (0xD030).
+0.0% absolute (0/69); 0% CAL-content index-base (D200/D978 retracted); 13.04% exclusive geometry (9/69: Ti structural + 8 VANOS RPM axes); 4 ROM-proven FE24 bases.
+
+> v5: retracted false D200/D978 XDF-geometry xrefs. Raised exclusive-geometry proofs for ≥1 fuel (Ti 0xD030) and ≥1 ignition (VANOS RPM axes e.g. 0xDD0F). Absolute CODE content reads still 0.
+
+## ROM-proven register bases
+
+Unique structure @ `0xFE24` (`LDB Rhi,-off-1[RW1C]; LDB Rlo,-off[RW1C] (hi byte at lower addr)`):
+
+| Reg | Value | Role |
+|-----|-------|------|
+| RW68 | `0x42EC` | CODE parameter island |
+| RW6A | `0x43F0` | CODE index / fault-id island |
+| RW6C | `0x1A08` | Descriptor RAM (`CMP RW6C,#0x1a08 @0x4D60`) |
+| RW6E | `0x1E08` | Descriptor RAM (`CMP RW6E,#0x1e08 @0x481B/0x4D66`) |
+
+Loader: `0x2EDB via trampoline 0x20B5 / LCALL 0x412C`.
+
+## Retraction (important)
+
+- **Retracted:** RW68=0xD200 index-base cross_checked for 13 MAF/sensor XDF items
+  - False positive: offsets under RW68 land in CODE island 0x42EC+, not CAL 0xD200+. CMP RW24,0x3e[RW68] reads island word 0xD000, not MAF high limit at 0xD23E.
+
+- **Retracted:** RW6A=0xD978 exclusive geometry for 6 fuel PT/WOT axis XDF items
+  - False positive: RW6A=0x43F0 island holds small fault/descriptor indices (e.g. +0x2E → 0x0006), not CAL addresses. Same sites feed LCALL 0x6efd/0x6f69 fault packaging.
+
+RW24/RW20/RW38 ‘exclusive’ ign geometries rejected — those regs are scratch (e.g. ADD RW24,RW6A,#imm; LD RW38,RW6C).
+
+## Fuel exclusive geometry — Ti `0xD030`
+
+- Target `0xD030` Inj. Constant(Ti)
+- 0x432A (RW68+0x3E) = 0xD000; 0x432C (RW68+0x40) = 0x0030 → `0xD030`
+- Exclusive split: `00D03000 unique @0x432A`
+- Body twins: `['90655046', '0080c05d00000020']` island↔CAL only
+- CODE CMP of page `0xD000` via RW68+0x3E: `0x8B13`, `0x8C17`, `0x8C2E`
+- CODE CMP of offset `0x0030` via RW68+0x40: `0x8BCC`
+- Content deref proven: **False**
+- Exclusive structural geometry: unique D000|0030 split under FE24 RW68, plus Ti body fragments that exist only as island↔CAL twins. CODE CMP @RW68+0x3E/+0x40 touches the split words (as bounds), not a content deref of 0xD030.
+
+## Ignition (+fuel) exclusive geometry — VANOS RPM axes
+
+- Signature `050605070a05070b0909090f12130860` (len 16) — **exactly 8** ROM hits, all XDF VANOS RPM axes:
+
+| Offset | Domain | Name |
+|--------|--------|------|
+| `0xD984` | fuel | 0xD984 RPM axis for Fuel, WOT, Vanos retarded |
+| `0xD9A6` | fuel | 0xD9A6 RPM axis for Fuel, WOT, Vanos advanced |
+| `0xD9C8` | fuel | 0xD9C8 RPM axis for Fuel, PT, Vanos retarded |
+| `0xDAA8` | fuel | 0xDAA8 RPM axis for Fuel, PT, Vanos advanced |
+| `0xDD0F` | ign | 0xDD0F RPM axis for Ignition, WOT, Vanos retarded |
+| `0xDD89` | ign | 0xDD89 RPM axis for Ignition, WOT, Vanos advanced |
+| `0xDE6D` | ign | 0xDE6D RPM axis for Ignition, PT, Vanos retarded |
+| `0xDF4D` | ign | 0xDF4D RPM axis for Ignition, PT, Vanos advanced |
+
+- Representative ignition: `0xDD0F`
+- Representative fuel: `0xD984`
+- CODE deref of axis body: **False** (descriptor path open)
+- Exclusive content geometry: this 16-byte RPM-axis preamble appears exactly 8 times in the image — precisely the XDF Fuel/Ign PT|WOT VANOS RPM axes. Proves table geometry for ≥1 fuel and ≥1 ignition axis (all 8). Not a CODE LOOKUP[ZR] content read.
 
 ## T1–T8 checklist
 
-| ID | Theory (Bosch TI) | ROM / XDF | Status | Evidence |
-|----|-------------------|-----------|--------|----------|
-| T1 | Primary load = air-mass kg/h (HFM) | MAF 0xD290; ADC→lookup | `partial_code` | ADC schedule @0x427A (ch 0x0A→0x1454 high-rate hyp); RW68+0x90→0xD290 CODE site @0x68CD (index-base cross_checked); MAF fault limits 0xD23E/D240/D244 via RW68. |
-| T2 | Load = air mass per stroke from mass + speed | D5 filtered load (inj-time referred) | `partial_code` | vec2 0x14CC period → DIVU @0x5AEB → ST 0x1566 @0x5AFD; consumer @0xB212. XDF D5 axis link still open. |
-| T3 | ti_base = f(load, injector_constant), λ≈1 | Ti 0xD030 + PT/WOT fuel maps | `structural_only` | Structural 0xD000+0x0030 @0x432A; post-load LCALL 0x20C7 RW1A=#0xD0/#0x30. No CODE deref of 0xD030 yet. |
-| T4 | Correction stack + Vbat + lambda + overrun cut | Enrich / O2 / voltage / cut tables | `xdf_only` | Partial XDF; CODE stack order not mapped this pass. |
-| T5 | zw_base = map(load, rpm) + corrections − knock | PT/WOT ign VANOS maps; knock | `partial_code` | Knock-related 0xD288 via RW68+0x88 @0x660C; spark-fault 0xD281 @0xB0AF. Main zw map reads still unresolved. |
-| T6 | Dwell = f(Vbat, rpm) | 0xE0DA | `xdf_only` | XDF named; no RW68/absolute CODE read this pass. |
-| T7 | TPS secondary / limp load | Alpha-N 0xDBC3 | `xdf_only` | Strong XDF; fault path CODE TBD. |
-| T8 | Camshaft control expander | VANOS dual fuel/ign maps | `xdf_only` | BMW app + XDF dual maps; selector CODE TBD. |
+| ID | Theory | Status | Evidence |
+|----|--------|--------|----------|
+| T1 | Primary load = air-mass kg/h (HFM) | `partial_code` | ADC schedule @0x427A (ch 0x0A→0x1454 hyp). Prior RW68→0xD290 claim retracted. MAF cal CODE read still open (descriptor path). |
+| T2 | Load = air mass per stroke from mass + speed | `partial_code` | 0x5AEB DIVU by 0x14CC → 0x1566; D5 axis link open. |
+| T3 | ti_base = f(load, injector_constant), λ≈1 | `exclusive_structural` | Exclusive structural geometry: unique D000|0030 split under FE24 RW68, plus Ti body fragments that exist only as island↔CAL twins. CODE CMP @RW68+0x3E/+0x40 touches the split words (as bounds), not a content deref of 0xD030. |
+| T4 | Correction stack + Vbat + lambda + overrun cut | `xdf_only` | XDF present; CODE stack order TBD. |
+| T5 | zw_base = map(load, rpm) + corrections − knock | `exclusive_geometry_axes` | VANOS RPM axis signature exclusive @ 0xDD0F (+7 siblings). Main zw map body CODE read still open. |
+| T6 | Dwell = f(Vbat, rpm) | `xdf_only` | XDF named; no CODE read this pass. |
+| T7 | TPS secondary / limp load | `xdf_only` | Strong XDF; fault path CODE TBD. |
+| T8 | Camshaft control expander | `exclusive_geometry_axes` | PT/WOT fuel+ign VANOS RPM axes share exclusive 16-byte signature (8/8 XDF match). Selector CODE TBD. |
 
-## New index-base xrefs (`RW68` + `0xD200`)
+## Key CODE sites
 
-**Proof:** Only base 0xD200 makes RW68+{0x3E,0x40,0x44,0x90} land simultaneously on MAF high/low/ratio/cal XDF items. No LD RW68,#imm in external image (0x0000–0x1FFF erased); base is cross_checked by geometry, not by immediate load.
+- FE24 loader: `0x2EDB via 0x20B5 / 0x412C`
+- Map interp: `0x20C7 → 0x33C2 (RW6E descriptors)`
+- Post-load Ti-related slots: `0x5B06 RW1A=#0xD0`, `0x5B5B RW1A=#0x30`
+- Ti page/off CMPs: `0x8B13`, `0x8C17`, `0x8C2E`, `0x8BCC`
 
-**13 unique / 19 sites**
+## Next
 
-| Target | Sites | XDF name |
-|--------|------:|----------|
-| `0xD23E` | 3 | 0xD23E[16bit] Air, MAF, High Fault Limit kg/h |
-| | | `0x8B13`, `0x8C17`, `0x8C2E` |
-| `0xD240` | 1 | 0xD240[16bit] Air, MAF, Low Fault Limit kg/h |
-| | | `0x8BCC` |
-| `0xD244` | 2 | 0xD244[16bit] Air, MAF, MAF/RPM Ratio Limit |
-| | | `0x8CD3`, `0x8CE7` |
-| `0xD256` | 3 | 0xD256[8bit] Coolant Temp Sensor max signal@min volts RAW |
-| | | `0x498E`, `0x5162`, `0xAFAD` |
-| `0xD257` | 1 | 0xD257[8bit] Coolant Temp Sensor min signal@max volts RAW |
-| | | `0x5A6C` |
-| `0xD25A` | 1 | 0xD25A[8bit] Air, IAT max signal |
-| | | `0x5C73` |
-| `0xD25B` | 1 | 0xD25B[8bit] Air, IAT min signal |
-| | | `0x5CEF` |
-| `0xD27B` | 1 | 0xD27B[8bit] Speed, RPM Threshold to activate speed signal check |
-| | | `0x99BE` |
-| `0xD27D` | 1 | 0xD27D[8bit] Speed, Counter? Threshold for speed signal check DTC 42 |
-| | | `0x9974` |
-| `0xD27E` | 2 | 0xD27E[8bit] RPM, Rev Limit, IF no speed signal |
-| | | `0x9758`, `0x9B7C` |
-| `0xD281` | 1 | 0xD281[8bit] Ign., Spark Fault |
-| | | `0xB0AF` |
-| `0xD288` | 1 | 0xD288 Knock Sensor DTC related |
-| | | `0x660C` |
-| `0xD290` | 1 | 0xD290[Func|5V|256]MAF Cal. kg/h |
-| | | `0x68CD` |
-
-## Load path fragments (T1–T3)
-
-### ADC schedule (T1)
-
-- Base `0x427A` … `0x42A0` in vec5 `0xA4AA`
-- vec5 loads channel word then dest word from schedule; LDB AD_resultlo,R44 kicks channel; STB AD_resulthi,[RW44] stores sample.
-- MAF channel hyp: **0x0A → 0x1454** (most frequent schedule slot; consumers do range/fault checks)
-
-### Period → load candidate (T2)
-
-- `0x5AEB` `DIVU RL48,0x14cc, TABLE[ZR]` → ST `0x1566`
-- Foreground scales a quantity by 1/period (×0x9C40) into 0x1566 — candidate air-mass-per-stroke / load index (Bosch p.38). Not yet tied to XDF D5 filtered-load axis by CODE proof.
-
-### Post-load interp (T3 mechanism)
-
-- 0x20C7 → 0x33C2; ADD RW1A,RW6E; LD RW4C,[RW1A]
-- Post-load interp indices 0xD0 / 0x30 are descriptor slots, not ROM page bytes. CAL target behind slot still unresolved in external image.
-
-## Not claimed
-
-- Shipping map promotion from Bosch PDF
-- Absolute `LOOKUP[ZR]` ign/fuel reads (still 0)
-- End-to-end HFM→ti→ign control
+1. Compose D000+|0030 from island into a pointer and [deref] Ti content
+1. Find descriptor-table patches that replace 0x42DF with 0xDxxx map pointers
+1. CODE walk of one VANOS RPM axis (sig @0xDD0F family) via interp
+1. Absolute LOOKUP[ZR] for one fuel map body and one ign map body
 
 ---
 Research-only. Verification gates unchanged.

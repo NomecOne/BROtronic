@@ -16,10 +16,12 @@ Regenerate engine-control artifacts (after Ghidra + ingest):
 ```bash
 python3 tools/re/scripts/analyze_engine_control.py
 python3 tools/re/scripts/analyze_priority_traces.py   # IRQ RAM pubs, HSO/HSI SFR audit, CAL access model v2
-python3 tools/re/scripts/analyze_bosch_theory_rom.py  # Bosch TI T1–T8 checklist + RW68=0xD200 xrefs
+python3 tools/re/scripts/analyze_bosch_theory_rom.py  # Bosch TI T1–T8 + FE24 bases + exclusive Ti/VANOS geometry
 ```
 
-Priority-trace outputs: `irq_ram_publications.*`, `sfr_hso_hsi_audit.*`, `cal_access_model.*`; theory checklist in `motronic_331_function.md` §7.
+Priority-trace outputs: `irq_ram_publications.*`, `sfr_hso_hsi_audit.*`, `cal_access_model.*`, `register_bases_fe24.*`, `theory_vs_rom_bosch_ti.*`; theory checklist in `motronic_331_function.md` §7.
+
+> **Note:** Prior `RW68=0xD200` “13/69 index-base” claim is **retracted** (false positive). Real bases from unique FE24 structure: `RW68=0x42EC`, `RW6A=0x43F0`, `RW6C=0x1A08`, `RW6E=0x1E08`. Exclusive geometry: Ti `0xD030` + 8 VANOS RPM axes.
 
 ## Definition evidence (XDF-primary)
 
