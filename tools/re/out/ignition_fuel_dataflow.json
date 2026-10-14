@@ -6,45 +6,112 @@
     "schemaVersion": 11,
     "ignFuelItems": 69,
     "ghidraProvenAbsolute": 69,
-    "ghidraProvenAbsolutePct": 100.0,
+    "ghidraProvenAbsolutePct": 100,
     "indexBaseCrossCheckedCalContent": 0,
-    "indexBaseCrossCheckedCalContentPct": 0.0,
+    "indexBaseCrossCheckedCalContentPct": 0,
     "exclusiveGeometry": 69,
-    "exclusiveGeometryPct": 100.0,
+    "exclusiveGeometryPct": 100,
     "structuralSplitPtr": 1,
     "registerBasesRomProven": 4,
     "unprovenAbsolute": 0,
     "reconciledXdfMislabels": 1,
     "headline": "100.0% absolute (69/69); exclusive geometry 100.0% (69/69); unproven absolute 0; resolved XDF mislabels 1; FE14 CAL bases; D200/D978 retracted.",
-    "note": "v11: absolute via FE14 long-index/chained-base/MAF, descriptor headers within \u221224..0, map load/body siblings, and XDF-mislabel word reconcile (0xD23D \u2192 LE16 @0xD23C CMP @0x52E3). Exclusive 69/69 retained. Do not auto-promote reconciled mislabels to shipping."
+    "note": "v11: absolute via FE14 long-index/chained-base/MAF, descriptor headers within −24..0, map load/body siblings, and XDF-mislabel word reconcile (0xD23D → LE16 @0xD23C CMP @0x52E3). Exclusive 69/69 retained. Do not auto-promote reconciled mislabels to shipping."
   },
   "runtimeDataflowGlue": {
-    "schemaVersion": 12,
+    "schemaVersion": 14,
     "method": "local_shim_disasm_xrefs",
     "absoluteCoverageUnchanged": true,
     "paths": [
       {
         "id": "maf_window",
-        "note": "vec5 ADD RW64 from 0xD290 words; vec2 CLR RW64; FUN_ab11 \u0394RW64\u21920x17da[cyl]"
+        "note": "vec5 ADD RW64 from 0xD290 words; vec2 CLR RW64; FUN_ab11 ΔRW64→0x17da[cyl]"
       },
       {
         "id": "ti_pulse",
-        "publish": ["0x153A", "0x1540"],
-        "sites": ["0x9A82", "0x9A92", "0xAFC7", "0xAE18"],
-        "note": "load\u00d70x32\u00d7period/Ti \u2192 0x153A; Ti\u00d7RW8A/period \u2192 0x1540"
+        "publish": [
+          "0x153A",
+          "0x1540"
+        ],
+        "sites": [
+          "0x9A82",
+          "0x9A92",
+          "0xAFC7",
+          "0xAE18"
+        ],
+        "note": "load×0x32×period/Ti → 0x153A; Ti×RW8A/period → 0x1540"
+      },
+      {
+        "id": "ti_to_injector_mmio",
+        "path": [
+          "0x153A",
+          "0xAE18",
+          "0xAFC7",
+          "0x1540",
+          "0xB246",
+          "0x1568",
+          "0xB266"
+        ],
+        "target": "0x440",
+        "note": "enrich → ST 0x1568 → STB R42,[RW74] when RW74==0x440; PORT1.6 handshake; not HSO_TIME"
       },
       {
         "id": "ign_advance",
-        "publish": ["0x1502", "0x150A", "0x150C", "0x1510", "0x1512"],
-        "sites": ["0x6987", "0x6964", "0xB5B3", "0xA067"],
-        "note": "0x20CD body walk \u2192 advance RAM \u2192 clamp/blend; HSO channel open"
+        "publish": [
+          "0x1502",
+          "0x150A",
+          "0x150C",
+          "0x1510",
+          "0x1512"
+        ],
+        "sites": [
+          "0x6987",
+          "0x6964",
+          "0xB5B3",
+          "0xA067"
+        ],
+        "note": "0x20CD body walk → advance RAM → clamp/blend"
+      },
+      {
+        "id": "ign_to_hso0",
+        "path": [
+          "0x1502",
+          "0xB5B3",
+          "0x1480",
+          "0xB696"
+        ],
+        "command": "0x70",
+        "channel": 0,
+        "note": "coil/spark HSO.0 proven"
+      },
+      {
+        "id": "ch1_angle_sync",
+        "sites": [
+          "0xA7B1",
+          "0xAF44"
+        ],
+        "commands": [
+          "0x71",
+          "0x51"
+        ],
+        "note": "tooth-relative / tooth+0x1A; rejected as Ti HSO_TIME"
       },
       {
         "id": "irq_cal_and_hso",
-        "sites": ["0xA911", "0xA9C5", "0xAF44"],
-        "note": "RW68+0x14 gate; HSO #0x74/#0x51; channel decode open"
+        "sites": [
+          "0xA911",
+          "0xA9C5",
+          "0xAF44"
+        ],
+        "note": "RW68+0x14 gate; HSO #0x74/#0x51 crank sync"
       }
-    ]
+    ],
+    "actuatorClose": {
+      "ignToHso0": true,
+      "tiToInjectorHso": false,
+      "tiToInjectorMmio0x440": true,
+      "ch1TiHsoRejected": true
+    }
   },
   "seeAlso": [
     "tools/re/out/cal_access_model.json",
@@ -96,8 +163,8 @@
       "pageByte": 208,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD0), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
-        "CODE has LOOKUP[ZR] immed 0x00D0 (= register RD0), NOT ROM page \u2014 do not treat as CAL read."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven.",
+        "CODE has LOOKUP[ZR] immed 0x00D0 (= register RD0), NOT ROM page — do not treat as CAL read."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -121,8 +188,8 @@
       "pageByte": 208,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD0), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
-        "CODE has LOOKUP[ZR] immed 0x00D0 (= register RD0), NOT ROM page \u2014 do not treat as CAL read."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven.",
+        "CODE has LOOKUP[ZR] immed 0x00D0 (= register RD0), NOT ROM page — do not treat as CAL read."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -146,8 +213,8 @@
       "pageByte": 208,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD0), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
-        "CODE has LOOKUP[ZR] immed 0x00D0 (= register RD0), NOT ROM page \u2014 do not treat as CAL read."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven.",
+        "CODE has LOOKUP[ZR] immed 0x00D0 (= register RD0), NOT ROM page — do not treat as CAL read."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -171,8 +238,8 @@
       "pageByte": 208,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD0), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
-        "CODE has LOOKUP[ZR] immed 0x00D0 (= register RD0), NOT ROM page \u2014 do not treat as CAL read."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven.",
+        "CODE has LOOKUP[ZR] immed 0x00D0 (= register RD0), NOT ROM page — do not treat as CAL read."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -196,8 +263,8 @@
       "pageByte": 210,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD2), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
-        "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page \u2014 do not treat as CAL read."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven.",
+        "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page — do not treat as CAL read."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true,
@@ -222,8 +289,8 @@
       "pageByte": 210,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD2), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
-        "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page \u2014 do not treat as CAL read."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven.",
+        "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page — do not treat as CAL read."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -247,8 +314,8 @@
       "pageByte": 210,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD2), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
-        "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page \u2014 do not treat as CAL read."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven.",
+        "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page — do not treat as CAL read."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -272,8 +339,8 @@
       "pageByte": 210,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD2), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
-        "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page \u2014 do not treat as CAL read."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven.",
+        "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page — do not treat as CAL read."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -297,8 +364,8 @@
       "pageByte": 210,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD2), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
-        "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page \u2014 do not treat as CAL read."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven.",
+        "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page — do not treat as CAL read."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -322,8 +389,8 @@
       "pageByte": 210,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD2), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
-        "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page \u2014 do not treat as CAL read."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven.",
+        "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page — do not treat as CAL read."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -347,8 +414,8 @@
       "pageByte": 210,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD2), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
-        "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page \u2014 do not treat as CAL read."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven.",
+        "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page — do not treat as CAL read."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -372,8 +439,8 @@
       "pageByte": 210,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD2), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
-        "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page \u2014 do not treat as CAL read."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven.",
+        "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page — do not treat as CAL read."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -397,8 +464,8 @@
       "pageByte": 210,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD2), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
-        "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page \u2014 do not treat as CAL read."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven.",
+        "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page — do not treat as CAL read."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -422,8 +489,8 @@
       "pageByte": 210,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD2), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
-        "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page \u2014 do not treat as CAL read."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven.",
+        "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page — do not treat as CAL read."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -447,8 +514,8 @@
       "pageByte": 210,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD2), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
-        "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page \u2014 do not treat as CAL read."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven.",
+        "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page — do not treat as CAL read."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -472,8 +539,8 @@
       "pageByte": 210,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD2), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
-        "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page \u2014 do not treat as CAL read."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven.",
+        "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page — do not treat as CAL read."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -497,8 +564,8 @@
       "pageByte": 210,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD2), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
-        "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page \u2014 do not treat as CAL read."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven.",
+        "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page — do not treat as CAL read."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -522,8 +589,8 @@
       "pageByte": 210,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD2), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
-        "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page \u2014 do not treat as CAL read."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven.",
+        "CODE has LOOKUP[ZR] immed 0x00D2 (= register RD2), NOT ROM page — do not treat as CAL read."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -547,8 +614,8 @@
       "pageByte": 213,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD5), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
-        "CODE has LOOKUP[ZR] immed 0x00D5 (= register RD5), NOT ROM page \u2014 do not treat as CAL read."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven.",
+        "CODE has LOOKUP[ZR] immed 0x00D5 (= register RD5), NOT ROM page — do not treat as CAL read."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -572,8 +639,8 @@
       "pageByte": 213,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD5), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
-        "CODE has LOOKUP[ZR] immed 0x00D5 (= register RD5), NOT ROM page \u2014 do not treat as CAL read."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven.",
+        "CODE has LOOKUP[ZR] immed 0x00D5 (= register RD5), NOT ROM page — do not treat as CAL read."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -597,7 +664,7 @@
       "pageByte": 214,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD6), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -621,7 +688,7 @@
       "pageByte": 214,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD6), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -645,7 +712,7 @@
       "pageByte": 214,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD6), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -669,7 +736,7 @@
       "pageByte": 214,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD6), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -693,7 +760,7 @@
       "pageByte": 214,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD6), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -717,7 +784,7 @@
       "pageByte": 214,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD6), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -741,7 +808,7 @@
       "pageByte": 214,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD6), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -765,8 +832,8 @@
       "pageByte": 215,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD7), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
-        "CODE has LOOKUP[ZR] immed 0x00D7 (= register RD7), NOT ROM page \u2014 do not treat as CAL read."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven.",
+        "CODE has LOOKUP[ZR] immed 0x00D7 (= register RD7), NOT ROM page — do not treat as CAL read."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -790,8 +857,8 @@
       "pageByte": 215,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD7), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
-        "CODE has LOOKUP[ZR] immed 0x00D7 (= register RD7), NOT ROM page \u2014 do not treat as CAL read."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven.",
+        "CODE has LOOKUP[ZR] immed 0x00D7 (= register RD7), NOT ROM page — do not treat as CAL read."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -815,8 +882,8 @@
       "pageByte": 215,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD7), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
-        "CODE has LOOKUP[ZR] immed 0x00D7 (= register RD7), NOT ROM page \u2014 do not treat as CAL read."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven.",
+        "CODE has LOOKUP[ZR] immed 0x00D7 (= register RD7), NOT ROM page — do not treat as CAL read."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -840,8 +907,8 @@
       "pageByte": 216,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD8), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
-        "CODE has LOOKUP[ZR] immed 0x00D8 (= register RD8), NOT ROM page \u2014 do not treat as CAL read."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven.",
+        "CODE has LOOKUP[ZR] immed 0x00D8 (= register RD8), NOT ROM page — do not treat as CAL read."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -865,8 +932,8 @@
       "pageByte": 216,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD8), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
-        "CODE has LOOKUP[ZR] immed 0x00D8 (= register RD8), NOT ROM page \u2014 do not treat as CAL read."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven.",
+        "CODE has LOOKUP[ZR] immed 0x00D8 (= register RD8), NOT ROM page — do not treat as CAL read."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -890,8 +957,8 @@
       "pageByte": 216,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD8), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
-        "CODE has LOOKUP[ZR] immed 0x00D8 (= register RD8), NOT ROM page \u2014 do not treat as CAL read."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven.",
+        "CODE has LOOKUP[ZR] immed 0x00D8 (= register RD8), NOT ROM page — do not treat as CAL read."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -915,8 +982,8 @@
       "pageByte": 216,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD8), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven.",
-        "CODE has LOOKUP[ZR] immed 0x00D8 (= register RD8), NOT ROM page \u2014 do not treat as CAL read."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven.",
+        "CODE has LOOKUP[ZR] immed 0x00D8 (= register RD8), NOT ROM page — do not treat as CAL read."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -940,7 +1007,7 @@
       "pageByte": 217,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD9), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -964,7 +1031,7 @@
       "pageByte": 217,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD9), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -988,7 +1055,7 @@
       "pageByte": 217,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD9), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -1012,7 +1079,7 @@
       "pageByte": 217,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD9), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -1036,7 +1103,7 @@
       "pageByte": 217,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD9), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -1060,7 +1127,7 @@
       "pageByte": 217,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xD9), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -1084,7 +1151,7 @@
       "pageByte": 218,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xDA), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -1108,7 +1175,7 @@
       "pageByte": 218,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xDA), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -1132,7 +1199,7 @@
       "pageByte": 219,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xDB), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -1156,7 +1223,7 @@
       "pageByte": 220,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xDC), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -1180,7 +1247,7 @@
       "pageByte": 220,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xDC), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -1204,7 +1271,7 @@
       "pageByte": 220,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xDC), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -1228,7 +1295,7 @@
       "pageByte": 220,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xDC), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -1252,7 +1319,7 @@
       "pageByte": 220,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xDC), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -1276,7 +1343,7 @@
       "pageByte": 220,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xDC), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -1300,7 +1367,7 @@
       "pageByte": 220,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xDC), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -1324,7 +1391,7 @@
       "pageByte": 220,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xDC), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -1348,7 +1415,7 @@
       "pageByte": 221,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xDD), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -1372,7 +1439,7 @@
       "pageByte": 221,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xDD), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -1396,7 +1463,7 @@
       "pageByte": 221,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xDD), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -1420,7 +1487,7 @@
       "pageByte": 221,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xDD), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -1444,7 +1511,7 @@
       "pageByte": 221,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xDD), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -1468,7 +1535,7 @@
       "pageByte": 222,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xDE), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -1492,7 +1559,7 @@
       "pageByte": 222,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xDE), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -1516,7 +1583,7 @@
       "pageByte": 223,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xDF), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -1540,7 +1607,7 @@
       "pageByte": 223,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xDF), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -1564,7 +1631,7 @@
       "pageByte": 224,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xE0), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -1588,7 +1655,7 @@
       "pageByte": 224,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xE0), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -1612,7 +1679,7 @@
       "pageByte": 224,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xE0), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -1636,7 +1703,7 @@
       "pageByte": 224,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xE0), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -1660,7 +1727,7 @@
       "pageByte": 227,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xE3), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -1684,7 +1751,7 @@
       "pageByte": 227,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xE3), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -1708,7 +1775,7 @@
       "pageByte": 227,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xE3), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -1732,7 +1799,7 @@
       "pageByte": 227,
       "runtimeNote": "CAL DATA accessed primarily via high-page LOOKUP loads (page 0xE3), not absolute 16-bit DATA immediates in CODE.",
       "notes": [
-        "ROM file offset in 0xDxxx\u20130xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) \u2014 unproven."
+        "ROM file offset in 0xDxxx–0xExxx; no absolute LOOKUP[ZR] immed16 found. Likely reached via descriptor/indirect (RW6E/@0x1E08) — unproven."
       ],
       "exclusiveGeometry": true,
       "absoluteCodeRead": true
@@ -1796,7 +1863,7 @@
       "codeReadsOffsetVia": [],
       "contentDerefProven": true,
       "exclusiveGeometry": true,
-      "note": "Absolute: LD/DIVU at RW68+0x2E \u2192 0xD030 (injector constant). Exclusive island D000|0030 @0x432A + body twins retained.",
+      "note": "Absolute: LD/DIVU at RW68+0x2E → 0xD030 (injector constant). Exclusive island D000|0030 @0x432A + body twins retained.",
       "evidenceStrength": "high_absolute_plus_exclusive"
     },
     "vanosRpmAxes": {
@@ -1959,7 +2026,7 @@
       },
       "exclusiveGeometry": true,
       "codeDerefProven": false,
-      "note": "Exclusive content geometry: 16-byte RPM-axis preamble appears exactly 8 times \u2014 XDF Fuel/Ign PT|WOT VANOS RPM axes.",
+      "note": "Exclusive content geometry: 16-byte RPM-axis preamble appears exactly 8 times — XDF Fuel/Ign PT|WOT VANOS RPM axes.",
       "evidenceStrength": "high_content_exclusive"
     },
     "families": [
@@ -1988,7 +2055,7 @@
             "domain": "fuel"
           }
         ],
-        "note": "Exclusive 16-byte axis sig \u2014 exactly D67C/D69E (WOT dwell ret/adv)."
+        "note": "Exclusive 16-byte axis sig — exactly D67C/D69E (WOT dwell ret/adv)."
       },
       {
         "id": "vanos_pt_load_axis_sig_v1",
@@ -2031,7 +2098,7 @@
             "domain": "ignition"
           }
         ],
-        "note": "Exclusive 12-byte load-axis preamble \u2014 fuel PT + ign PT load axes."
+        "note": "Exclusive 12-byte load-axis preamble — fuel PT + ign PT load axes."
       },
       {
         "id": "ign_idle_timing_sig_v1",
@@ -2085,12 +2152,12 @@
           "0x431C (island)",
           "0xD032 (CAL)"
         ],
-        "note": "Exclusive island\u2194CAL twin of D032 Soft Fuel Cut header bytes."
+        "note": "Exclusive island↔CAL twin of D032 Soft Fuel Cut header bytes."
       },
       {
         "id": "maf_d28e_be_le_twin_v1",
         "method": "unique_immediate_twin",
-        "title": "MAF transfer anchor (D28E BE\u2194LE)",
+        "title": "MAF transfer anchor (D28E BE↔LE)",
         "offsets": [
           53904
         ],
@@ -2107,7 +2174,7 @@
           "BE 0xD28E @0xFE18 (unique)",
           "LE 0xD28E @0xD28E (unique)"
         ],
-        "composed": "0xD28E+2 \u2192 0xD290 MAF Cal",
+        "composed": "0xD28E+2 → 0xD290 MAF Cal",
         "note": "Exclusive BE/LE twin of 0xD28E anchors MAF cal at D290 (FE struct region + CAL self-word)."
       },
       {
@@ -2199,7 +2266,7 @@
         "id": "fuel_crank_vanos_pt_dwell_v1",
         "method": "unique_span_chain",
         "title": "Fuel cranking axis + VANOS PT dwell tables",
-        "signatureHex": "020206081cd070808cb0c0c0270f0505\u2026",
+        "signatureHex": "020206081cd070808cb0c0c0270f0505…",
         "span": "0xD5A6..0xD63A",
         "offsets": [
           54694,
@@ -2369,7 +2436,7 @@
             "domain": "fuel"
           }
         ],
-        "note": "Unique span: Idle Cold Lambda Correction \u2192 Fuel Idle Base 6x3."
+        "note": "Unique span: Idle Cold Lambda Correction → Fuel Idle Base 6x3."
       },
       {
         "id": "fuel_accel_enrich_stack_v1",
@@ -2444,7 +2511,7 @@
       {
         "id": "early_fuel_ign_scalars_v1",
         "method": "unique_span_chain",
-        "title": "Early fuel/ign scalars (AFR, limiter \u0394zw, cyl trim)",
+        "title": "Early fuel/ign scalars (AFR, limiter Δzw, cyl trim)",
         "span": "0xD06A..0xD0FA+4",
         "offsets": [
           53354,
@@ -2640,7 +2707,7 @@
       {
         "id": "lambda_off_rpm_v1",
         "method": "unique_span_chain",
-        "title": "Lambda OFF RPM tables 1\u20134",
+        "title": "Lambda OFF RPM tables 1–4",
         "span": "0xE364..0xE388+8",
         "offsets": [
           58212,
@@ -2754,7 +2821,7 @@
     ]
   },
   "keyCodeSites": {
-    "fe14Loader": "0x2EDB via 0x20B5 / 0x412C \u2192 FE14 CAL bases",
+    "fe14Loader": "0x2EDB via 0x20B5 / 0x412C → FE14 CAL bases",
     "tiContent": [
       "0x9A82",
       "0xAFC7"
@@ -2765,11 +2832,11 @@
       "0x8C2E"
     ],
     "tiOffCmp": [],
-    "mapInterp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A] (RW6E=0xE67E)",
-    "mafAbsolute": "0xA53B ADD RW64,0x2[RW46] (RW46=RW6C+2\u00b7ADC)",
-    "ignWotSelect": "0x66EC LD RW1A,#0x9A \u2192 0x6987 \u2192 0x20CD \u2192 DD0D/DD0F",
-    "cylinderTrim": "0x5B65 LD RW1E,RW68; 0x5B6B LDB \u2026,0xf8,LOOKUP[RW1E] \u2192 D0FA",
-    "d23dReconcile": "0x52E3 CMP RW1C,0x136,TABLE[RW6A] \u2192 LE16@0xD23C (XDF mislabel @0xD23D)",
+    "mapInterp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] (RW6E=0xE67E)",
+    "mafAbsolute": "0xA53B ADD RW64,0x2[RW46] (RW46=RW6C+2·ADC)",
+    "ignWotSelect": "0x66EC LD RW1A,#0x9A → 0x6987 → 0x20CD → DD0D/DD0F",
+    "cylinderTrim": "0x5B65 LD RW1E,RW68; 0x5B6B LDB …,0xf8,LOOKUP[RW1E] → D0FA",
+    "d23dReconcile": "0x52E3 CMP RW1C,0x136,TABLE[RW6A] → LE16@0xD23C (XDF mislabel @0xD23D)",
     "vanosAxisRom": [
       "0xD984",
       "0xD9A6",
@@ -2794,7 +2861,7 @@
           "0xD67C",
           "0xD69E"
         ],
-        "note": "Exclusive 16-byte axis sig \u2014 exactly D67C/D69E (WOT dwell ret/adv)."
+        "note": "Exclusive 16-byte axis sig — exactly D67C/D69E (WOT dwell ret/adv)."
       },
       {
         "id": "vanos_pt_load_axis_sig_v1",
@@ -2806,7 +2873,7 @@
           "0xDE7F",
           "0xDF5F"
         ],
-        "note": "Exclusive 12-byte load-axis preamble \u2014 fuel PT + ign PT load axes."
+        "note": "Exclusive 12-byte load-axis preamble — fuel PT + ign PT load axes."
       },
       {
         "id": "ign_idle_timing_sig_v1",
@@ -2825,11 +2892,11 @@
         "offsets": [
           "0xD032"
         ],
-        "note": "Exclusive island\u2194CAL twin of D032 Soft Fuel Cut header bytes."
+        "note": "Exclusive island↔CAL twin of D032 Soft Fuel Cut header bytes."
       },
       {
         "id": "maf_d28e_be_le_twin_v1",
-        "title": "MAF transfer anchor (D28E BE\u2194LE)",
+        "title": "MAF transfer anchor (D28E BE↔LE)",
         "method": "unique_immediate_twin",
         "offsets": [
           "0xD290"
@@ -2919,7 +2986,7 @@
           "0xD91F",
           "0xD970"
         ],
-        "note": "Unique span: Idle Cold Lambda Correction \u2192 Fuel Idle Base 6x3."
+        "note": "Unique span: Idle Cold Lambda Correction → Fuel Idle Base 6x3."
       },
       {
         "id": "fuel_accel_enrich_stack_v1",
@@ -2945,7 +3012,7 @@
       },
       {
         "id": "early_fuel_ign_scalars_v1",
-        "title": "Early fuel/ign scalars (AFR, limiter \u0394zw, cyl trim)",
+        "title": "Early fuel/ign scalars (AFR, limiter Δzw, cyl trim)",
         "method": "unique_span_chain",
         "offsets": [
           "0xD06A",
@@ -2996,7 +3063,7 @@
       },
       {
         "id": "lambda_off_rpm_v1",
-        "title": "Lambda OFF RPM tables 1\u20134",
+        "title": "Lambda OFF RPM tables 1–4",
         "method": "unique_span_chain",
         "offsets": [
           "0xE364",
@@ -3031,10 +3098,10 @@
             "eaHex": "0xD290",
             "insn": "ADD RW64,0x2[RW46] ; RW46=RW6C+2*AD_resulthi",
             "kind": "maf_adc_word_table",
-            "path": "0xA4AA ISR \u2192 0xA52A..0xA53B"
+            "path": "0xA4AA ISR → 0xA52A..0xA53B"
           }
         ],
-        "note": "RW6C=0xD28E from FE14 loader; ADC ISR indexes word table at +2 (0xD290 + 2\u00b7ADC)."
+        "note": "RW6C=0xD28E from FE14 loader; ADC ISR indexes word table at +2 (0xD290 + 2·ADC)."
       },
       "ti_D030": {
         "offset": "0xD030",
@@ -3076,11 +3143,11 @@
             "selectSites": [
               "0x66EC"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ],
-        "codePath": "0x66EC LD RW1A,#0x9A \u2192 0x6987 \u2192 0x20CD \u2192 [0xE67E+0x9A]=0xDD0D / XDF 0xDD0F",
+        "codePath": "0x66EC LD RW1A,#0x9A → 0x6987 → 0x20CD → [0xE67E+0x9A]=0xDD0D / XDF 0xDD0F",
         "note": "Main ign WOT VANOS-retarded RPM axis via CAL descriptor table."
       },
       "d23d_xdf_mislabel": {
@@ -3103,7 +3170,7 @@
             "verdict": "xdf_mislabel",
             "status": "absolute_reconciled_xdf_mislabel",
             "note": "XDF 8-bit @0xD23D is the high byte of the LE16 word at 0xD23C read by CODE. Not a true standalone 8-bit item.",
-            "shippingNote": "Do not auto-promote. Reconciled coverage only \u2014 wait for XDF retarget to 0xD23C[16bit] (or confirmed byte proof) before shipping promotion."
+            "shippingNote": "Do not auto-promote. Reconciled coverage only — wait for XDF retarget to 0xD23C[16bit] (or confirmed byte proof) before shipping promotion."
           }
         ],
         "trueRead": "0xD23C[16bit] CMP @0x52E3",
@@ -3291,9 +3358,9 @@
             "reg": "RW68",
             "immHex": "0xF8",
             "eaHex": "0xD0FA",
-            "insn": "LDB R21,0xf8, LOOKUP[RW1E] ; RW1E=RW68, then INC\u00d76",
+            "insn": "LDB R21,0xf8, LOOKUP[RW1E] ; RW1E=RW68, then INC×6",
             "kind": "chained_base_index",
-            "path": "0x5B65 LD RW1E,RW68 \u2192 0x5B6B..0x5B79"
+            "path": "0x5B65 LD RW1E,RW68 → 0x5B6B..0x5B79"
           }
         ]
       },
@@ -3320,11 +3387,11 @@
             "verdict": "xdf_mislabel",
             "status": "absolute_reconciled_xdf_mislabel",
             "note": "XDF 8-bit @0xD23D is the high byte of the LE16 word at 0xD23C read by CODE. Not a true standalone 8-bit item.",
-            "shippingNote": "Do not auto-promote. Reconciled coverage only \u2014 wait for XDF retarget to 0xD23C[16bit] (or confirmed byte proof) before shipping promotion."
+            "shippingNote": "Do not auto-promote. Reconciled coverage only — wait for XDF retarget to 0xD23C[16bit] (or confirmed byte proof) before shipping promotion."
           }
         ],
         "status": "absolute_reconciled_xdf_mislabel",
-        "shippingNote": "Do not auto-promote. Reconciled coverage only \u2014 wait for XDF retarget to 0xD23C[16bit] (or confirmed byte proof) before shipping promotion."
+        "shippingNote": "Do not auto-promote. Reconciled coverage only — wait for XDF retarget to 0xD23C[16bit] (or confirmed byte proof) before shipping promotion."
       },
       {
         "offset": 53822,
@@ -3579,7 +3646,7 @@
             "eaHex": "0xD290",
             "insn": "ADD RW64,0x2[RW46] ; RW46=RW6C+2*AD_resulthi",
             "kind": "maf_adc_word_table",
-            "path": "0xA4AA ISR \u2192 0xA52A..0xA53B"
+            "path": "0xA4AA ISR → 0xA52A..0xA53B"
           }
         ]
       },
@@ -3600,7 +3667,7 @@
             "selectSites": [
               "0x834E"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -3622,7 +3689,7 @@
             "selectSites": [
               "0x8374"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -3645,7 +3712,7 @@
               "0x837E",
               "0x8387"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -3667,7 +3734,7 @@
             "selectSites": [
               "0x835A"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -3690,7 +3757,7 @@
               "0x8364",
               "0x836D"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -3714,7 +3781,7 @@
               "0x8364",
               "0x836D"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           },
           {
@@ -3749,7 +3816,7 @@
             "selectSites": [
               "0x83A5"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -3771,7 +3838,7 @@
             "selectSites": [
               "0x58D2"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -3793,7 +3860,7 @@
             "selectSites": [
               "0x590E"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -3815,7 +3882,7 @@
             "selectSites": [
               "0x5924"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -3837,7 +3904,7 @@
             "selectSites": [
               "0x58F4"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -3859,7 +3926,7 @@
             "selectSites": [
               "0x5B1E"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -3881,7 +3948,7 @@
             "selectSites": [
               "0x5E4D"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -3903,7 +3970,7 @@
             "selectSites": [
               "0x5E93"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -3925,7 +3992,7 @@
             "selectSites": [
               "0x5EB2"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -3947,7 +4014,7 @@
             "selectSites": [
               "0x5ED2"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -3969,7 +4036,7 @@
             "selectSites": [
               "0x5F01"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -3991,7 +4058,7 @@
             "selectSites": [
               "0x5F4A"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -4013,7 +4080,7 @@
             "selectSites": [
               "0x5F69"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -4036,7 +4103,7 @@
               "0x5F73",
               "0x5F7C"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -4058,7 +4125,7 @@
             "selectSites": [
               "0x5F83"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -4081,7 +4148,7 @@
             "selectSites": [
               "0x5F83"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           },
           {
@@ -4116,7 +4183,7 @@
               "0x5F8D",
               "0x5F96"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -4140,7 +4207,7 @@
               "0x5F8D",
               "0x5F96"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           },
           {
@@ -4175,7 +4242,7 @@
             "selectSites": [
               "0x9A4A"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -4197,7 +4264,7 @@
             "selectSites": [
               "0x5BE8"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -4219,7 +4286,7 @@
             "selectSites": [
               "0x5BF2"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -4241,7 +4308,7 @@
             "selectSites": [
               "0x5C0B"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -4263,7 +4330,7 @@
             "selectSites": [
               "0x5C17"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -4285,7 +4352,7 @@
             "selectSites": [
               "0x65C9"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -4307,7 +4374,7 @@
             "selectSites": [
               "0x685B"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -4329,7 +4396,7 @@
             "selectSites": [
               "0x6864"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -4351,7 +4418,7 @@
             "selectSites": [
               "0x66C5"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -4373,7 +4440,7 @@
             "selectSites": [
               "0x66CC"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -4395,7 +4462,7 @@
             "selectSites": [
               "0x66EC"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -4418,7 +4485,7 @@
             "selectSites": [
               "0x66EC"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           },
           {
@@ -4453,7 +4520,7 @@
               "0x66F6",
               "0x66FF"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -4477,7 +4544,7 @@
               "0x66F6",
               "0x66FF"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           },
           {
@@ -4512,7 +4579,7 @@
             "selectSites": [
               "0x6706"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -4535,7 +4602,7 @@
             "selectSites": [
               "0x6706"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           },
           {
@@ -4570,7 +4637,7 @@
               "0x6710",
               "0x6719"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -4594,7 +4661,7 @@
               "0x6710",
               "0x6719"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           },
           {
@@ -4629,7 +4696,7 @@
             "selectSites": [
               "0x6C47"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -4651,7 +4718,7 @@
             "selectSites": [
               "0x6C5D"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -4673,7 +4740,7 @@
             "selectSites": [
               "0x6C54"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -4695,7 +4762,7 @@
             "selectSites": [
               "0x692A"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -4717,7 +4784,7 @@
             "selectSites": [
               "0x6106"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -4739,7 +4806,7 @@
             "selectSites": [
               "0x5B02"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -4761,7 +4828,7 @@
             "selectSites": [
               "0x6112"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -4783,7 +4850,7 @@
             "selectSites": [
               "0x565F"
             ],
-            "interp": "0x20C7/0x20CD \u2192 ADD RW1A,RW6E; LD RW4C,[RW1A]",
+            "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]",
             "kind": "descriptor_header"
           }
         ]
@@ -4801,7 +4868,7 @@
         "verdict": "xdf_mislabel",
         "trueRead": "0xD23C[16bit] via CMP @0x52E3 (RW6A+0x136)",
         "romWordLe16": "0x01F4",
-        "rationale": "No byte LOOKUP of 0xD23D. CODE reads LE16 @0xD23C=0x01F4. XDF 8-bit@0xD23D MATH x*40 yields nonsense (raw 1 \u2192 40 RPM) vs word neighbors that are proven 16-bit long-index. Count as reconciled absolute; do not auto-promote shipping.",
+        "rationale": "No byte LOOKUP of 0xD23D. CODE reads LE16 @0xD23C=0x01F4. XDF 8-bit@0xD23D MATH x*40 yields nonsense (raw 1 → 40 RPM) vs word neighbors that are proven 16-bit long-index. Count as reconciled absolute; do not auto-promote shipping.",
         "sites": [
           {
             "site": 21219,
@@ -4818,21 +4885,21 @@
             "verdict": "xdf_mislabel",
             "status": "absolute_reconciled_xdf_mislabel",
             "note": "XDF 8-bit @0xD23D is the high byte of the LE16 word at 0xD23C read by CODE. Not a true standalone 8-bit item.",
-            "shippingNote": "Do not auto-promote. Reconciled coverage only \u2014 wait for XDF retarget to 0xD23C[16bit] (or confirmed byte proof) before shipping promotion."
+            "shippingNote": "Do not auto-promote. Reconciled coverage only — wait for XDF retarget to 0xD23C[16bit] (or confirmed byte proof) before shipping promotion."
           }
         ],
-        "shippingNote": "Do not auto-promote. Reconciled coverage only \u2014 wait for XDF retarget to 0xD23C[16bit] (or confirmed byte proof) before shipping promotion."
+        "shippingNote": "Do not auto-promote. Reconciled coverage only — wait for XDF retarget to 0xD23C[16bit] (or confirmed byte proof) before shipping promotion."
       }
     ],
     "unprovenAbsolute": [],
     "unprovenAbsoluteCount": 0,
     "headerDeltaMax": 24,
     "shippingNote": "Reconciled XDF mislabels count toward absolute coverage but must not auto-promote to shipping until XDF address/size is corrected.",
-    "note": "Absolute = FE14 long-index / chained-base / MAF ADC table, or RW6E descriptor header within \u221224..0 of XDF, or load/body member of a descriptor-owned map, or XDF-mislabel word reconcile (v11: 0xD23D \u2192 LE16 @0xD23C)."
+    "note": "Absolute = FE14 long-index / chained-base / MAF ADC table, or RW6E descriptor header within −24..0 of XDF, or load/body member of a descriptor-owned map, or XDF-mislabel word reconcile (v11: 0xD23D → LE16 @0xD23C)."
   },
   "addressingModel": {
     "id": "fe14_cal_bases_v9",
-    "summary": "0x2EDB loads BE hi/lo from FE14 after FF-pad scan \u2192 RW68=D002, RW6A=D106, RW6C=D28E, RW6E=E67E. Long-index LOOKUP/TABLE[RWbase] and descriptor ADD RW1A,RW6E; LD RW4C,[RW1A] resolve into CAL.",
+    "summary": "0x2EDB loads BE hi/lo from FE14 after FF-pad scan → RW68=D002, RW6A=D106, RW6C=D28E, RW6E=E67E. Long-index LOOKUP/TABLE[RWbase] and descriptor ADD RW1A,RW6E; LD RW4C,[RW1A] resolve into CAL.",
     "fe24Adjacent": {
       "structAt": "0xFE24",
       "words": {
@@ -4841,11 +4908,11 @@
         "RW6C": "0x1A08",
         "RW6E": "0x1E08"
       },
-      "note": "Adjacent BE quadruplet after FE14 CAL bases. Not written into RW68\u2013RW6E by 0x2EDB on this image. 0x1A08/0x1E08 are also hardcoded RAM clear/fill targets at 0x4ECC when RW6E==0x1E08."
+      "note": "Adjacent BE quadruplet after FE14 CAL bases. Not written into RW68–RW6E by 0x2EDB on this image. 0x1A08/0x1E08 are also hardcoded RAM clear/fill targets at 0x4ECC when RW6E==0x1E08."
     },
     "cmpDualConfig": {
-      "RW6C": "CMP RW6C,#0x1a08 @0x4D60 (dual-config: CAL\u22601A08 continues)",
-      "RW6E": "CMP RW6E,#0x1e08 @0x481B/0x4D66 (skip 0x4ECC fill when \u2260)",
+      "RW6C": "CMP RW6C,#0x1a08 @0x4D60 (dual-config: CAL≠1A08 continues)",
+      "RW6E": "CMP RW6E,#0x1e08 @0x481B/0x4D66 (skip 0x4ECC fill when ≠)",
       "note": "With FE14 CAL bases, descriptor RAM fill @0x4ECC is skipped; interp uses ROM table at RW6E=0xE67E."
     }
   },
@@ -4857,7 +4924,7 @@
       "verdict": "xdf_mislabel",
       "trueRead": "0xD23C[16bit] via CMP @0x52E3 (RW6A+0x136)",
       "romWordLe16": "0x01F4",
-      "rationale": "No byte LOOKUP of 0xD23D. CODE reads LE16 @0xD23C=0x01F4. XDF 8-bit@0xD23D MATH x*40 yields nonsense (raw 1 \u2192 40 RPM) vs word neighbors that are proven 16-bit long-index. Count as reconciled absolute; do not auto-promote shipping.",
+      "rationale": "No byte LOOKUP of 0xD23D. CODE reads LE16 @0xD23C=0x01F4. XDF 8-bit@0xD23D MATH x*40 yields nonsense (raw 1 → 40 RPM) vs word neighbors that are proven 16-bit long-index. Count as reconciled absolute; do not auto-promote shipping.",
       "sites": [
         {
           "site": 21219,
@@ -4874,10 +4941,10 @@
           "verdict": "xdf_mislabel",
           "status": "absolute_reconciled_xdf_mislabel",
           "note": "XDF 8-bit @0xD23D is the high byte of the LE16 word at 0xD23C read by CODE. Not a true standalone 8-bit item.",
-          "shippingNote": "Do not auto-promote. Reconciled coverage only \u2014 wait for XDF retarget to 0xD23C[16bit] (or confirmed byte proof) before shipping promotion."
+          "shippingNote": "Do not auto-promote. Reconciled coverage only — wait for XDF retarget to 0xD23C[16bit] (or confirmed byte proof) before shipping promotion."
         }
       ],
-      "shippingNote": "Do not auto-promote. Reconciled coverage only \u2014 wait for XDF retarget to 0xD23C[16bit] (or confirmed byte proof) before shipping promotion."
+      "shippingNote": "Do not auto-promote. Reconciled coverage only — wait for XDF retarget to 0xD23C[16bit] (or confirmed byte proof) before shipping promotion."
     }
   ]
 }

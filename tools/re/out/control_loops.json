@@ -18,9 +18,9 @@
       "path": [
         "VECTOR_Reset @0x2080: TIMER1lo watchdog kick",
         "spin until [0x4000]==0x5AA5",
-        "LJMP 0x4120 \u2192 LJMP 0x476B HW init (SP, IOS0/1, AD, HSI_*, PORT1/2)",
-        "LJMP 0x2097 \u2192 FUN_3679 RAM copy / integrity",
-        "eventually FUN_4815 \u2192 EI @0x491F"
+        "LJMP 0x4120 → LJMP 0x476B HW init (SP, IOS0/1, AD, HSI_*, PORT1/2)",
+        "LJMP 0x2097 → FUN_3679 RAM copy / integrity",
+        "eventually FUN_4815 → EI @0x491F"
       ],
       "evidenceStrength": "high",
       "status": "hypothesized_with_strong_listing",
@@ -48,7 +48,7 @@
       "id": "trampoline_dispatch",
       "kind": "foreground_dispatch",
       "entryHex": "0x2094-0x20D3",
-      "note": "Dense LJMP trampoline table. 0x20C7 (fan-in 93 LCALLs) \u2192 0x33C2 table/interp helper; 0x20CD fan-in 31. Likely shared map-interp / service calls used by fuel+ign math.",
+      "note": "Dense LJMP trampoline table. 0x20C7 (fan-in 93 LCALLs) → 0x33C2 table/interp helper; 0x20CD fan-in 31. Likely shared map-interp / service calls used by fuel+ign math.",
       "hotTargets": [
         {
           "addr": 8391,
@@ -109,7 +109,7 @@
     {
       "id": "irq_vector_bank",
       "kind": "interrupt",
-      "entryHex": "0x2000 vectors \u2192 0x4178 stubs",
+      "entryHex": "0x2000 vectors → 0x4178 stubs",
       "siteCount": 8,
       "sitesInsideCode": 8,
       "handlers": [
@@ -287,7 +287,7 @@
           "verificationStatus": "cross_checked",
           "hypothesis": "ios0_state_machine",
           "evidenceStrength": "medium",
-          "hypothesisSummary": "XOR IOS0 into RA1; conditional STB + LJMP into trampoline table (0x4145\u2026). Candidate I/O edge / synch state ISR."
+          "hypothesisSummary": "XOR IOS0 into RA1; conditional STB + LJMP into trampoline table (0x4145…). Candidate I/O edge / synch state ISR."
         },
         {
           "id": "vec4_stub",
@@ -375,7 +375,7 @@
           "verificationStatus": "cross_checked",
           "hypothesis": "adc_hsi_schedule",
           "evidenceStrength": "high",
-          "hypothesisSummary": "ORB IOS1; AD kick + HSO #0x18/+0x1F4; sample AD_resulthi\u21920x187C; MAF absolute ADD RW46,RW6C; ADD RW64,0x2[RW46]; further HSO #0x1A/#0x33/#0x2/#0x13/#0x22; flag 0x101E."
+          "hypothesisSummary": "ORB IOS1; AD kick + HSO #0x18/+0x1F4; sample AD_resulthi→0x187C; MAF absolute ADD RW46,RW6C; ADD RW64,0x2[RW46]; further HSO #0x1A/#0x33/#0x2/#0x13/#0x22; flag 0x101E."
         },
         {
           "id": "vec6_stub",
@@ -419,7 +419,7 @@
           "verificationStatus": "cross_checked",
           "hypothesis": "serial_sbuf",
           "evidenceStrength": "medium",
-          "hypothesisSummary": "Stub \u2192 0x20AF \u2192 FUN_2eaa: SBUF/SP_STAT path with POPF+RET. Candidate SCI/diagnostic IRQ."
+          "hypothesisSummary": "Stub → 0x20AF → FUN_2eaa: SBUF/SP_STAT path with POPF+RET. Candidate SCI/diagnostic IRQ."
         },
         {
           "id": "vec7_stub",
@@ -472,7 +472,7 @@
     {
       "id": "hso_schedule_outputs",
       "kind": "output_path",
-      "note": "SFR audit cross_checked: writes named HSI_status/HSI_time are HSO_COMMAND/HSO_TIME. Proven sites: vec2 #0x74+PORT2; vec5 #0x18/#0x1A/#0x33/#0x2/#0x13/#0x22; FUN_ab11 #0x51. Channel\u2192 actuator still open.",
+      "note": "SFR audit: HSI_* names are HSO_COMMAND/HSO_TIME. Proven: ign→HSO.0 #0x70; Ti→MMIO 0x440; CH1 #0x71/#0x51 angle-sync only (not Ti width).",
       "counts": {
         "HSI_statusRefs": 37,
         "HSI_timeRefs": 49,
@@ -480,17 +480,20 @@
         "PORT2Refs": 26
       },
       "evidenceStrength": "medium",
-      "status": "cross_checked_sfr_naming_channel_open",
+      "status": "cross_checked_actuators_partial",
       "openQuestions": [
-        "Which channel bits fire coil vs injectors vs VANOS",
-        "Prove Ti RAM 0x153A/0x1540 and ign RAM 0x1502/0x1512 feed a specific HSO_COMMAND"
+        "Decode 0x440 injector-driver protocol (R42/R43; bank/cylinder)",
+        "CH1 phase-sync vs Ti-width coupling (phase only?)",
+        "CH2/CH3/CH4 connector roles (VANOS vs aux)",
+        "Dwell E0DA / Alpha-N DBC3 body walks via [RW4C]",
+        "Idle vs run mode RAM flags; AD ring slot ID"
       ]
     },
     {
       "id": "map_interp_helper",
       "kind": "shared_runtime",
       "entryHex": "0x33C2",
-      "note": "Reached via trampoline 0x20C7. Body does pointer chase + DJNZ accumulate \u2014 classic axis/map interpolate. Not ignition/fuel specific; shared by many LCALL sites.",
+      "note": "Reached via trampoline 0x20C7. Body does pointer chase + DJNZ accumulate — classic axis/map interpolate. Not ignition/fuel specific; shared by many LCALL sites.",
       "evidenceStrength": "medium",
       "status": "hypothesis"
     }
@@ -638,10 +641,10 @@
     "status": "partial_proven_cal_partial_output",
     "steps": [
       "Sensors/IRQ: HSI capture (vec2) + ADC/MAF (vec5) publish period 0x14CC + air sum RW64 + sample 0x187C",
-      "Foreground: FE14 bases via 0x412C\u21920x20B5\u21920x2EDB; FUN_4815+ LCALL 0x20C7/0x20CD map interp (RW6E descriptors)",
-      "Fuel Ti: DIVU/LD Ti@RW68+0x2E \u2192 RAM 0x153A/0x1540; FUN_ab11 consumes with period for pulse math",
-      "Ign: descriptor 0x9A\u2192 DD0D/DD0F via 0x20CD; advance RAM 0x1502/0x150A/0x150C \u2192 consumers 0xB5B3/0xA067",
-      "Outputs: HSO schedules + PORT2 in vec2/vec5/FUN_ab11 \u2014 channel bits still open",
+      "Foreground: FE14 bases via 0x412C→0x20B5→0x2EDB; FUN_4815+ LCALL 0x20C7/0x20CD map interp (RW6E descriptors)",
+      "Fuel Ti: DIVU/LD Ti@RW68+0x2E → RAM 0x153A/0x1540; FUN_ab11 consumes with period for pulse math",
+      "Ign: descriptor 0x9A→ DD0D/DD0F via 0x20CD; advance RAM 0x1502/0x150A/0x150C → consumers 0xB5B3/0xA067",
+      "Outputs: HSO schedules + PORT2 in vec2/vec5/FUN_ab11 — channel bits still open",
       "Safety: TIMER1lo watchdog; soft/hard fuel cut scalars (XDF absolute; actuator path TBD)"
     ]
   },
@@ -662,7 +665,7 @@
       "ram": "0x153A",
       "roleHypothesis": "ti_pulse_word",
       "publish": "0x9A92/0x9A60/0x4966",
-      "consume": "0xAE18 \u2192 RW8A"
+      "consume": "0xAE18 → RW8A"
     },
     {
       "ram": "0x1502",
@@ -678,19 +681,17 @@
     }
   ],
   "openQuestions": [
-    "Identify spark vs injector HSO/PORT bit assignments (immediates listed; decode open)",
-    "Close Ti RAM \u2192 injector HSO schedule (0x153A/0x1540 \u2192 which HSO_COMMAND)",
-    "Close ign advance RAM \u2192 spark HSO (0x1502/0x1512 \u2192 which HSO_COMMAND)",
+    "Decode 0x440 injector-driver protocol (R42/R43; bank/cylinder)",
+    "CH1 phase-sync vs Ti-width coupling (phase only?)",
+    "CH2/CH3/CH4 connector roles (VANOS vs aux)",
     "Dwell E0DA / Alpha-N DBC3 body walks via [RW4C]",
-    "Idle vs run mode flag(s) in RAM (candidates 0x101E, 0x13ea in FUN_4815)",
-    "Which AD ring slot is MAF vs other sensors"
+    "Idle vs run mode RAM flags; AD ring slot ID"
   ],
   "nextSteps": [
-    "From FUN_ab11 after 0xAE18/0xAF44, walk every HSO_COMMAND write and tag channel bits",
-    "From 0xB5B3/0xA0F0 ign consumers, find next HSO/PORT schedule (spark path)",
-    "Decode Intel HSO_COMMAND bitfields for observed immediates vs pin map",
-    "Optional: retarget seed.xdf 0xD23D \u2192 0xD23C[16bit] before shipping promote",
-    "Optional: deeper [RW4C] walks for dwell/Alpha-N semantics"
+    "Disasm 0xB266 neighborhood: R42/R43 pairs and PORT1.6 handshake semantics",
+    "Map CH1 #0x71/#0x51 phase relationship to injection windows (not width)",
+    "Tag CH2/CH3/CH4 HSO sites vs connector pin map",
+    "Optional [RW4C] body walks for dwell E0DA / Alpha-N DBC3"
   ],
   "shippingNote": "Research-only. Verification gates for promotion unchanged."
 }
