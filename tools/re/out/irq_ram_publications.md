@@ -106,12 +106,12 @@ ROM: `BMW DME413 SW623 D466.29 C16x900A 94 RedLabel.bin`
 | Pulse RAM | `0x153A` → RW8A @`0xAE18`; `0x1540` @`0xAFC7` | Ti×load÷period |
 | Final pulse | `ST RW42,0x1568` @`0xB246` | After enrich / clamps |
 | Driver write | `STB R42`×2 @`0xB266` then `STB R43`×2 @`0xB281` | LE Ti word; `PORT1.6`↑/↓; `PORT1.7`→`RW8C`; gated `RW74==0x440` |
-| Bank/cyl frames | `0xAF52` / `0xB10D` / `0xAB8F` | `R8E.0`→`0x155e`/`0x1560`; `OR R8E` + `0x154e[RW8E]`; see `mmio_440_injector_protocol.md` |
-| CH1 HSO | `#0x71`/`#0x51` | **Rejected** as Ti width — phase/angle only |
+| Bank/cyl frames | `0xAF52` / `0xB10D` / `0xAB8F` | `RW8E` mod-6; even/odd banks; command `(RC7,R8E)` — see `mmio_440_injector_protocol.md` |
+| CH1 HSO | `#0x71`/`#0x51` | Phase only; **not** Ti width; **not** software accept gate for `@0x440` |
 
 ## Open questions
 
 - Map 0x14C2/0x14CC to RPM/period engineering units
 - Which AD channel index in [RW70] ring is MAF vs TMOT vs IAT
-- `RW8E`→physical bank/pin map; `@0x440` ASIC ID; command opcode bits
-- CH1 edge vs `@0x440` accept; CH2/CH3/CH4 connector roles
+- `RC7` OEM bit names; `RW8E`→OEM cyl/pins; `@0x440` ASIC ID
+- Hardware CH1↔ASIC accept; CH2/CH3/CH4 connector roles

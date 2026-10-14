@@ -64,7 +64,7 @@ Addressing: FE14 CAL bases (`RW68=0xD002`, `RW6A=0xD106`, `RW6C=0xD28E`, `RW6E=0
 5. Ign WOT/PT maps → advance RAM → **HSO.0 `#0x70`**.
 6. Ti pulse → **`0x1568` → MMIO `0x440`** (LE `R42`/`R43` + PORT1.6 handshake). CH1 `#0x71/#0x51` are angle-sync only (not Ti width).
 
-## Actuator close (shim v15)
+## Actuator close (shim v16)
 
 > Intel 80C196KB `HSO_COMMAND`: `T2RST|T2CAM|SET|INT|CH[3:0]`. Writes named `HSI_status` are HSO_COMMAND (SFR audit cross_checked).
 
@@ -92,31 +92,29 @@ Addressing: FE14 CAL bases (`RW68=0xD002`, `RW6A=0xD106`, `RW6C=0xD28E`, `RW6E=0
 | **Ign clamp** | `0x1512` @`0xB48E`… clamps advance before queue fill. |
 | **Ti → injector (MMIO, not HSO)** | `0x153A`→RW8A @`0xAE18` → `0x1540` @`0xAFC7` → enrich → **`ST 0x1568`** @`0xB246` → **`STB R42`×2 / `STB R43`×2** @`0xB266`/`0xB281` when `RW74==0x440` (`PORT1.6`↑ then ↓; `PORT1.7`→`RW8C`). |
 
-### MMIO `@0x440` protocol (v15 — see `mmio_440_injector_protocol.md`)
+### MMIO `@0x440` protocol (v16 — see `mmio_440_injector_protocol.md`)
 
 | Element | Proven meaning |
 |---------|----------------|
-| `R42` / `R43` | LE split of Ti word (`RW42` / `0x1568`) — width bytes, not bank opcodes |
-| `PORT1.6` | Ready/busy: wait SET before lo, CLEAR before hi; timeout → `RC3.0` |
-| `PORT1.7` | Status bit shifted into `RW8C` |
-| Dual-STB | Each byte written twice |
-| `RW8E` / `R8E.0` | Cylinder/phase index; even/odd selects `0x155e` vs `0x1560`; command frames `OR R8E` + `0x154e[RW8E]` |
+| `R42` / `R43` | LE Ti word — width bytes |
+| `PORT1.6` / `1.7` | Ready/busy + status shift (`RW8C`); **sole CODE accept gate** |
+| Command `@0xB10D` | `RC3.5`: `(RC7&0xB8)\|R8E`; else `RC7&0xA8`; force `0x40` if `RC7&0x47`; data `0x154e[RW8E]` |
+| `RW8E` | Mod-6 phase; sync anchors **0↔3**; `R8E.0`→`0x155e`/`0x1560`; ign `(R8E±…) mod 6` |
 | `0x441` / `0x480` | Status/readback companions |
 
-### CH1 `#0x71`/`#0x51` verdict (Ti pulse test)
+### CH1 `#0x71`/`#0x51` verdict
 
-| Imm | HSO_TIME source | Ti link? | Role |
-|-----|-----------------|----------|------|
-| `#0x71` | `RW5E` = tooth±angle (`ADD RW5E,RW7E,#0x28` / `MULU…RW92`) @`0xA7B1` | **No** | CH1 set, crank-angle sync |
-| `#0x51` | tooth+`#0x1A` (`ADD HSI_time,RW38,RW7E`) @`0xAF44` | **No** | CH1 clear/sync |
+| Imm | Ti width? | Gates `@0x440` accept? | Role |
+|-----|-----------|------------------------|------|
+| `#0x71` @`0xA7B1` | **No** | **No** (no MMIO follow) | Angle sync SET |
+| `#0x51` @`0xAF44` | **No** | **No** (PORT1.6 only; precedes bank preload) | Angle sync / phase before bank word |
 
-**Rejected:** Ti pulse width does **not** program CH1 `HSO_TIME`. Injector on-time is the **0x440** LE word stream. CH1 remains **phase-only** vs width on `@0x440`.
+**Rejected:** Ti width via CH1; CH1 as **software** accept gate. Hardware CH1-pin↔ASIC still open.
 
 ### Still open
 
-- Command opcode bits beyond `OR R8E`; physical `RW8E`→pin/bank map; `@0x440` ASIC ID
-- Whether CH1 edges gate ASIC accept of `@0x440` transfers
-- CH2/CH3/CH4 connector roles; AD ring ID; idle/run flags
+- `RC7` per-bit OEM names; `RW8E`→OEM cyl 1..6 / pins; `@0x440` ASIC ID
+- Hardware CH1↔ASIC accept; CH2/CH3/CH4; AD ring; idle/run
 
 ## Control-loop deepen (v12 sites, retained)
 
@@ -137,9 +135,9 @@ Addressing: FE14 CAL bases (`RW68=0xD002`, `RW6A=0xD106`, `RW6C=0xD28E`, `RW6E=0
 
 ## Open (next RE value) — gaps for “control the engine”
 
-- Map `RW8E` indices / command opcodes to physical banks & pins; identify `@0x440` ASIC
-- CH1 edge vs `@0x440` accept coupling (phase proven separate from width)
-- CH2/CH3/CH4 connector roles; dwell `E0DA` / Alpha-N `DBC3`; idle/run flags; AD ring ID
+- `RC7` OEM bit names; `RW8E`→OEM cyl/pins; `@0x440` ASIC ID
+- Hardware CH1-pin vs ASIC accept (CODE software-gate **rejected**)
+- CH2/CH3/CH4; dwell `E0DA` / Alpha-N `DBC3`; idle/run; AD ring ID
 - Optional seed.xdf retarget `0xD23D → 0xD23C[16bit]`
 
 ## Related

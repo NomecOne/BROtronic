@@ -63,8 +63,9 @@ Channels: `0–5` = HSO.0–.5; `6` = HSO.0+.1; `7` = software timer; `E` = star
 
 **Proven actuators:**
 - Ignition advance → **HSO.0 `#0x70`**
-- Ti pulse → **`0x1568` → MMIO `@0x440`** LE `R42`/`R43` + `PORT1.6` handshake (CH1 `#0x71/#0x51` phase-only; see `mmio_440_injector_protocol.md`)
+- Ti pulse → **`0x1568` → MMIO `@0x440`** LE `R42`/`R43` + `PORT1.6` (command bitfield + `RW8E` mod-6; see `mmio_440_injector_protocol.md`)
+- CH1 `#0x71/#0x51` = phase only; **rejected** as Ti width and as **software** `@0x440` accept gate
 
-**Open:** `RW8E`→pin/bank map; `@0x440` ASIC ID; CH1↔ASIC accept; CH2/3/4 connector identity.
+**Open:** `RC7` OEM names; `RW8E`→OEM cyl/pins; ASIC ID; HW CH1↔ASIC; CH2/3/4 identity.
 
 Intel: writes to IOS0 (windowed) can also drive HSO pins directly; this ROM heavily uses HSI_status/HSI_time pairs instead.

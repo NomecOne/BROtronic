@@ -29,8 +29,8 @@
       "Mid-CODE data islands still coarsely labeled",
       "Do not promote CODE-derived maps to shipping until map-level cross_checked/verified",
       "Do not claim full CODE+DATA control; verification gates unchanged",
-      "Map RW8E / 0x440 command opcodes to physical banks & pins; ASIC ID",
-      "CH1 edge vs 0x440 accept coupling (protocol decoded; phase vs width closed)",
+      "RC7 per-bit OEM names; RW8E→OEM cyl/pins; 0x440 ASIC ID",
+      "Hardware CH1-pin vs ASIC accept (software gate rejected)",
       "CH2/CH3/CH4 connector roles (VANOS vs aux)",
       "Optional: deeper [RW4C] body walks for dwell E0DA / Alpha-N DBC3",
       "Optional: retarget seed.xdf 0xD23D → 0xD23C[16bit] before shipping promote",
@@ -72,7 +72,7 @@
       "structuralSplitPtr": 1,
       "registerBasesRomProven": 4,
       "headline": "100.0% absolute (69/69); exclusive geometry 100.0% (69/69); unproven absolute 0; resolved XDF mislabels 1; FE14 CAL bases; D200/D978 retracted.",
-      "note": "v15: 0x440 protocol decoded (R42/R43=LE Ti; PORT1.6 handshake; RW8E bank/cyl). CH1 phase-only. Absolute 69/69 retained. Do not auto-promote shipping."
+      "note": "v16: 0x440 command bitfield + RW8E mod-6/banks proven; CH1 software-gate of 0x440 accept rejected. Absolute 69/69 retained."
     },
     "priorityTraces": {
       "irqRamPublications": "done_v1_plus_v12_crosslinks",
@@ -118,13 +118,14 @@
         ]
       },
       "actuatorClose": {
-        "status": "done_v15",
+        "status": "done_v16",
         "ignToHso0": true,
-        "tiToInjectorHso": false,
         "tiToInjectorMmio0x440": true,
         "mmio440ProtocolDecoded": true,
+        "commandFrameBitfield": true,
+        "rw8eMod6Mapped": true,
         "ch1TiHsoRejected": true,
-        "ch1PhaseOnly": true
+        "ch1SoftwareGate440Rejected": true
       }
     }
   }

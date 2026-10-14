@@ -106,7 +106,7 @@
     "3. MAF word table 0xD290 scales ADC → air mass; RW6A limits gate plausibility.",
     "4. Ti → 0x153A/0x1540 → enrich → 0x1568 → MMIO STB R42/R43 [0x440] (LE width + PORT1.6).",
     "5. Ign maps → 0x1502/0x1512 → 0x1480 queue → HSO.0 #0x70 (coil/spark).",
-    "6. CH1 #0x71/#0x51 tooth-angle sync only; RW8E indexes bank/cyl frames on same 0x440 FIFO."
+    "6. CH1 #0x71/#0x51 phase-only (no software gate on 0x440 accept); RW8E mod-6 + command(RC7,R8E) on same FIFO."
   ],
   "controlLoopDeepen": {
     "schemaVersion": 12,
@@ -284,8 +284,8 @@
     "shippingNote": "Do not auto-promote. Reconciled coverage only — wait for XDF retarget to 0xD23C[16bit] (or confirmed byte proof) before shipping promotion."
   },
   "open": [
-    "Map RW8E indices / command opcodes to physical banks & pins; identify 0x440 ASIC",
-    "CH1 edge vs 0x440 ASIC accept coupling (phase proven separate from width)",
+    "RC7 per-bit OEM names; RW8E 0..5 → OEM cyl 1..6 / pins; 0x440 ASIC ID",
+    "Hardware CH1-pin vs ASIC accept (CODE software-gate rejected)",
     "CH2/CH3/CH4 connector roles (VANOS vs aux)",
     "End-to-end dwell E0DA / Alpha-N DBC3 body walks via [RW4C]",
     "Idle vs run mode RAM flags; AD ring slot ID",
@@ -303,7 +303,7 @@
     "tools/re/out/sfr_hso_hsi_audit.md"
   ],
   "actuatorClose": {
-    "schemaVersion": 15,
+    "schemaVersion": 16,
     "method": "local_shim_disasm_xrefs",
     "hsoBitfield": "T2RST|T2CAM|SET|INT|CH[3:0] (Intel 80C196KB)",
     "proven": [
@@ -339,21 +339,27 @@
       "r42": "Ti[7:0]",
       "r43": "Ti[15:8]",
       "handshake": "PORT1.6 ready/busy; PORT1.7->RW8C",
-      "cylinder": "RW8E index; R8E.0 selects 0x155e/0x1560; command OR R8E + 0x154e[RW8E]",
+      "commandFrame": "(RC7&0xB8)|R8E if RC3.5 else RC7&0xA8; force 0x40 if RC7&0x47; data 0x154e[RW8E]",
+      "rw8e": "mod-6 phase; sync anchors 0/3; even/odd banks 0x155e/0x1560",
+      "ch1SoftwareGate": false,
       "detailArtifact": "tools/re/out/mmio_440_injector_protocol.md"
     },
     "ch1TiTest": {
       "verdict": "rejected_as_ti_hso_time",
       "role": "phase_angle_sync_only",
+      "softwareGates440Accept": false,
       "0x71": {
         "site": "0xA7B1",
         "timeSource": "RW5E tooth-relative",
-        "tiLink": false
+        "tiLink": false,
+        "mmioFollows": false
       },
       "0x51": {
         "site": "0xAF44",
         "timeSource": "tooth+0x1A",
-        "tiLink": false
+        "tiLink": false,
+        "precedesBankPreload": true,
+        "acceptGate": "PORT1.6_not_CH1"
       }
     },
     "decode": [
@@ -389,9 +395,10 @@
       }
     ],
     "open": [
-      "rw8e_physical_pin_map",
+      "rc7_bit_oem_names",
+      "rw8e_oem_cyl_pins",
       "mmio_0x440_asic_id",
-      "ch1_vs_440_accept",
+      "hw_ch1_vs_asic_accept",
       "ch2_ch3_ch4_connector_roles",
       "dwell_E0DA_body",
       "idle_run_flags"
