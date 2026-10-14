@@ -53,20 +53,24 @@ CODE: `0x2000`–`0xB930` inclusive; DATA from `0xB931`.
 - IRQ handlers:
   - vec0 `0x2000` stub `0x4178` → `0xA479` — **ios0_edge_timer_tick** (medium): IOS0 XOR edge; may set INT_PEND bit0 / bump RW7A; POPF+RET. Candidate timer/port edge ISR.
   - vec1 `0x2002` stub `0x417C` → `0xA4A9` — **unused_or_spurious_ret** (high): Landing is bare RET @0xA4A9 (same as vec4). Likely unused vector.
-  - vec2 `0x2004` stub `0x4180` → `0xA88E` — **hsi_capture_crank_cam** (high): FUN_a88e: ORB IOS1, read HSI_time repeatedly, TIMER2 store, period math into RAM. Strong candidate crank/cam HSI ISR.
+  - vec2 `0x2004` stub `0x4180` → `0xA88E` — **hsi_capture_crank_cam** (high): FUN_a88e: ORB IOS1, read HSI_time repeatedly, TIMER2 store, period math into RAM (`0x14C0/14C2/14C4/14CC`). Also `CMP …,0x14,TABLE[RW68]` period gate, HSO `#0x74`, `CLR RW64` air-window reset, `STB RA3,PORT2`.
   - vec3 `0x2006` stub `0x4184` → `0xA640` — **ios0_state_machine** (medium): XOR IOS0 into RA1; conditional STB + LJMP into trampoline table (0x4145…). Candidate I/O edge / synch state ISR.
   - vec4 `0x2008` stub `0x4188` → `0xA4A9` — **unused_or_spurious_ret** (high): Same bare RET @0xA4A9 as vec1.
-  - vec5 `0x200A` stub `0x418C` → `0xA4AA` — **adc_hsi_schedule** (medium): ORB IOS1; AD_resultlo write; HSI_status/HSI_time schedule (+0x1F4). Candidate ADC-complete / timed sample ISR.
+  - vec5 `0x200A` stub `0x418C` → `0xA4AA` — **adc_hsi_schedule** (high): ORB IOS1; AD kick + HSO `#0x18/+0x1F4`; sample `AD_resulthi→0x187C`; **MAF absolute** `ADD RW46,RW6C; ADD RW64,0x2[RW46]`; further HSO `#0x1A/#0x33/#0x2/#0x13/#0x22`; flag `0x101E`.
   - vec6 `0x200C` stub `0x4190` → `0x20AF` — **serial_sbuf** (medium): Stub → 0x20AF → FUN_2eaa: SBUF/SP_STAT path with POPF+RET. Candidate SCI/diagnostic IRQ.
   - vec7 `0x200E` stub `0x4194` → `0xA49E` — **counter_overflow_helper** (medium): INCB RDB with saturate; POPF+RET. Small helper ISR / soft counter.
 
-### `hso_schedule_outputs` (output_path) — evidence **low**
+### `hso_schedule_outputs` (output_path) — evidence **medium**
 
-- Status: `hypothesis`
-- Note: Listing shows many LDB HSI_status,#imm + LD/ADD HSI_time sequences and PORT1/PORT2 stores. On 80C196, spark/injector pulses are often HSO-scheduled; Ghidra may be naming HSO command/time as HSI_*. Treat as output-scheduling hypothesis until SFR map is confirmed.
+- Status: `cross_checked_sfr_naming_channel_open`
+- Note: SFR audit **cross_checked**: writes named `HSI_status`/`HSI_time` are HSO_COMMAND/HSO_TIME. Channel→actuator still open.
+- Proven schedule sites (shim deepen):
+  - vec2 `@0xA9C5` `LDB HSI_status,#0x74` + `ADD HSI_time,RW7E,R9A` then `STB RA3,PORT2`
+  - vec5 `@0xA4B5/#0x18`, `@0xA592/#0x1a`, `@0xA5AC/#0x33`, `@0xA5B3/#0x2` (+ `@0xA62C/#0x13`, `@0xA633/#0x22`)
+  - FUN_ab11 `@0xAF44` `LDB HSI_status,#0x51` + `ADD HSI_time,RW38,RW7E` (after Ti/air consume)
 - Open:
-  - Confirm SFR addresses for HSO_COMMAND / HSO_TIME vs HSI_* in this Ghidra language
-  - Which channel bits fire coil vs injectors
+  - Which channel bits fire coil vs injectors vs VANOS
+  - Prove Ti RAM `0x153A`/`0x1540` and ign RAM `0x1502`/`0x1512` feed a specific HSO_COMMAND
 - Counts: `{'HSI_statusRefs': 37, 'HSI_timeRefs': 49, 'PORT1Refs': 53, 'PORT2Refs': 26}`
 
 ### `map_interp_helper` (shared_runtime) — evidence **medium**
@@ -77,12 +81,26 @@ CODE: `0x2000`–`0xB930` inclusive; DATA from `0xB931`.
 
 ## End-to-end engine control (sketch)
 
-Status: `partial_hypothesis` — **not** complete control.
+Status: `partial_proven_cal_partial_output` — **not** complete control.
 
-1. Sensors/IRQ: HSI capture (vec2) + ADC schedule (vec5) + IOS edges update RAM timestamps/flags
-1. Foreground: FUN_4815+ tasks LCALL trampolines (0x20C7 interp) using page-indexed CAL in 0xDxxx–0xExxx
-1. Outputs: HSI_*/PORT1/PORT2 writes schedule or drive actuators (spark/fuel unproven which bits)
-1. Safety: TIMER1lo watchdog kicks throughout; soft/hard fuel cut scalars in XDF (CODE path TBD)
+1. Sensors/IRQ: HSI capture (vec2) + ADC/MAF (vec5) publish period `0x14CC` + air sum `RW64` + sample `0x187C`
+1. Foreground: FE14 bases via `0x412C→0x20B5→0x2EDB`; FUN_4815+ LCALL `0x20C7/0x20CD` map interp (`RW6E` descriptors)
+1. Fuel Ti: `DIVU/LD Ti@RW68+0x2E` → RAM `0x153A`/`0x1540`; FUN_ab11 consumes with period for pulse math
+1. Ign: descriptor `0x9A→DD0D/DD0F` via `0x20CD`; advance RAM `0x1502`/`0x150A`/`0x150C` → consumers `0xB5B3`/`0xA067`
+1. Outputs: HSO schedules + PORT2 in vec2/vec5/FUN_ab11 — **channel bits still open**
+1. Safety: TIMER1lo watchdog; soft/hard fuel cut scalars (XDF absolute; actuator path TBD)
+
+## Runtime RAM glue (proven sites)
+
+| RAM | Role hypothesis | Publish | Consume |
+|-----|-----------------|---------|---------|
+| `0x14CC` | period_scale | vec2 | Ti math `0x9A7A`, `0xAFD1`; air/Ti `0xAE20` |
+| `RW64/66` | maf_accum | vec5 `0xA53B` | FUN_ab11 `0xADED`; reset vec2 `0xAA44` |
+| `0x153A` | ti_pulse_word | `0x9A92`/`0x9A60`/`0x4966` | `0xAE18` → RW8A |
+| `0x1540` | ti_alt_pulse | `0xAFDF` | (follow) |
+| `0x1502` | ign_advance | `0x6964` | `0xB5B3` |
+| `0x150A/0x150C` | ign_shadows | `0x69A8`/`0x69B6` | `0xA067`/`0xA092` |
+| `0x1510/0x1512` | ign_clamped | `0xA0B5`/`0xA0F0` | (HSO path TBD) |
 
 ## CFG hot targets (LJMP/LCALL only)
 
@@ -116,19 +134,20 @@ Family expected loops (load → ti / zw / dwell / lambda / idle) from local PDF 
 
 ## Open questions
 
-- Identify spark vs injector HSO/PORT bit assignments
-- Trace MAF table 0xD290 through page 0xD2 loads into final Ti / inj pulse
-- Trace ign WOT/PT maps 0xDD27/0xDDA1/0xDE8B/0xDF6B to dwell/advance output
-- Idle vs run mode flag(s) in RAM (candidates near 0x13ea test in FUN_4815)
-- Promote any item to ghidraProven only after full address operand or proven index base
+- Identify spark vs injector HSO/PORT bit assignments (immediates listed; decode open)
+- Close Ti RAM → injector HSO schedule (0x153A/0x1540 → which HSO_COMMAND)
+- Close ign advance RAM → spark HSO (0x1502/0x1512 → which HSO_COMMAND)
+- Dwell E0DA / Alpha-N DBC3 body walks via [RW4C]
+- Idle vs run mode flag(s) in RAM (candidates `0x101E`, `0x13ea` in FUN_4815)
+- Which AD ring slot is MAF vs other sensors
 
 ## Next concrete RE steps
 
-1. Deep-trace IRQ vec2 (0xA88E) and vec5 (0xA4AA) to RAM variables they publish
-1. Build page-index resolver: when CODE loads 0xD0/D7/…, follow ZR/RW until table base lands on XDF offset
-1. SFR audit: dump Ghidra MCS96 register map for HSO vs HSI naming at used addresses
-1. From FUN_4815 post-EI, enumerate LCALL 0x20C7 call sites and preceding page loads
-1. For each ignition timing + fueling XDF table, find exclusive page+index path (not just page hit)
+1. From FUN_ab11 after `0xAE18`/`0xAF44`, walk every HSO_COMMAND write and tag channel bits
+1. From `0xB5B3`/`0xA0F0` ign consumers, find next HSO/PORT schedule (spark path)
+1. Decode Intel HSO_COMMAND bitfields for observed immediates vs pin map
+1. Optional: retarget seed.xdf 0xD23D → 0xD23C[16bit] before shipping promote
+1. Optional: deeper [RW4C] walks for dwell/Alpha-N semantics
 
 ## Related follow-ups (priority traces)
 

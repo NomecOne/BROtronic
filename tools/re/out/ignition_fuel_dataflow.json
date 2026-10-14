@@ -18,10 +18,39 @@
     "headline": "100.0% absolute (69/69); exclusive geometry 100.0% (69/69); unproven absolute 0; resolved XDF mislabels 1; FE14 CAL bases; D200/D978 retracted.",
     "note": "v11: absolute via FE14 long-index/chained-base/MAF, descriptor headers within \u221224..0, map load/body siblings, and XDF-mislabel word reconcile (0xD23D \u2192 LE16 @0xD23C CMP @0x52E3). Exclusive 69/69 retained. Do not auto-promote reconciled mislabels to shipping."
   },
+  "runtimeDataflowGlue": {
+    "schemaVersion": 12,
+    "method": "local_shim_disasm_xrefs",
+    "absoluteCoverageUnchanged": true,
+    "paths": [
+      {
+        "id": "maf_window",
+        "note": "vec5 ADD RW64 from 0xD290 words; vec2 CLR RW64; FUN_ab11 \u0394RW64\u21920x17da[cyl]"
+      },
+      {
+        "id": "ti_pulse",
+        "publish": ["0x153A", "0x1540"],
+        "sites": ["0x9A82", "0x9A92", "0xAFC7", "0xAE18"],
+        "note": "load\u00d70x32\u00d7period/Ti \u2192 0x153A; Ti\u00d7RW8A/period \u2192 0x1540"
+      },
+      {
+        "id": "ign_advance",
+        "publish": ["0x1502", "0x150A", "0x150C", "0x1510", "0x1512"],
+        "sites": ["0x6987", "0x6964", "0xB5B3", "0xA067"],
+        "note": "0x20CD body walk \u2192 advance RAM \u2192 clamp/blend; HSO channel open"
+      },
+      {
+        "id": "irq_cal_and_hso",
+        "sites": ["0xA911", "0xA9C5", "0xAF44"],
+        "note": "RW68+0x14 gate; HSO #0x74/#0x51; channel decode open"
+      }
+    ]
+  },
   "seeAlso": [
     "tools/re/out/cal_access_model.json",
     "tools/re/out/irq_ram_publications.json",
-    "tools/re/out/sfr_hso_hsi_audit.json"
+    "tools/re/out/sfr_hso_hsi_audit.json",
+    "tools/re/out/engine_control_dataflow_summary.json"
   ],
   "items": [
     {

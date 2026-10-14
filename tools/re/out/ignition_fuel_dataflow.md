@@ -193,6 +193,18 @@ Signature `050605070a05070b0909090f12130860` — exactly 8 hits (exclusive); ign
 - MAF absolute `0xA53B ADD RW64,0x2[RW46] (RW46=RW6C+2·ADC)`
 - Ign WOT `0x66EC LD RW1A,#0x9A → 0x6987 → 0x20CD → DD0D/DD0F`
 
+## Runtime dataflow glue (v12 shim deepen — proven)
+
+Absolute CAL coverage unchanged. New: RAM/HSO links between CAL reads and actuators.
+
+| Path | Proven flow |
+|------|-------------|
+| MAF window | vec5 accumulate `RW64` ← `0xD290` words; vec2 `CLR RW64` @ tooth; FUN_ab11 `ΔRW64→0x17da[cyl]` |
+| Ti pulse | `0x9A76…9A92`: load×0x32×`0x14CC`÷Ti → **`0x153A`**; `0xAFC7`: Ti×RW8A÷`0x14CC` → **`0x1540`**; consume `0xAE18` |
+| Ign advance | `0x20CD` body walk → ST **`0x1502`/`0x150A`/`0x150C`**; consumers `0xB5B3`, `0xA067…0xA0F0` → **`0x1510`/`0x1512`** |
+| IRQ↔CAL | vec2 `CMP RW92,0x14,TABLE[RW68]` (`0xD016`); HSO `#0x74` + PORT2 |
+| Output HSO | vec5 `#0x18/#0x1A/#0x33/#0x2/#0x13/#0x22`; FUN_ab11 `#0x51` — **channel decode open** |
+
 ## Related artifacts
 
 - `theory_vs_rom_bosch_ti.{md,json}` — T1–T8 + absolute + exclusive
@@ -203,8 +215,8 @@ Signature `050605070a05070b0909090f12130860` — exactly 8 hits (exclusive); ign
 ## What is *not* claimed
 
 - Shipping promotion from Bosch PDF or retracted geometry
-- Absolute coverage of all 69 (currently 69/69; D23D via XDF-mislabel reconcile only)
-- End-to-end HFM→ti→ign control closed-loop proof
+- Complete “control the engine” (HSO channel → coil/inj still open)
+- End-to-end HFM→ti→ign→HSO closed-loop proof (CAL+RAM glue proven; actuator channel open)
 - Auto-promotion of reconciled XDF mislabels to shipping maps
 
 ---

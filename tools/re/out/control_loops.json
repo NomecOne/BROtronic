@@ -243,7 +243,7 @@
           "verificationStatus": "cross_checked",
           "hypothesis": "hsi_capture_crank_cam",
           "evidenceStrength": "high",
-          "hypothesisSummary": "FUN_a88e: ORB IOS1, read HSI_time repeatedly, TIMER2 store, period math into RAM. Strong candidate crank/cam HSI ISR."
+          "hypothesisSummary": "FUN_a88e: ORB IOS1, read HSI_time repeatedly, TIMER2 store, period math into RAM (0x14C0/14C2/14C4/14CC). Also CMP …,0x14,TABLE[RW68] period gate, HSO #0x74, CLR RW64 air-window reset, STB RA3,PORT2."
         },
         {
           "id": "vec3_stub",
@@ -374,8 +374,8 @@
           ],
           "verificationStatus": "cross_checked",
           "hypothesis": "adc_hsi_schedule",
-          "evidenceStrength": "medium",
-          "hypothesisSummary": "ORB IOS1; AD_resultlo write; HSI_status/HSI_time schedule (+0x1F4). Candidate ADC-complete / timed sample ISR."
+          "evidenceStrength": "high",
+          "hypothesisSummary": "ORB IOS1; AD kick + HSO #0x18/+0x1F4; sample AD_resulthi\u21920x187C; MAF absolute ADD RW46,RW6C; ADD RW64,0x2[RW46]; further HSO #0x1A/#0x33/#0x2/#0x13/#0x22; flag 0x101E."
         },
         {
           "id": "vec6_stub",
@@ -472,18 +472,18 @@
     {
       "id": "hso_schedule_outputs",
       "kind": "output_path",
-      "note": "Listing shows many LDB HSI_status,#imm + LD/ADD HSI_time sequences and PORT1/PORT2 stores. On 80C196, spark/injector pulses are often HSO-scheduled; Ghidra may be naming HSO command/time as HSI_*. Treat as output-scheduling hypothesis until SFR map is confirmed.",
+      "note": "SFR audit cross_checked: writes named HSI_status/HSI_time are HSO_COMMAND/HSO_TIME. Proven sites: vec2 #0x74+PORT2; vec5 #0x18/#0x1A/#0x33/#0x2/#0x13/#0x22; FUN_ab11 #0x51. Channel\u2192 actuator still open.",
       "counts": {
         "HSI_statusRefs": 37,
         "HSI_timeRefs": 49,
         "PORT1Refs": 53,
         "PORT2Refs": 26
       },
-      "evidenceStrength": "low",
-      "status": "hypothesis",
+      "evidenceStrength": "medium",
+      "status": "cross_checked_sfr_naming_channel_open",
       "openQuestions": [
-        "Confirm SFR addresses for HSO_COMMAND / HSO_TIME vs HSI_* in this Ghidra language",
-        "Which channel bits fire coil vs injectors"
+        "Which channel bits fire coil vs injectors vs VANOS",
+        "Prove Ti RAM 0x153A/0x1540 and ign RAM 0x1502/0x1512 feed a specific HSO_COMMAND"
       ]
     },
     {
@@ -635,27 +635,62 @@
     }
   ],
   "endToEndControlSketch": {
-    "status": "partial_hypothesis",
+    "status": "partial_proven_cal_partial_output",
     "steps": [
-      "Sensors/IRQ: HSI capture (vec2) + ADC schedule (vec5) + IOS edges update RAM timestamps/flags",
-      "Foreground: FUN_4815+ tasks LCALL trampolines (0x20C7 interp) using page-indexed CAL in 0xDxxx\u20130xExxx",
-      "Outputs: HSI_*/PORT1/PORT2 writes schedule or drive actuators (spark/fuel unproven which bits)",
-      "Safety: TIMER1lo watchdog kicks throughout; soft/hard fuel cut scalars in XDF (CODE path TBD)"
+      "Sensors/IRQ: HSI capture (vec2) + ADC/MAF (vec5) publish period 0x14CC + air sum RW64 + sample 0x187C",
+      "Foreground: FE14 bases via 0x412C\u21920x20B5\u21920x2EDB; FUN_4815+ LCALL 0x20C7/0x20CD map interp (RW6E descriptors)",
+      "Fuel Ti: DIVU/LD Ti@RW68+0x2E \u2192 RAM 0x153A/0x1540; FUN_ab11 consumes with period for pulse math",
+      "Ign: descriptor 0x9A\u2192 DD0D/DD0F via 0x20CD; advance RAM 0x1502/0x150A/0x150C \u2192 consumers 0xB5B3/0xA067",
+      "Outputs: HSO schedules + PORT2 in vec2/vec5/FUN_ab11 \u2014 channel bits still open",
+      "Safety: TIMER1lo watchdog; soft/hard fuel cut scalars (XDF absolute; actuator path TBD)"
     ]
   },
+  "runtimeRamGlue": [
+    {
+      "ram": "0x14CC",
+      "roleHypothesis": "period_scale",
+      "publish": "vec2",
+      "consume": "Ti math 0x9A7A/0xAFD1; air/Ti 0xAE20"
+    },
+    {
+      "ram": "RW64/66",
+      "roleHypothesis": "maf_accum",
+      "publish": "vec5 0xA53B",
+      "consume": "FUN_ab11 0xADED; reset vec2 0xAA44"
+    },
+    {
+      "ram": "0x153A",
+      "roleHypothesis": "ti_pulse_word",
+      "publish": "0x9A92/0x9A60/0x4966",
+      "consume": "0xAE18 \u2192 RW8A"
+    },
+    {
+      "ram": "0x1502",
+      "roleHypothesis": "ign_advance",
+      "publish": "0x6964",
+      "consume": "0xB5B3"
+    },
+    {
+      "ram": "0x1510/0x1512",
+      "roleHypothesis": "ign_clamped",
+      "publish": "0xA0B5/0xA0F0",
+      "consume": "HSO path TBD"
+    }
+  ],
   "openQuestions": [
-    "Identify spark vs injector HSO/PORT bit assignments",
-    "Trace MAF table 0xD290 through page 0xD2 loads into final Ti / inj pulse",
-    "Trace ign WOT/PT maps 0xDD27/0xDDA1/0xDE8B/0xDF6B to dwell/advance output",
-    "Idle vs run mode flag(s) in RAM (candidates near 0x13ea test in FUN_4815)",
-    "Promote any item to ghidraProven only after full address operand or proven index base"
+    "Identify spark vs injector HSO/PORT bit assignments (immediates listed; decode open)",
+    "Close Ti RAM \u2192 injector HSO schedule (0x153A/0x1540 \u2192 which HSO_COMMAND)",
+    "Close ign advance RAM \u2192 spark HSO (0x1502/0x1512 \u2192 which HSO_COMMAND)",
+    "Dwell E0DA / Alpha-N DBC3 body walks via [RW4C]",
+    "Idle vs run mode flag(s) in RAM (candidates 0x101E, 0x13ea in FUN_4815)",
+    "Which AD ring slot is MAF vs other sensors"
   ],
   "nextSteps": [
-    "Deep-trace IRQ vec2 (0xA88E) and vec5 (0xA4AA) to RAM variables they publish",
-    "Build page-index resolver: when CODE loads 0xD0/D7/\u2026, follow ZR/RW until table base lands on XDF offset",
-    "SFR audit: dump Ghidra MCS96 register map for HSO vs HSI naming at used addresses",
-    "From FUN_4815 post-EI, enumerate LCALL 0x20C7 call sites and preceding page loads",
-    "For each ignition timing + fueling XDF table, find exclusive page+index path (not just page hit)"
+    "From FUN_ab11 after 0xAE18/0xAF44, walk every HSO_COMMAND write and tag channel bits",
+    "From 0xB5B3/0xA0F0 ign consumers, find next HSO/PORT schedule (spark path)",
+    "Decode Intel HSO_COMMAND bitfields for observed immediates vs pin map",
+    "Optional: retarget seed.xdf 0xD23D \u2192 0xD23C[16bit] before shipping promote",
+    "Optional: deeper [RW4C] walks for dwell/Alpha-N semantics"
   ],
   "shippingNote": "Research-only. Verification gates for promotion unchanged."
 }

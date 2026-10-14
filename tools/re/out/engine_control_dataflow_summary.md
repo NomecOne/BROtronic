@@ -64,6 +64,33 @@ Addressing: FE14 CAL bases (`RW68=0xD002`, `RW6A=0xD106`, `RW6C=0xD28E`, `RW6E=0
 5. Ign WOT/PT maps via RW6E descriptors (e.g. 0xDD0F) → spark/dwell outputs.
 6. HSO/PORT scheduling drives injectors/coils (bit assignment still open).
 
+## Control-loop deepen (shim run — proven vs hypothesis)
+
+> Shim disasm-at / xrefs over existing MCS96 listing. Absolute CAL coverage unchanged (69/69). New notes deepen **runtime RAM / HSO glue** between proven CAL reads and outputs.
+
+### Proven (listing + CFG)
+
+| Link | Sites | What |
+|------|-------|------|
+| FE14 loader call chain | `0x412C → 0x20B5 → 0x2EDB` | Loads RW68/6A/6C/6E byte-pairs from FE14 struct; RET @0x2F37 |
+| MAF accumulate window | vec5 `0xA52A…0xA53B`; reset vec2 `0xAA44` | `AD_resulthi → ×2 + RW6C → ADD RW64,0x2[RW46]`; tooth edge `CLR RW64/RW66/RW88` |
+| Period publish | vec2 `0xA8FB/A9B6/A9C0/AA8F` | `0x14C2/14C0/14C4/14CC` period/timestamp words |
+| Period × CAL gate | vec2 `0xA911` | `CMP RW92,0x14,TABLE[RW68]` → RW68+0x14 = `0xD016` (IRQ uses FE14 base) |
+| Ti → pulse RAM | `0x9A76…0x9A92`, alt `0x9A60` | `load×0x32 × 0x14CC ÷ Ti[RW68+0x2E] → ST 0x153A` |
+| Ti × period (2nd form) | `0xAFC7…0xAFDF` | `LD Ti; MULU RW8A; DIVU 0x14CC → ST 0x1540` |
+| Air Δ / Ti consume | `0xADED…0xAE62` (in FUN_ab11) | `ΔRW64→0x17da[cyl]`; `LD 0x153A→RW8A`; history `0x17da/17e6/17f2` |
+| Map body walk | `0x20CD → 0x343C` | `ADD RW1A,RW6E; LD RW4C,[RW1A]` then `[RW4C]+` axis/body walk (fan-in 31) |
+| Ign advance RAM | `0x6987` ret path; `0x6964/69A8/69B6` | Interp result → `0x1502`; shadows `0x150A/0x150C` |
+| Ign consumers | `0xB5B3`, `0xA067…0xA0B5` | `SUB …,0x1502`; clamp/blend into `0x1510/0x1512` |
+| Crank-synced HSO+PORT | vec2 `0xA9C5…0xA9D5`; FUN_ab11 `0xAF44` | HSO_COMMAND `#0x74` / `#0x51` + `STB RA3,PORT2` |
+
+### Hypothesis (not yet channel-proven)
+
+- Post-interp `ADD RW20,#0x3c; SUB RW20,RW1C` @0x698A = 60° reference (Bosch-style); strong pattern, not SFR-proven.
+- HSO immediates `#0x18/#0x1A/#0x33/#0x2/#0x13/#0x22/#0x51/#0x74` → coil vs injector vs cam — **open**.
+- Which `[RW70]` AD ring slot is MAF vs TMOT/IAT — **open**.
+- Idle vs run gate candidates (`0x101E` vec5 store; `0x13ea` in FUN_4815) — **open**.
+
 ## D23D verdict
 
 - **Verdict:** `xdf_mislabel`
@@ -72,18 +99,21 @@ Addressing: FE14 CAL bases (`RW68=0xD002`, `RW6A=0xD106`, `RW6C=0xD28E`, `RW6E=0
 - **Rationale:** No byte LOOKUP of 0xD23D. CODE reads LE16 @0xD23C=0x01F4. XDF 8-bit@0xD23D MATH x*40 yields nonsense (raw 1 → 40 RPM) vs word neighbors that are proven 16-bit long-index. Count as reconciled absolute; do not auto-promote shipping.
 - **Shipping:** Do not auto-promote. Reconciled coverage only — wait for XDF retarget to 0xD23C[16bit] (or confirmed byte proof) before shipping promotion.
 
-## Open (next RE value)
+## Open (next RE value) — gaps for “control the engine”
 
-- HSO/PORT bit assignment for spark vs injector
-- End-to-end dwell E0DA / Alpha-N DBC3 body walks via [RW4C]
-- Idle vs run mode RAM flags
-- Optional seed.xdf retarget 0xD23D → 0xD23C[16bit] before shipping
+- **HSO channel decode:** map `#0x18/#0x1A/#0x33/#0x51/#0x74/…` + PORT1/2 bits to coil vs injector vs VANOS
+- **Close Ti → HSO:** prove which schedule after `0x153A`/`0x1540`/`RW8A` programs injector on-time (not only RAM publish)
+- **Close ign → HSO:** prove which schedule after `0x1502`/`0x1512` programs spark (FUN_ab11 / vec2 `#0x74` candidates)
+- End-to-end dwell `0xE0DA` / Alpha-N `0xDBC3` body walks via `[RW4C]`
+- Idle vs run mode RAM flags (`0x101E`, post-EI FUN_4815)
+- Optional seed.xdf retarget `0xD23D → 0xD23C[16bit]` before shipping
 
 ## Related
 
 - `tools/re/out/absolute_code_reads.json`
 - `tools/re/out/ignition_fuel_dataflow.md`
 - `tools/re/out/control_loops.md`
+- `tools/re/out/irq_ram_publications.md`
 - `tools/re/out/theory_vs_rom_bosch_ti.md`
 - `tools/re/out/cal_access_model.md`
 

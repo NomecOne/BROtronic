@@ -25,17 +25,17 @@
       "note": "Baseline CODE through 0xB930 inclusive (Richard). All 8 IRQ stub landings are inside CODE."
     },
     "openFollowUps": [
-      "IRQ 0xAxxx landings are inside CODE\u22640xB930 \u2014 review mid-CODE executable vs data-island (irq_stubs_review.json)",
+      "IRQ 0xAxxx landings are inside CODE≤0xB930 — review mid-CODE executable vs data-island (irq_stubs_review.json)",
       "Mid-CODE data islands (XDF claims / pads) still coarsely labeled",
       "Do not promote CODE-derived maps to shipping until map-level cross_checked/verified",
-      "Trace HSI_*/PORT outputs to spark vs injector (SFR naming audit)",
       "Do not claim full CODE+DATA control; verification gates unchanged",
-      "Trace descriptor slot 0xD0/0x30 after load (0x1566) to Ti/fuel map pointers",
-      "Prove PT/WOT main fuel map body through [RW4C] after descriptor load",
-      "Optional: deeper [RW4C] body walks for dwell/Alpha-N semantics",
-      "Optional: retarget seed.xdf 0xD23D \u2192 0xD23C[16bit] before shipping promote",
-      "Engine control: absolute 69/69 complete \u2014 deepen [RW4C] dwell/Alpha-N body walks",
-      "Optional: HSO/PORT bit assignment for spark vs injector"
+      "HSO channel decode: #0x18/#0x1A/#0x33/#0x51/#0x74/… + PORT bits → coil vs injector vs VANOS",
+      "Close Ti → HSO: prove schedule after 0x153A/0x1540/RW8A programs injector on-time",
+      "Close ign → HSO: prove schedule after 0x1502/0x1512 programs spark",
+      "Optional: deeper [RW4C] body walks for dwell E0DA / Alpha-N DBC3",
+      "Optional: retarget seed.xdf 0xD23D → 0xD23C[16bit] before shipping promote",
+      "Idle vs run mode RAM flags (0x101E, post-EI FUN_4815)",
+      "Which AD ring [RW70] slot is MAF vs TMOT/IAT"
     ]
   },
   "artifacts": [
@@ -60,17 +60,6 @@
       "tools/re/out/rw68_cal_index_base.md",
       "tools/re/out/ref_pdf_bosch_m_motronic_technical_instruction.md",
       "tools/re/out/register_bases_fe24.md",
-      "tools/re/out/register_bases_fe24.md",
-      "tools/re/out/register_bases_fe24.md",
-      "tools/re/out/register_bases_fe24.md",
-      "tools/re/out/register_bases_fe24.md",
-      "tools/re/out/register_bases_fe24.md",
-      "tools/re/out/register_bases_fe24.md",
-      "tools/re/out/register_bases_fe24.md",
-      "tools/re/out/engine_control_dataflow_summary.md",
-      "tools/re/out/register_bases_fe24.md",
-      "tools/re/out/engine_control_dataflow_summary.md",
-      "tools/re/out/register_bases_fe24.md",
       "tools/re/out/engine_control_dataflow_summary.md"
     ],
     "ignitionFuelCoverage": {
@@ -84,10 +73,10 @@
       "structuralSplitPtr": 1,
       "registerBasesRomProven": 4,
       "headline": "100.0% absolute (69/69); exclusive geometry 100.0% (69/69); unproven absolute 0; resolved XDF mislabels 1; FE14 CAL bases; D200/D978 retracted.",
-      "note": "v11: absolute via FE14 long-index/chained-base/MAF, descriptor headers within \u221224..0, map load/body siblings, and XDF-mislabel word reconcile (0xD23D \u2192 LE16 @0xD23C CMP @0x52E3). Exclusive 69/69 retained. Do not auto-promote reconciled mislabels to shipping."
+      "note": "v12: absolute 69/69 retained. Control-loop deepen via local shim: Ti→0x153A/0x1540, ign→0x1502/0x1512, MAF RW64 window, IRQ↔RW68 gate, HSO sites listed; channel decode still open. Do not auto-promote shipping."
     },
     "priorityTraces": {
-      "irqRamPublications": "done_v1",
+      "irqRamPublications": "done_v1_plus_v12_crosslinks",
       "sfrHsoHsiAudit": "cross_checked",
       "calAccessModel": "corrected_v2",
       "firstProvenIgnFuelXref": true,
@@ -111,6 +100,23 @@
         "trueRead": "0xD23C[16bit] via CMP @0x52E3",
         "romWordLe16": "0x01F4",
         "shipping": "do_not_auto_promote"
+      },
+      "controlLoopDeepen": {
+        "status": "done_v12_shim",
+        "method": "npm run re:shim -- disasm-at/xrefs",
+        "proven": [
+          "fe14_loader 0x412C→0x20B5→0x2EDB",
+          "maf_window RW64 + tooth reset",
+          "ti_pulse RAM 0x153A/0x1540",
+          "ign_advance RAM 0x1502/0x1512",
+          "irq_cal_gate RW68+0x14",
+          "hso_sites #0x51/#0x74 listed"
+        ],
+        "open": [
+          "hso_channel_decode",
+          "ti_to_hso_close",
+          "ign_to_hso_close"
+        ]
       }
     }
   }

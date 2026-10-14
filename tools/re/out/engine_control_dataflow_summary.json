@@ -108,6 +108,68 @@
     "5. Ign WOT/PT maps via RW6E descriptors (e.g. 0xDD0F) \u2192 spark/dwell outputs.",
     "6. HSO/PORT scheduling drives injectors/coils (bit assignment still open)."
   ],
+  "controlLoopDeepen": {
+    "schemaVersion": 12,
+    "method": "local_shim_disasm_xrefs",
+    "absoluteCoverageUnchanged": "69/69",
+    "proven": [
+      {
+        "id": "fe14_loader_chain",
+        "sites": ["0x412C", "0x20B5", "0x2EDB"],
+        "note": "LJMP chain loads RW68/6A/6C/6E from FE14; RET @0x2F37"
+      },
+      {
+        "id": "maf_accumulate_window",
+        "sites": ["0xA52A", "0xA53B", "0xAA44"],
+        "note": "ADC\u2192 RW6C+2\u00b7ADC ADD RW64; tooth edge CLR RW64/RW66/RW88"
+      },
+      {
+        "id": "period_ram",
+        "sites": ["0xA8FB", "0xA9B6", "0xA9C0", "0xAA8F"],
+        "targets": ["0x14C2", "0x14C0", "0x14C4", "0x14CC"],
+        "note": "vec2 period/timestamp publications"
+      },
+      {
+        "id": "irq_cal_gate_rw68",
+        "sites": ["0xA911"],
+        "note": "CMP RW92,0x14,TABLE[RW68] \u2192 0xD016; IRQ uses FE14 base"
+      },
+      {
+        "id": "ti_to_pulse_ram",
+        "sites": ["0x9A76", "0x9A82", "0x9A92", "0x9A60", "0xAFC7"],
+        "targets": ["0x153A", "0x1540"],
+        "note": "load\u00d70x32\u00d7period/Ti \u2192 0x153A; alt Ti\u00d7RW8A/period \u2192 0x1540"
+      },
+      {
+        "id": "air_delta_ti_consume",
+        "sites": ["0xADED", "0xAE18", "0xAE62"],
+        "targets": ["0x17da", "0x17e6", "0x17f2", "0x153A"],
+        "note": "FUN_ab11: \u0394RW64 history + LD 0x153A\u2192 RW8A"
+      },
+      {
+        "id": "map_body_walk",
+        "sites": ["0x20CD", "0x343C"],
+        "note": "ADD RW1A,RW6E; LD RW4C,[RW1A]; [RW4C]+ axis/body walk"
+      },
+      {
+        "id": "ign_advance_ram",
+        "sites": ["0x6987", "0x6964", "0x69A8", "0x69B6", "0xB5B3", "0xA067"],
+        "targets": ["0x1502", "0x150A", "0x150C", "0x1510", "0x1512"],
+        "note": "interp \u2192 advance RAM; consumers clamp/blend"
+      },
+      {
+        "id": "crank_hso_port",
+        "sites": ["0xA9C5", "0xA9D5", "0xAF44"],
+        "note": "HSO_COMMAND #0x74/#0x51 + STB RA3,PORT2 (channel decode open)"
+      }
+    ],
+    "hypothesis": [
+      "ADD RW20,#0x3c; SUB RW20,RW1C @0x698A = 60\u00b0 reference (Bosch-style pattern)",
+      "HSO immediates not yet mapped to coil vs injector vs VANOS",
+      "AD ring [RW70] channel identity (MAF vs TMOT/IAT) open",
+      "Idle/run flags 0x101E / FUN_4815 candidates open"
+    ]
+  },
   "priorityProofs": {
     "maf_D290": {
       "offset": "0xD290",
@@ -164,15 +226,18 @@
     "shippingNote": "Do not auto-promote. Reconciled coverage only \u2014 wait for XDF retarget to 0xD23C[16bit] (or confirmed byte proof) before shipping promotion."
   },
   "open": [
-    "HSO/PORT bit assignment for spark vs injector",
+    "HSO channel decode: #0x18/#0x1A/#0x33/#0x51/#0x74/\u2026 + PORT bits \u2192 coil vs injector vs VANOS",
+    "Close Ti \u2192 HSO: prove schedule after 0x153A/0x1540/RW8A programs injector on-time",
+    "Close ign \u2192 HSO: prove schedule after 0x1502/0x1512 programs spark",
     "End-to-end dwell E0DA / Alpha-N DBC3 body walks via [RW4C]",
-    "Idle vs run mode RAM flags",
+    "Idle vs run mode RAM flags (0x101E, post-EI FUN_4815)",
     "Optional seed.xdf retarget 0xD23D \u2192 0xD23C[16bit] before shipping"
   ],
   "relatedArtifacts": [
     "tools/re/out/absolute_code_reads.json",
     "tools/re/out/ignition_fuel_dataflow.md",
     "tools/re/out/control_loops.md",
+    "tools/re/out/irq_ram_publications.md",
     "tools/re/out/theory_vs_rom_bosch_ti.md",
     "tools/re/out/cal_access_model.md"
   ]

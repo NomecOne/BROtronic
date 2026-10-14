@@ -77,8 +77,19 @@ ROM: `BMW DME413 SW623 D466.29 C16x900A 94 RedLabel.bin`
 - `0xA615` `LDB HSI_status,0x1603, LOOKUP[ZR]`
 - `0xA61A` `ADD HSI_time,TIMER1,#0x4`
 
+## Cross-links to fuel/ign (shim deepen v12)
+
+| From IRQ | Into control math (proven) |
+|----------|----------------------------|
+| `0x14CC` period | Ti `MULU/DIVU` @`0x9A7A`, `0xAFD1`; air/Ti @`0xAE20` |
+| `RW64` MAF sum (vec5) | Reset @vec2 `0xAA44`; Δ consume FUN_ab11 `@0xADED` |
+| `0x187C` ADC sample | Published vec5 `@0xA530` (channel identity open) |
+| HSO `#0x74` + PORT2 | Crank-synced output candidate; channel decode open |
+| `CMP …,0x14,TABLE[RW68]` @`0xA911` | Period vs CAL word `0xD016` (IRQ uses FE14 RW68) |
+
 ## Open questions
 
 - Map 0x14C2/0x14CC to RPM/period engineering units
 - Which AD channel index in [RW70] ring is MAF vs TMOT vs IAT
-- Decode HSO_COMMAND immediates (#0x18/#0x1A/#0x13/#0x22/#0x74) to spark vs inj channels
+- Decode HSO_COMMAND immediates (#0x18/#0x1A/#0x13/#0x22/#0x51/#0x74) to spark vs inj channels
+- Prove Ti `0x153A` / ign `0x1502` feed which HSO schedule after FUN_ab11
