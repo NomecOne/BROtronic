@@ -140,8 +140,21 @@ Addressing: FE14 CAL bases (`RW68=0xD002`, `RW6A=0xD106`, `RW6C=0xD28E`, `RW6E=0
 - CH2/CH3/CH4; dwell `E0DA` / Alpha-N `DBC3`; idle/run; AD ring ID
 - Optional seed.xdf retarget `0xD23D → 0xD23C[16bit]`
 
+## Human-facing RE deliverables
+
+These are the primary docs for reading control flow and every tuning datum:
+
+| Deliverable | Path | Contents |
+|-------------|------|----------|
+| **Control flowcharts** | [`control_flowcharts.md`](control_flowcharts.md) | Mermaid: boot→loops, fuel→`@0x440`, ign→HSO.0, IRQs (6 diagrams); addresses on nodes; links to CAL catalog |
+| **Tuning data catalog** | [`tuning_data_catalog.md`](tuning_data_catalog.md) · [`tuning_data_catalog.json`](tuning_data_catalog.json) | One entry per ign/fuel/key-sensor XDF item (69): purpose (PROVEN vs HYPOTHESIS), formula, CODE read refs |
+
+> This summary remains the short actuator/dataflow closeout. Prefer the flowcharts + catalog for human navigation of CODE↔CAL.
+
 ## Related
 
+- `tools/re/out/control_flowcharts.md` — **human-facing control paths**
+- `tools/re/out/tuning_data_catalog.md` / `.json` — **human-facing XDF↔CODE catalog**
 - `tools/re/out/mmio_440_injector_protocol.md`
 - `tools/re/out/absolute_code_reads.json`
 - `tools/re/out/ignition_fuel_dataflow.md`

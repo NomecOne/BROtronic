@@ -403,5 +403,11 @@
       "dwell_E0DA_body",
       "idle_run_flags"
     ]
+  },
+  "humanFacingDeliverables": {
+    "controlFlowcharts": "tools/re/out/control_flowcharts.md",
+    "tuningDataCatalogMd": "tools/re/out/tuning_data_catalog.md",
+    "tuningDataCatalogJson": "tools/re/out/tuning_data_catalog.json",
+    "note": "Primary human-facing RE docs for control paths and per-XDF CODE reads. This summary remains the short actuator/dataflow closeout."
   }
 }
