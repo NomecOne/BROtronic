@@ -81,7 +81,17 @@ node tools/re/ingest.mjs
 
 Windows: `pwsh -File tools/re/ghidra/run_headless.ps1` (defaults to MCS96) or `npm run re:ghidra:win`.
 
-npm aliases: `npm run re:ingest`, `npm run re:annotate`, `npm run re:ghidra:detect`, `npm run re:ghidra`, `npm run re:ghidra:branches`, `npm run re:ghidra:win`.
+npm aliases: `npm run re:ingest`, `npm run re:annotate`, `npm run re:ghidra:detect`, `npm run re:ghidra`, `npm run re:ghidra:branches`, `npm run re:ghidra:win`, `npm run re:shim`.
+
+### Agent shim (option B)
+
+Local CLI over this Ghidra pipeline for agents — **does not patch REA**. See [`tools/re/shim/README.md`](shim/README.md).
+
+```bash
+npm run re:shim -- status
+npm run re:shim -- disasm-at 0x2091 --count 16
+npm run re:shim -- export-refresh   # headless only if exports stale/missing
+```
 
 ### Expected inputs
 
