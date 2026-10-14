@@ -1,0 +1,24 @@
+{
+  "ok": true,
+  "exitCode": 0,
+  "language": "MCS96:LE:16:default",
+  "compiler": "default",
+  "ghidraInstallDir": "/home/ubuntu/tools/ghidra_11.3.2_PUBLIC",
+  "headless": "/home/ubuntu/tools/ghidra_11.3.2_PUBLIC/support/analyzeHeadless",
+  "rom": "/workspace/public/rom/BMW DME413 SW623 D466.29 C16x900A 94 RedLabel.bin",
+  "projectDir": "/workspace/tools/re/ghidra/project",
+  "projectName": "RedLabel_M331",
+  "log": "/workspace/tools/re/out/ghidra_headless.log",
+  "exports": {
+    "/workspace/tools/re/out/ghidra/ghidra_export_meta.json": true,
+    "/workspace/tools/re/out/ghidra/ghidra_functions.csv": true,
+    "/workspace/tools/re/out/ghidra/ghidra_symbols.csv": true,
+    "/workspace/tools/re/out/ghidra/ghidra_listing.txt": true
+  },
+  "namingNote": "C16x900A = CS16 0x900A only",
+  "next": [
+    "Review tools/re/out/ghidra/ghidra_listing.txt for instruction sanity",
+    "If x86 Real Mode looks wrong, try MCS-96 module or alternate language (see README)",
+    "node tools/re/annotate.mjs  # merge region map; import Ghidra function starts"
+  ]
+}

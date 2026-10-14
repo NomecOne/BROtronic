@@ -1,0 +1,131 @@
+{
+  "schemaVersion": 1,
+  "rom": "BMW DME413 SW623 D466.29 C16x900A 94 RedLabel.bin",
+  "checksum16": 36874,
+  "namingNote": "Filename C16x900A = checksum16 0x900A fingerprint only; not Siemens/Infineon C16x ISA evidence.",
+  "verificationStatus": "cross_checked",
+  "userStatedIsa": "mcs96_80c196_family",
+  "workingHypothesis": "mcs96_80c196_family",
+  "evidencePreferredIsa": "mcs96_80c196_family",
+  "ghidraLanguageCanonical": "MCS96:LE:16:default",
+  "ghidraLanguageHistoricalReject": "x86:LE:16:Real Mode",
+  "confidence": 0.9,
+  "scores": {
+    "mcs96Score": 5,
+    "i8086Score": 1,
+    "ljmp": {
+      "hits": 169,
+      "inRange": 28
+    },
+    "nearCall": {
+      "hits": 38,
+      "inRange": 30
+    },
+    "fdPad": 174,
+    "ffPad": 493,
+    "nop90": 70,
+    "pushBpFrame": 0
+  },
+  "firstNonFf": 8192,
+  "vectors": [
+    {
+      "at": 8192,
+      "target": 16760
+    },
+    {
+      "at": 8194,
+      "target": 16764
+    },
+    {
+      "at": 8196,
+      "target": 16768
+    },
+    {
+      "at": 8198,
+      "target": 16772
+    },
+    {
+      "at": 8200,
+      "target": 16776
+    },
+    {
+      "at": 8202,
+      "target": 16780
+    },
+    {
+      "at": 8204,
+      "target": 16784
+    },
+    {
+      "at": 8206,
+      "target": 16788
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "naming_clarification",
+      "detail": "ROM filename token C16x900A denotes full-file byte-sum fingerprint 0x900A, not Siemens/Infineon C16x CPU family.",
+      "sources": [
+        "re_pipeline"
+      ]
+    },
+    {
+      "kind": "memory_layout",
+      "detail": "First non-0xFF byte at 0x2000; baseline CODE 0x2000–0xB930 inclusive (Richard); DATA_CAL from 0xB931. Bytes 0x0000-0x1FFF erased in external image. Legacy shipping pack CODE≤0x7FFF is superseded for region labeling.",
+      "sources": [
+        "re_pipeline",
+        "sheet"
+      ]
+    },
+    {
+      "kind": "sheet_ida_note",
+      "detail": "CAL sheet @0x2000: \"Hard coded vector addresses for interupts ?\"; @0x2010: \"Internal 16kb of ROM Not always internal?\". Community IDA notes treat some mid-CODE ranges as data.",
+      "sources": [
+        "sheet",
+        "ida"
+      ]
+    },
+    {
+      "kind": "vector_table",
+      "detail": "LE u16 table at 0x2000 -> 0x4178, 0x417C, 0x4180, 0x4184, 0x4188, 0x418C, 0x4190, 0x4194 (targets step +4).",
+      "sources": [
+        "re_pipeline",
+        "sheet"
+      ]
+    },
+    {
+      "kind": "mcs96_opcode_pattern",
+      "detail": "In CODE window: opcode 0xE7 (MCS-96 LJMP, PC-rel disp16) count=169; naive abs-in-window count=28 (use PC-rel CFG, not abs). Pad byte 0xFD count=174; sheet: 0xFD~=NOP / 0xFF~=reset — matches MCS-96.",
+      "sources": [
+        "re_pipeline",
+        "sheet",
+        "ghidra"
+      ]
+    },
+    {
+      "kind": "8086_opcode_pattern",
+      "detail": "In CODE window: 0xE8 near-call-like bytes=38 (in-range targets=30); classic prologue 55 8B EC count=0; 0x90 (8086 NOP) count=70 vs 0xFD count=174.",
+      "sources": [
+        "re_pipeline"
+      ]
+    }
+  ],
+  "conflicts": [
+    {
+      "kind": "isa_locked",
+      "detail": "MCS-96 / 80C196-class is the locked CODE ISA (Richard confirmation + Ghidra MCS96:LE:16:default). x86 Real Mode remains historical reject only. LJMP/LCALL are PC-relative disp16 (see blocker1_ljmp_lcall.md). Do not pick C16x from filename.",
+      "preferredByEvidence": "mcs96_80c196_family",
+      "lockedIsa": "mcs96_80c196_family",
+      "scores": {
+        "mcs96Score": 5,
+        "i8086Score": 1
+      }
+    }
+  ],
+  "notes": [
+    "Do not infer CPU from \"C16x####\" ROM naming — that is checksum16.",
+    "CODE ISA locked: MCS-96 / 80C196-class. Default Ghidra language MCS96:LE:16:default.",
+    "LJMP (E7) / LCALL (EF) use PC-relative disp16 per Intel MCS-96; Ghidra SLEIGH matches. CFG edges: tools/re/out/mcs96_cfg_edges.*",
+    "x86 Real Mode compare tree is historical only — do not re-evaluate as ISA candidate."
+  ]
+}

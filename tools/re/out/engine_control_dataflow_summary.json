@@ -1,0 +1,413 @@
+{
+  "schemaVersion": 1,
+  "id": "engine_control_dataflow_summary_v1",
+  "rom": "BMW DME413 SW623 D466.29 C16x900A 94 RedLabel.bin",
+  "status": "absolute_paths_proven_control_summary",
+  "shippingNote": "Research summary only. Absolute CODE→CAL paths proven under FE14. Do not auto-promote shipping maps. D23D is XDF-mislabel reconcile only.",
+  "coverage": {
+    "absolute": "69/69",
+    "exclusive": "69/69",
+    "unprovenAbsolute": 0,
+    "reconciledXdfMislabels": 1,
+    "headline": "100.0% absolute (69/69); exclusive geometry 100.0% (69/69); unproven absolute 0; resolved XDF mislabels 1; FE14 CAL bases; D200/D978 retracted."
+  },
+  "runtimeBases": {
+    "RW68": "0xD002",
+    "RW6A": "0xD106",
+    "RW6C": "0xD28E",
+    "RW6E": "0xE67E"
+  },
+  "controlLoops": [
+    {
+      "id": "air_maf",
+      "role": "air_mass_input",
+      "xdf": "0xD290",
+      "status": "absolute",
+      "codePath": "0xA53B ADD RW64,0x2[RW46] (RW46=RW6C+2·ADC)",
+      "dataflow": "ADC ISR vec5 @0xA4AA → index word table at RW6C+2 (RW6C=0xD28E → body 0xD290). Publishes air-mass proxy for fuel/ign load axes.",
+      "feeds": [
+        "fuel_ti",
+        "ign_maps",
+        "maf_limits"
+      ]
+    },
+    {
+      "id": "maf_limits",
+      "role": "air_plausibility_gates",
+      "xdf": [
+        "0xD23E",
+        "0xD240",
+        "0xD244",
+        "0xD23D(reconciled→D23C)"
+      ],
+      "status": "absolute",
+      "codePath": "CMP/MULU long-index RW6A+0x138/13A/13E; D23D reconcile CMP RW6A+0x136 @0x52E3 → LE16@0xD23C",
+      "dataflow": "Sensor/limit block under RW6A=0xD106 gates MAF high/low faults and MAF/RPM ratio. D23D XDF byte is mislabel of word threshold at 0xD23C (do not auto-promote).",
+      "feeds": [
+        "diagnostic_flags"
+      ]
+    },
+    {
+      "id": "fuel_ti",
+      "role": "injector_constant_base",
+      "xdf": "0xD030",
+      "status": "absolute",
+      "codePath": [
+        "0x9A82",
+        "0xAFC7"
+      ],
+      "dataflow": "RW68=0xD002; LD/DIVU at +0x2E → Ti injector constant 0xD030. Used with load (MAF-derived) to form injection pulse width before HSO/PORT scheduling.",
+      "feeds": [
+        "injector_pulse"
+      ],
+      "related": [
+        "cylinder_trim_0xD0FA"
+      ]
+    },
+    {
+      "id": "cylinder_trim",
+      "role": "per_cylinder_fuel_trim",
+      "xdf": "0xD0FA",
+      "status": "absolute",
+      "codePath": "0x5B65 LD RW1E,RW68; 0x5B6B LDB …,0xf8,LOOKUP[RW1E] → D0FA",
+      "dataflow": "Chained base: LD RW1E,RW68 then LDB …,0xf8,LOOKUP[RW1E] (+ INC×6) reads per-cylinder trim bytes at 0xD0FA.",
+      "feeds": [
+        "injector_pulse"
+      ]
+    },
+    {
+      "id": "ign_wot",
+      "role": "main_ignition_wot_axis",
+      "xdf": "0xDD0F",
+      "status": "absolute",
+      "codePath": "0x66EC LD RW1A,#0x9A → 0x6987 → 0x20CD → DD0D/DD0F",
+      "dataflow": "Select index 0x9A → interp 0x20CD → descriptor [RW6E+0x9A]=0xDD0D → XDF ign WOT VANOS-retarded RPM axis 0xDD0F. Map body walked via [RW4C].",
+      "feeds": [
+        "spark_advance",
+        "dwell"
+      ]
+    },
+    {
+      "id": "map_interp",
+      "role": "shared_cal_interp",
+      "status": "absolute_helper",
+      "codePath": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] (RW6E=0xE67E)",
+      "dataflow": "Trampoline 0x20C7/0x20CD: ADD RW1A,RW6E; LD RW4C,[RW1A]. Shared by fuel and ignition map consumers.",
+      "feeds": [
+        "fuel_maps",
+        "ign_maps",
+        "dwell_maps"
+      ]
+    }
+  ],
+  "endToEndSketch": [
+    "1. Crank/cam HSI ISR (vec2) + ADC ISR (vec5) publish RPM/air samples to RAM.",
+    "2. Foreground loads FE14 CAL bases (RW68/6A/6C/6E) once via 0x2EDB.",
+    "3. MAF word table 0xD290 scales ADC → air mass; RW6A limits gate plausibility.",
+    "4. Ti → 0x153A/0x1540 → enrich → 0x1568 → MMIO STB R42/R43 [0x440] (LE width + PORT1.6).",
+    "5. Ign maps → 0x1502/0x1512 → 0x1480 queue → HSO.0 #0x70 (coil/spark).",
+    "6. CH1 #0x71/#0x51 phase-only (no software gate on 0x440 accept); RW8E mod-6 + command(RC7,R8E) on same FIFO."
+  ],
+  "controlLoopDeepen": {
+    "schemaVersion": 12,
+    "method": "local_shim_disasm_xrefs",
+    "absoluteCoverageUnchanged": "69/69",
+    "proven": [
+      {
+        "id": "fe14_loader_chain",
+        "sites": [
+          "0x412C",
+          "0x20B5",
+          "0x2EDB"
+        ],
+        "note": "LJMP chain loads RW68/6A/6C/6E from FE14; RET @0x2F37"
+      },
+      {
+        "id": "maf_accumulate_window",
+        "sites": [
+          "0xA52A",
+          "0xA53B",
+          "0xAA44"
+        ],
+        "note": "ADC→ RW6C+2·ADC ADD RW64; tooth edge CLR RW64/RW66/RW88"
+      },
+      {
+        "id": "period_ram",
+        "sites": [
+          "0xA8FB",
+          "0xA9B6",
+          "0xA9C0",
+          "0xAA8F"
+        ],
+        "targets": [
+          "0x14C2",
+          "0x14C0",
+          "0x14C4",
+          "0x14CC"
+        ],
+        "note": "vec2 period/timestamp publications"
+      },
+      {
+        "id": "irq_cal_gate_rw68",
+        "sites": [
+          "0xA911"
+        ],
+        "note": "CMP RW92,0x14,TABLE[RW68] → 0xD016; IRQ uses FE14 base"
+      },
+      {
+        "id": "ti_to_pulse_ram",
+        "sites": [
+          "0x9A76",
+          "0x9A82",
+          "0x9A92",
+          "0x9A60",
+          "0xAFC7"
+        ],
+        "targets": [
+          "0x153A",
+          "0x1540"
+        ],
+        "note": "load×0x32×period/Ti → 0x153A; alt Ti×RW8A/period → 0x1540"
+      },
+      {
+        "id": "air_delta_ti_consume",
+        "sites": [
+          "0xADED",
+          "0xAE18",
+          "0xAE62"
+        ],
+        "targets": [
+          "0x17da",
+          "0x17e6",
+          "0x17f2",
+          "0x153A"
+        ],
+        "note": "FUN_ab11: ΔRW64 history + LD 0x153A→ RW8A"
+      },
+      {
+        "id": "map_body_walk",
+        "sites": [
+          "0x20CD",
+          "0x343C"
+        ],
+        "note": "ADD RW1A,RW6E; LD RW4C,[RW1A]; [RW4C]+ axis/body walk"
+      },
+      {
+        "id": "ign_advance_ram",
+        "sites": [
+          "0x6987",
+          "0x6964",
+          "0x69A8",
+          "0x69B6",
+          "0xB5B3",
+          "0xA067"
+        ],
+        "targets": [
+          "0x1502",
+          "0x150A",
+          "0x150C",
+          "0x1510",
+          "0x1512"
+        ],
+        "note": "interp → advance RAM; consumers clamp/blend"
+      },
+      {
+        "id": "crank_hso_port",
+        "sites": [
+          "0xA9C5",
+          "0xA9D5",
+          "0xAF44"
+        ],
+        "note": "HSO_COMMAND #0x74/#0x51 + STB RA3,PORT2 (channel decode open)"
+      }
+    ],
+    "hypothesis": [
+      "ADD RW20,#0x3c; SUB RW20,RW1C @0x698A = 60° reference (Bosch-style pattern)",
+      "HSO immediates not yet mapped to coil vs injector vs VANOS",
+      "AD ring [RW70] channel identity (MAF vs TMOT/IAT) open",
+      "Idle/run flags 0x101E / FUN_4815 candidates open"
+    ]
+  },
+  "priorityProofs": {
+    "maf_D290": {
+      "offset": "0xD290",
+      "status": "absolute",
+      "method": "maf_adc_word_table",
+      "note": "RW6C=0xD28E from FE14 loader; ADC ISR indexes word table at +2 (0xD290 + 2·ADC)."
+    },
+    "ti_D030": {
+      "offset": "0xD030",
+      "status": "absolute",
+      "method": "long_index",
+      "note": "RW68=0xD002; LD RW40,0x2e[RW68] @0xAFC7 and DIVU RL1C,0x2e,TABLE[RW68] @0x9A82 read injector constant."
+    },
+    "ign_WOT_DD0F": {
+      "offset": "0xDD0F",
+      "status": "absolute",
+      "method": "descriptor_header",
+      "note": "Main ign WOT VANOS-retarded RPM axis via CAL descriptor table."
+    },
+    "d23d_xdf_mislabel": {
+      "offset": "0xD23D",
+      "status": "absolute_reconciled_xdf_mislabel",
+      "method": "xdf_mislabel_word_high_byte",
+      "note": "XDF 8-bit@0xD23D is high byte of LE16@0xD23C=0x01F4. Reconciled absolute; do not auto-promote shipping."
+    }
+  },
+  "d23dVerdict": {
+    "offsetHex": "0xD23D",
+    "name": "0xD23D[8bit] Air, MAF, RPM min threshold for MAF signal check",
+    "status": "absolute_reconciled_xdf_mislabel",
+    "verdict": "xdf_mislabel",
+    "trueRead": "0xD23C[16bit] via CMP @0x52E3 (RW6A+0x136)",
+    "romWordLe16": "0x01F4",
+    "rationale": "No byte LOOKUP of 0xD23D. CODE reads LE16 @0xD23C=0x01F4. XDF 8-bit@0xD23D MATH x*40 yields nonsense (raw 1 → 40 RPM) vs word neighbors that are proven 16-bit long-index. Count as reconciled absolute; do not auto-promote shipping.",
+    "sites": [
+      {
+        "site": 21219,
+        "siteHex": "0x52E3",
+        "reg": "RW6A",
+        "immHex": "0x136",
+        "eaHex": "0xD23C",
+        "xdfHex": "0xD23D",
+        "insn": "CMP RW1C,0x136, TABLE[RW6A]",
+        "kind": "xdf_mislabel_word_high_byte",
+        "romWordLe16": "0x01F4",
+        "romHighByte": "0x01",
+        "xdfClaim": "8bit @0xD23D MATH x*40",
+        "verdict": "xdf_mislabel",
+        "status": "absolute_reconciled_xdf_mislabel",
+        "note": "XDF 8-bit @0xD23D is the high byte of the LE16 word at 0xD23C read by CODE. Not a true standalone 8-bit item.",
+        "shippingNote": "Do not auto-promote. Reconciled coverage only — wait for XDF retarget to 0xD23C[16bit] (or confirmed byte proof) before shipping promotion."
+      }
+    ],
+    "shippingNote": "Do not auto-promote. Reconciled coverage only — wait for XDF retarget to 0xD23C[16bit] (or confirmed byte proof) before shipping promotion."
+  },
+  "open": [
+    "RC7 per-bit OEM names; RW8E 0..5 → OEM cyl 1..6 / pins; 0x440 ASIC ID",
+    "Hardware CH1-pin vs ASIC accept (CODE software-gate rejected)",
+    "CH2/CH3/CH4 connector roles (VANOS vs aux)",
+    "End-to-end dwell E0DA / Alpha-N DBC3 body walks via [RW4C]",
+    "Idle vs run mode RAM flags; AD ring slot ID",
+    "Optional seed.xdf retarget 0xD23D → 0xD23C[16bit] before shipping"
+  ],
+  "relatedArtifacts": [
+    "tools/re/out/mmio_440_injector_protocol.md",
+    "tools/re/out/mmio_440_injector_protocol.json",
+    "tools/re/out/absolute_code_reads.json",
+    "tools/re/out/ignition_fuel_dataflow.md",
+    "tools/re/out/control_loops.md",
+    "tools/re/out/irq_ram_publications.md",
+    "tools/re/out/theory_vs_rom_bosch_ti.md",
+    "tools/re/out/cal_access_model.md",
+    "tools/re/out/sfr_hso_hsi_audit.md"
+  ],
+  "actuatorClose": {
+    "schemaVersion": 16,
+    "method": "local_shim_disasm_xrefs",
+    "hsoBitfield": "T2RST|T2CAM|SET|INT|CH[3:0] (Intel 80C196KB)",
+    "proven": [
+      {
+        "id": "ign_to_hso0",
+        "path": [
+          "0x1502",
+          "0xB5B3",
+          "0x1480",
+          "0xB696"
+        ],
+        "command": "0x70",
+        "channel": 0,
+        "role": "coil_spark"
+      },
+      {
+        "id": "ti_to_injector_mmio",
+        "path": [
+          "0x153A",
+          "0xAE18",
+          "0xAFC7",
+          "0x1540",
+          "0xB246",
+          "0x1568",
+          "0xB266"
+        ],
+        "target": "0x440",
+        "role": "injector_pulse_mmio",
+        "note": "STB R42 x2 then R43 x2; LE Ti word; PORT1.6 handshake; not HSO_TIME"
+      }
+    ],
+    "mmio440": {
+      "r42": "Ti[7:0]",
+      "r43": "Ti[15:8]",
+      "handshake": "PORT1.6 ready/busy; PORT1.7->RW8C",
+      "commandFrame": "(RC7&0xB8)|R8E if RC3.5 else RC7&0xA8; force 0x40 if RC7&0x47; data 0x154e[RW8E]",
+      "rw8e": "mod-6 phase; sync anchors 0/3; even/odd banks 0x155e/0x1560",
+      "ch1SoftwareGate": false,
+      "detailArtifact": "tools/re/out/mmio_440_injector_protocol.md"
+    },
+    "ch1TiTest": {
+      "verdict": "rejected_as_ti_hso_time",
+      "role": "phase_angle_sync_only",
+      "softwareGates440Accept": false,
+      "0x71": {
+        "site": "0xA7B1",
+        "timeSource": "RW5E tooth-relative",
+        "tiLink": false,
+        "mmioFollows": false
+      },
+      "0x51": {
+        "site": "0xAF44",
+        "timeSource": "tooth+0x1A",
+        "tiLink": false,
+        "precedesBankPreload": true,
+        "acceptGate": "PORT1.6_not_CH1"
+      }
+    },
+    "decode": [
+      {
+        "imm": "0x70",
+        "role": "coil_spark",
+        "confidence": "proven"
+      },
+      {
+        "imm": "0x71",
+        "role": "ch1_angle_sync_set",
+        "confidence": "proven_not_ti_width"
+      },
+      {
+        "imm": "0x51",
+        "role": "ch1_clear_sync",
+        "confidence": "proven_not_ti_width"
+      },
+      {
+        "imm": "0x74",
+        "role": "crank_sync_ch4",
+        "confidence": "medium"
+      },
+      {
+        "imm": "0x18",
+        "role": "adc_period_timer",
+        "confidence": "behavior_proven"
+      },
+      {
+        "imm": "0x1A",
+        "role": "timed_companion",
+        "confidence": "behavior_proven"
+      }
+    ],
+    "open": [
+      "rc7_bit_oem_names",
+      "rw8e_oem_cyl_pins",
+      "mmio_0x440_asic_id",
+      "hw_ch1_vs_asic_accept",
+      "ch2_ch3_ch4_connector_roles",
+      "dwell_E0DA_body",
+      "idle_run_flags"
+    ]
+  },
+  "humanFacingDeliverables": {
+    "controlFlowcharts": "tools/re/out/control_flowcharts.md",
+    "tuningDataCatalogMd": "tools/re/out/tuning_data_catalog.md",
+    "tuningDataCatalogJson": "tools/re/out/tuning_data_catalog.json",
+    "note": "Primary human-facing RE docs for control paths and per-XDF CODE reads. This summary remains the short actuator/dataflow closeout."
+  }
+}

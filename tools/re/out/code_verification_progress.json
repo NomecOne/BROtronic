@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 2,
+  "rom": "BMW DME413 SW623 D466.29 C16x900A 94 RedLabel.bin",
+  "checksum16": "0x900A",
+  "byteRegionCoverage": {
+    "classifiedPct": 100,
+    "note": "Every byte has a region label; this is not the same as instruction-verified CODE."
+  },
+  "codeVerification": {
+    "isa": "mcs96_80c196_family",
+    "isaLocked": true,
+    "ghidraLanguage": "MCS96:LE:16:default",
+    "isaVerificationStatus": "cross_checked",
+    "ghidraInstructions": 5972,
+    "ghidraFunctions": 213,
+    "blocker1": {
+      "status": "resolved",
+      "addressing": "pc_relative_disp16",
+      "cfgEdgesCrossChecked": 385,
+      "doc": "tools/re/out/blocker1_ljmp_lcall.md"
+    },
+    "codeBounds": {
+      "endInclusive": "0xB930",
+      "dataStart": "0xB931",
+      "note": "Baseline CODE through 0xB930 inclusive (Richard). All 8 IRQ stub landings are inside CODE."
+    },
+    "openFollowUps": [
+      "IRQ 0xAxxx landings mid-CODE review (irq_stubs_review.json)",
+      "Mid-CODE data islands still coarsely labeled",
+      "Do not promote CODE-derived maps to shipping until map-level cross_checked/verified",
+      "Do not claim full CODE+DATA control; verification gates unchanged",
+      "RC7 per-bit OEM names; RW8E→OEM cyl/pins; 0x440 ASIC ID",
+      "Hardware CH1-pin vs ASIC accept (software gate rejected)",
+      "CH2/CH3/CH4 connector roles (VANOS vs aux)",
+      "Optional: deeper [RW4C] body walks for dwell E0DA / Alpha-N DBC3",
+      "Optional: retarget seed.xdf 0xD23D → 0xD23C[16bit] before shipping promote",
+      "Idle vs run mode RAM flags; AD ring [RW70] slot ID"
+    ]
+  },
+  "artifacts": [
+    "tools/re/out/isa_ghidra_conclusion.md",
+    "tools/re/out/blocker1_ljmp_lcall.md",
+    "tools/re/out/mcs96_cfg_edges.json",
+    "tools/re/out/mcs96_branch_resolve.json",
+    "tools/re/out/byte_map.json",
+    "tools/re/out/ghidra/"
+  ],
+  "engineControl": {
+    "goal": "control_loops_plus_ignition_fuel_dataflow",
+    "completeControlClaimed": false,
+    "artifacts": [
+      "tools/re/out/control_loops.md",
+      "tools/re/out/ignition_fuel_dataflow.md",
+      "tools/re/out/irq_ram_publications.md",
+      "tools/re/out/sfr_hso_hsi_audit.md",
+      "tools/re/out/cal_access_model.md",
+      "tools/re/out/motronic_331_function.md",
+      "tools/re/out/theory_vs_rom_bosch_ti.md",
+      "tools/re/out/rw68_cal_index_base.md",
+      "tools/re/out/ref_pdf_bosch_m_motronic_technical_instruction.md",
+      "tools/re/out/register_bases_fe24.md",
+      "tools/re/out/engine_control_dataflow_summary.md"
+    ],
+    "ignitionFuelCoverage": {
+      "items": 69,
+      "ghidraProvenCodeRead": 69,
+      "ghidraProvenPct": 100,
+      "indexBaseCrossCheckedCalContent": 0,
+      "indexBaseCrossCheckedCalContentPct": 0,
+      "exclusiveGeometry": 69,
+      "exclusiveGeometryPct": 100,
+      "structuralSplitPtr": 1,
+      "registerBasesRomProven": 4,
+      "headline": "100.0% absolute (69/69); exclusive geometry 100.0% (69/69); unproven absolute 0; resolved XDF mislabels 1; FE14 CAL bases; D200/D978 retracted.",
+      "note": "v16: 0x440 command bitfield + RW8E mod-6/banks proven; CH1 software-gate of 0x440 accept rejected. Absolute 69/69 retained."
+    },
+    "priorityTraces": {
+      "irqRamPublications": "done_v1_plus_v12_crosslinks",
+      "sfrHsoHsiAudit": "cross_checked",
+      "calAccessModel": "corrected_v2",
+      "firstProvenIgnFuelXref": true,
+      "boschTiTheoryVsRom": "done_v11_absolute_69_reconciled",
+      "rw68IndexBase": "retracted_d200_false_positive",
+      "registerBasesFe24": "adjacent_not_loaded_alternate",
+      "exclusiveGeometryFuelIgn": "exclusive_geometry_69_complete_v8",
+      "registerBasesFe14": "rom_proven_runtime_cal",
+      "absoluteMafTiIgn": {
+        "maf_D290": true,
+        "ti_D030": true,
+        "ign_WOT_DD0F": true,
+        "d23d_xdf_mislabel": true,
+        "absoluteCount": 69,
+        "unprovenAbsolute": 0,
+        "reconciledXdfMislabels": 1
+      },
+      "d23dVerdict": {
+        "verdict": "xdf_mislabel",
+        "status": "absolute_reconciled_xdf_mislabel",
+        "trueRead": "0xD23C[16bit] via CMP @0x52E3",
+        "romWordLe16": "0x01F4",
+        "shipping": "do_not_auto_promote"
+      },
+      "controlLoopDeepen": {
+        "status": "done_v12_shim",
+        "method": "npm run re:shim -- disasm-at/xrefs",
+        "proven": [
+          "fe14_loader 0x412C→0x20B5→0x2EDB",
+          "maf_window RW64 + tooth reset",
+          "ti_pulse RAM 0x153A/0x1540",
+          "ign_advance RAM 0x1502/0x1512",
+          "irq_cal_gate RW68+0x14",
+          "hso_sites #0x51/#0x74 listed"
+        ],
+        "open": [
+          "hso_channel_decode",
+          "ti_to_hso_close",
+          "ign_to_hso_close"
+        ]
+      },
+      "actuatorClose": {
+        "status": "done_v16",
+        "ignToHso0": true,
+        "tiToInjectorMmio0x440": true,
+        "mmio440ProtocolDecoded": true,
+        "commandFrameBitfield": true,
+        "rw8eMod6Mapped": true,
+        "ch1TiHsoRejected": true,
+        "ch1SoftwareGate440Rejected": true
+      }
+    }
+  }
+}

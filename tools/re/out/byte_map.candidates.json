@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "id": "466.29.byte_map_regions",
+  "hw": "0261200413",
+  "sw": "1267357623",
+  "motronicVersion": "M3.3.1",
+  "name": "RedLabel byte-map regions (research)",
+  "description": "Offline region classification artifact. Research only — do not copy into shipping TuneDex packs without review.",
+  "isBuiltIn": false,
+  "expectedSize": 65536,
+  "expectedChecksum16": 36874,
+  "definitionRevision": "2026-10-04.annotate",
+  "layoutFamily": "M331_413_623",
+  "matchPolicy": "manual",
+  "fingerprint": {
+    "size": 65536,
+    "checksum16": 36874,
+    "releaseId": "466.29"
+  },
+  "regions": [
+    {
+      "name": "LOW_PAD_OR_INTERNAL_HOLE",
+      "start": 0,
+      "end": 8191,
+      "kind": "OTHER"
+    },
+    {
+      "name": "VECTOR_0x2000",
+      "start": 8192,
+      "end": 8207,
+      "kind": "VECTORS"
+    },
+    {
+      "name": "CODE_WINDOW",
+      "start": 8192,
+      "end": 47408,
+      "kind": "CODE"
+    },
+    {
+      "name": "DATA_CAL",
+      "start": 47409,
+      "end": 65533,
+      "kind": "DATA"
+    },
+    {
+      "name": "CS16_TRAIL",
+      "start": 65534,
+      "end": 65535,
+      "kind": "OTHER"
+    }
+  ],
+  "maps": [],
+  "candidateMaps": []
+}

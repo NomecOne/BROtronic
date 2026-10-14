@@ -1,9 +1,10 @@
 /**
- * Merge Ghidra function-start CSV into the byte-map runs (when exports exist).
+ * Merge Ghidra function-start CSV / listing into the byte-map (when exports exist).
  * Safe no-op if tools/re/out/ghidra/ghidra_functions.csv is missing.
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import { MEM } from './romPaths.mjs';
 
 export function loadGhidraFunctions(ghidraOutDir) {
   const csvPath = path.join(ghidraOutDir, 'ghidra_functions.csv');
@@ -31,17 +32,40 @@ export function loadGhidraFunctions(ghidraOutDir) {
   return { functions, meta, csvPath };
 }
 
+/**
+ * Parse exported listing lines into instruction addresses (CODE window only).
+ * Accepts `4178  PUSHF` or `0000:4178  OUT ...`.
+ */
+export function loadGhidraInstructionAddresses(ghidraOutDir) {
+  const listingPath = path.join(ghidraOutDir, 'ghidra_listing.txt');
+  if (!fs.existsSync(listingPath)) return null;
+  const text = fs.readFileSync(listingPath, 'utf8');
+  const addrs = [];
+  for (const line of text.split(/\r?\n/)) {
+    if (!line || line.startsWith(';')) continue;
+    const m = line.match(/^(?:[0-9A-Fa-f]{4}:)?([0-9A-Fa-f]{1,4})\s+\S/);
+    if (!m) continue;
+    const off = parseInt(m[1], 16);
+    if (!Number.isFinite(off) || off < MEM.CODE_START || off > MEM.CODE_END) continue;
+    addrs.push(off);
+  }
+  return { listingPath, addresses: addrs, count: addrs.length };
+}
+
 export function ghidraStatusSummary(ghidraOutDir) {
   const loaded = loadGhidraFunctions(ghidraOutDir);
   if (!loaded) {
     return {
       present: false,
-      detail: 'No Ghidra exports yet — run tools/re/ghidra/run_headless.ps1 after installing Ghidra+JDK',
+      detail:
+        'No Ghidra exports yet — run bash tools/re/ghidra/run_headless.sh after installing Ghidra+JDK',
     };
   }
+  const listing = loadGhidraInstructionAddresses(ghidraOutDir);
   return {
     present: true,
     functionCount: loaded.functions.length,
+    instructionCount: loaded.meta?.instructionCount ?? listing?.count ?? null,
     language: loaded.meta?.language ?? null,
     csvPath: loaded.csvPath,
     verificationStatus: 'unverified',

@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "language": "MCS96:LE:16:default",
+  "instructionCount": 5972,
+  "functionCount": 213,
+  "sampleAt4178": "4178  PUSHF",
+  "sampleAt417C": "417c  NOP",
+  "sampleAt2000": null,
+  "namingNote": "C16x900A = CS16 0x900A only",
+  "notes": [
+    "Raw binary required ForceDisassembleRedLabel seeds at LE16 vectors @0x2000",
+    "Expect LJMP/NOP (E7/FD) patterns near vector targets if MCS-96 is correct",
+    "Do not promote CODE-derived maps until verificationStatus is raised"
+  ]
+}

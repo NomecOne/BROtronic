@@ -22,9 +22,13 @@ function exists(p) {
   }
 }
 
-function findHeadlessBat(root) {
+function findHeadless(root) {
   if (!root) return null;
   const candidates = [
+    // Linux / macOS first
+    path.join(root, 'support', 'analyzeHeadless'),
+    path.join(root, 'analyzeHeadless'),
+    // Windows
     path.join(root, 'support', 'analyzeHeadless.bat'),
     path.join(root, 'analyzeHeadless.bat'),
   ];
@@ -43,21 +47,24 @@ function probeJava() {
 
 function discoverInstall() {
   const envDir = process.env.GHIDRA_INSTALL_DIR || process.env.GHIDRA_HOME || '';
+  const home = process.env.HOME || process.env.USERPROFILE || '';
   const guesses = [
     envDir,
-    path.join(process.env.USERPROFILE || '', 'ghidra'),
-    path.join(process.env.USERPROFILE || '', 'Tools', 'ghidra'),
+    path.join(home, 'tools', 'ghidra'),
+    path.join(home, 'ghidra'),
+    path.join(home, 'Tools', 'ghidra'),
+    '/opt/ghidra',
     'C:\\ghidra',
     'C:\\Tools\\ghidra',
   ].filter(Boolean);
 
-  // Also scan shallow USERPROFILE for ghidra_* dirs
-  const home = process.env.USERPROFILE || '';
-  if (home && exists(home)) {
+  // Scan HOME and HOME/tools for ghidra_* dirs
+  for (const scanRoot of [home, path.join(home, 'tools'), path.join(home, 'Tools')]) {
+    if (!scanRoot || !exists(scanRoot)) continue;
     try {
-      for (const ent of fs.readdirSync(home, { withFileTypes: true })) {
+      for (const ent of fs.readdirSync(scanRoot, { withFileTypes: true })) {
         if (ent.isDirectory() && /^ghidra[_-]?/i.test(ent.name)) {
-          guesses.push(path.join(home, ent.name));
+          guesses.push(path.join(scanRoot, ent.name));
         }
       }
     } catch {
@@ -66,8 +73,8 @@ function discoverInstall() {
   }
 
   for (const g of guesses) {
-    const bat = findHeadlessBat(g);
-    if (bat) return { installDir: path.resolve(g), headless: bat };
+    const headless = findHeadless(g);
+    if (headless) return { installDir: path.resolve(g), headless };
   }
   return { installDir: null, headless: null };
 }
@@ -88,20 +95,15 @@ const report = {
   },
   processorCandidates: [
     {
-      id: 'x86:LE:16:Real Mode',
-      role: 'user_stated_primary',
-      note: 'Ghidra language for classic 8086 real-mode — user-stated interest. Validate against binary (NOP/LJMP patterns) before trusting CODE.',
-    },
-    {
-      id: 'x86:LE:16:Protected Mode',
-      role: 'alternate_x86_16',
-      note: 'Try only if Real Mode listing looks nonsensical.',
-    },
-    {
-      id: 'MCS-96 / 80C196 (external module if available)',
-      role: 'evidence_preferred_alternate',
+      id: 'MCS96:LE:16:default',
+      role: 'canonical_locked',
       note:
-        'Binary+sheet markers (E7 abs16 LJMP-like density, FD≈NOP, FF≈reset, vector table @0x2000) lean MCS-96-class. Stock Ghidra may lack this language — install a community processor module if Real Mode fails sanity checks.',
+        'Locked CODE ISA for RedLabel (MCS-96 / 80C196-class). Default for run_headless. LJMP/LCALL are PC-relative disp16 (Intel + SLEIGH agree).',
+    },
+    {
+      id: 'x86:LE:16:Real Mode',
+      role: 'historical_reject_only',
+      note: 'Rejected once; keep compare_x86_real/ for history. Do not re-evaluate as ISA candidate.',
     },
   ],
   namingNote:
@@ -109,7 +111,7 @@ const report = {
   blockers: [
     !java.ok ? 'JDK/JRE not on PATH (Ghidra requires a compatible JDK, typically Temurin 21+ for recent Ghidra).' : null,
     !ghidra.headless
-      ? 'Ghidra not found. Set GHIDRA_INSTALL_DIR to the extracted Ghidra root (folder containing support/analyzeHeadless.bat).'
+      ? 'Ghidra not found. Set GHIDRA_INSTALL_DIR to the extracted Ghidra root (folder containing support/analyzeHeadless or analyzeHeadless.bat).'
       : null,
   ].filter(Boolean),
 };

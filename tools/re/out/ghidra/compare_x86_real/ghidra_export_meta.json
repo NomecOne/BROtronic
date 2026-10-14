@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "program": "BMW DME413 SW623 D466.29 C16x900A 94 RedLabel.bin",
+  "language": "x86:LE:16:Real Mode",
+  "compiler": "default",
+  "memorySize": 65536,
+  "imageBase": "0000:0000",
+  "instructionCount": 206,
+  "functionCount": 0,
+  "namingNote": "C16x900A in ROM filename is CS16 fingerprint 0x900A, not a C16x language ID",
+  "verificationStatus": "unverified"
+}

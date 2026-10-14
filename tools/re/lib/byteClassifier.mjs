@@ -1,7 +1,10 @@
 /**
  * Region / every-byte classifier for the 64KB RedLabel image.
  * Emits run-length annotations covering 0x0000–0xFFFF.
+ *
+ * Baseline CODE (Richard): 0x2000–0xB930 inclusive; DATA_CAL starts at 0xB931.
  */
+import { MEM } from './romPaths.mjs';
 
 function paint(bytes, start, endInclusive, patch) {
   const lo = Math.max(0, start);
@@ -62,7 +65,6 @@ function parseXdfSpans(xdfText) {
       title: title.slice(0, 96),
     });
   }
-  // merge overlaps later via paint order
   return spans;
 }
 
@@ -84,7 +86,7 @@ function findPadRuns(buf, start, end, padByte, minLen = 16) {
 
 /**
  * @param {Buffer} buf
- * @param {{ xdfText?: string }} [opts]
+ * @param {{ xdfText?: string, ghidraInsnAddrs?: number[], ghidraLanguage?: string|null }} [opts]
  */
 export function classifyRom(buf, opts = {}) {
   /** @type {Array<{region:string,confidence:number,evidence:string,source:string,note:string,verificationStatus:string}>} */
@@ -100,8 +102,7 @@ export function classifyRom(buf, opts = {}) {
     };
   }
 
-  // Base layout from shipping pack + binary firstNonFF
-  paint(bytes, 0x0000, 0x1fff, {
+  paint(bytes, 0x0000, MEM.LOW_PAD_END, {
     region: 'PAD',
     confidence: 0.9,
     evidence:
@@ -111,22 +112,23 @@ export function classifyRom(buf, opts = {}) {
     verificationStatus: 'plausible',
   });
 
-  paint(bytes, 0x2000, 0x7fff, {
+  // Baseline CODE through 0xB930 inclusive (Richard / RedLabel 413/623).
+  paint(bytes, MEM.CODE_START, MEM.CODE_END, {
     region: 'CODE',
-    confidence: 0.55,
+    confidence: 0.7,
     evidence:
-      'Hypothesized CODE window per shipping regions + first non-FF @0x2000. ISA not verified; structural only.',
-    source: 're_pipeline',
-    note: 'code_window_hypothesis',
+      'Baseline CODE section 0x2000–0xB930 inclusive (Richard). First non-FF @0x2000; MCS-96 Ghidra language locked. Mid-window XDF claims may still paint DATA islands.',
+    source: 'sheet',
+    note: 'code_through_0xB930',
     verificationStatus: 'plausible',
   });
 
-  paint(bytes, 0x8000, 0xfffd, {
+  paint(bytes, MEM.DATA_START, MEM.DATA_END, {
     region: 'DATA',
     confidence: 0.85,
-    evidence: 'DATA_CAL window from shipping pack / ingest DATA_BASE=0x8000; XDF maps land here.',
-    source: 'brotronic_legacy',
-    note: 'data_cal',
+    evidence: `DATA_CAL window after CODE: 0x${MEM.DATA_START.toString(16).toUpperCase()}–0xFFFD (CODE ends inclusive 0xB930).`,
+    source: 're_pipeline',
+    note: 'data_cal_after_code',
     verificationStatus: 'plausible',
   });
 
@@ -139,8 +141,7 @@ export function classifyRom(buf, opts = {}) {
     verificationStatus: 'cross_checked',
   });
 
-  // Vector table at 0x2000
-  paint(bytes, 0x2000, 0x200f, {
+  paint(bytes, MEM.VECTOR_START, MEM.VECTOR_END, {
     region: 'VECTOR',
     confidence: 0.7,
     evidence:
@@ -151,7 +152,7 @@ export function classifyRom(buf, opts = {}) {
   });
 
   // PAD holes inside CODE (FF and FD)
-  for (const run of findPadRuns(buf, 0x2000, 0x7fff, 0xff, 16)) {
+  for (const run of findPadRuns(buf, MEM.CODE_START, MEM.CODE_END, 0xff, 16)) {
     paint(bytes, run.start, run.end, {
       region: 'PAD',
       confidence: 0.8,
@@ -161,7 +162,7 @@ export function classifyRom(buf, opts = {}) {
       verificationStatus: 'plausible',
     });
   }
-  for (const run of findPadRuns(buf, 0x2000, 0x7fff, 0xfd, 16)) {
+  for (const run of findPadRuns(buf, MEM.CODE_START, MEM.CODE_END, 0xfd, 16)) {
     paint(bytes, run.start, run.end, {
       region: 'PAD',
       confidence: 0.65,
@@ -172,8 +173,7 @@ export function classifyRom(buf, opts = {}) {
     });
   }
 
-  // Identity / ASCII-ish trailer in DATA
-  // FFB0..FFCA has "011/163 0701"
+  // Identity / ASCII-ish trailer in high DATA
   let asciiStart = -1;
   for (let i = 0xffb0; i <= 0xffd0; i++) {
     const c = buf[i];
@@ -194,23 +194,51 @@ export function classifyRom(buf, opts = {}) {
     }
   }
 
-  // XDF claimed map spans → DATA_MAP (still DATA kind, finer note)
+  // XDF claimed map spans — may create mid-CODE DATA islands when addr < 0xB931
   if (opts.xdfText) {
     const spans = parseXdfSpans(opts.xdfText);
     for (const sp of spans) {
-      if (sp.start < 0x8000 || sp.start > 0xfffd) continue;
-      paint(bytes, sp.start, Math.min(sp.end, 0xfffd), {
+      if (sp.start < 0x8000 || sp.start > MEM.DATA_END) continue;
+      const inCode = sp.start <= MEM.CODE_END;
+      paint(bytes, sp.start, Math.min(sp.end, MEM.DATA_END), {
         region: 'DATA',
-        confidence: 0.5,
-        evidence: `XDF candidate span: ${sp.title}`,
+        confidence: 0.62,
+        evidence: inCode
+          ? `XDF (primary definition evidence) span inside CODE≤0xB930 (mid-CODE data island): ${sp.title}`
+          : `XDF (primary definition evidence) span: ${sp.title}`,
         source: 'xdf',
-        note: 'xdf_claim',
-        verificationStatus: 'unverified',
+        note: inCode ? 'xdf_mid_code_island' : 'xdf_claim',
+        verificationStatus: 'plausible',
       });
     }
   }
 
-  // Re-assert trailing checksum after any DATA overlays
+  // Ghidra listing instruction starts → raise CODE confidence
+  if (Array.isArray(opts.ghidraInsnAddrs) && opts.ghidraInsnAddrs.length) {
+    const lang = opts.ghidraLanguage || 'unknown';
+    for (const a of opts.ghidraInsnAddrs) {
+      if (a < 0x2010 || a > MEM.CODE_END) continue;
+      paint(bytes, a, Math.min(a + 2, MEM.CODE_END), {
+        region: 'CODE',
+        confidence: 0.78,
+        evidence: `Ghidra listing instruction start (${lang}); LJMP/LCALL are PC-relative disp16`,
+        source: 'ghidra',
+        note: 'ghidra_insn',
+        verificationStatus: 'plausible',
+      });
+    }
+  }
+
+  // Re-assert vector table + trailing checksum after overlays
+  paint(bytes, MEM.VECTOR_START, MEM.VECTOR_END, {
+    region: 'VECTOR',
+    confidence: 0.7,
+    evidence:
+      'LE u16 interrupt/vector candidates @0x2000 (sheet: hard-coded vector addresses). Targets 0x4178..0x4194 step +4.',
+    source: 'sheet',
+    note: 'vector_table_0x2000',
+    verificationStatus: 'plausible',
+  });
   paint(bytes, 0xfffe, 0xffff, {
     region: 'OTHER',
     confidence: 0.95,
@@ -232,7 +260,6 @@ export function classifyRom(buf, opts = {}) {
     .reduce((a, r) => a + r.length, 0);
   const unknown = buf.length - classified;
 
-  // Gaps: UNKNOWN runs + CODE bytes without finer instruction annotation
   const gaps = runs
     .filter(r => r.region === 'UNKNOWN' || (r.region === 'CODE' && r.confidence < 0.7))
     .map(r => ({
@@ -249,13 +276,20 @@ export function classifyRom(buf, opts = {}) {
 
   return {
     size: buf.length,
+    memoryMap: {
+      codeStart: MEM.CODE_START,
+      codeEndInclusive: MEM.CODE_END,
+      codeEndExclusive: MEM.CODE_END_EXCLUSIVE,
+      dataStart: MEM.DATA_START,
+      dataEndInclusive: MEM.DATA_END,
+      note: 'CODE ends at 0xB930 inclusive (Richard baseline RedLabel 413/623).',
+    },
     byRegion,
     classifiedBytes: classified,
     unknownBytes: unknown,
     classifiedPct: (100 * classified) / buf.length,
     runs,
     gaps,
-    // Compact every-byte region code stream (1 char/byte) for tooling
-    regionStream: bytes.map(b => b.region[0]).join(''), // P/C/D/V/O/U
+    regionStream: bytes.map(b => b.region[0]).join(''),
   };
 }

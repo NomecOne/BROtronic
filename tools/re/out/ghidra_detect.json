@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "ready": true,
+  "java": {
+    "ok": true,
+    "detail": "openjdk version \"21.0.10\" 2026-01-20"
+  },
+  "ghidra": {
+    "installDir": "/home/ubuntu/tools/ghidra_11.3.2_PUBLIC",
+    "headless": "/home/ubuntu/tools/ghidra_11.3.2_PUBLIC/support/analyzeHeadless",
+    "envGHIDRA_INSTALL_DIR": "/home/ubuntu/tools/ghidra_11.3.2_PUBLIC",
+    "envGHIDRA_HOME": null
+  },
+  "processorCandidates": [
+    {
+      "id": "MCS96:LE:16:default",
+      "role": "canonical_locked",
+      "note": "Locked CODE ISA for RedLabel (MCS-96 / 80C196-class). Default for run_headless. LJMP/LCALL are PC-relative disp16 (Intel + SLEIGH agree)."
+    },
+    {
+      "id": "x86:LE:16:Real Mode",
+      "role": "historical_reject_only",
+      "note": "Rejected once; keep compare_x86_real/ for history. Do not re-evaluate as ISA candidate."
+    }
+  ],
+  "namingNote": "ROM filename C16x900A is checksum16=0x900A only — never use it to select a C166/C167 Ghidra language.",
+  "blockers": []
+}

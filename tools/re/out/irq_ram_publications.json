@@ -1,0 +1,402 @@
+{
+  "schemaVersion": 1,
+  "id": "irq_ram_publications_v1",
+  "rom": "BMW DME413 SW623 D466.29 C16x900A 94 RedLabel.bin",
+  "disclaimer": "RAM target roles are hypotheses from access patterns. Addresses themselves are proven store sites in Ghidra listing.",
+  "handlers": {
+    "vec2_hsi_capture": {
+      "vectorIndex": 2,
+      "entry": 43150,
+      "end": 43792,
+      "roleHypothesis": "hsi_capture_crank_cam",
+      "evidenceStrength": "high",
+      "entryHex": "0xA88E",
+      "ramPublications": [
+        {
+          "site": 43259,
+          "siteHex": "0xA8FB",
+          "target": 5314,
+          "targetHex": "0x14C2",
+          "src": "RW60",
+          "insn": "ST RW60,0x14c2, TABLE[ZR]",
+          "roleHypothesis": "period_hi_or_tooth_count",
+          "roleEvidence": "medium"
+        },
+        {
+          "site": 43307,
+          "siteHex": "0xA92B",
+          "target": 5322,
+          "targetHex": "0x14CA",
+          "src": "TIMER2",
+          "insn": "ST TIMER2,0x14ca, TABLE[ZR]",
+          "roleHypothesis": "timer2_capture_copy",
+          "roleEvidence": "medium"
+        },
+        {
+          "site": 43446,
+          "siteHex": "0xA9B6",
+          "target": 5312,
+          "targetHex": "0x14C0",
+          "src": "RW28",
+          "insn": "ST RW28,0x14c0, TABLE[ZR]",
+          "roleHypothesis": "hsi_edge_timestamp",
+          "roleEvidence": "medium"
+        },
+        {
+          "site": 43456,
+          "siteHex": "0xA9C0",
+          "target": 5316,
+          "targetHex": "0x14C4",
+          "src": "RW5C",
+          "insn": "ST RW5C,0x14c4, TABLE[ZR]",
+          "roleHypothesis": "period_shadow",
+          "roleEvidence": "medium"
+        },
+        {
+          "site": 43537,
+          "siteHex": "0xAA11",
+          "target": 2302,
+          "targetHex": "0x08FE",
+          "src": "RA4",
+          "insn": "STB RA4,0x8fe, LOOKUP[ZR]",
+          "roleHypothesis": "port_shadow_ra4",
+          "roleEvidence": "medium"
+        },
+        {
+          "site": 43558,
+          "siteHex": "0xAA26",
+          "target": 4846,
+          "targetHex": "0x12EE",
+          "src": "ZR",
+          "insn": "ST ZR,0x12ee, TABLE[ZR]",
+          "roleHypothesis": "clear_word",
+          "roleEvidence": "medium"
+        },
+        {
+          "site": 43641,
+          "siteHex": "0xAA79",
+          "target": 1033,
+          "targetHex": "0x0409",
+          "src": "R43",
+          "insn": "STB R43,0x409, LOOKUP[ZR]",
+          "roleHypothesis": "small_state_byte",
+          "roleEvidence": "medium"
+        },
+        {
+          "site": 43663,
+          "siteHex": "0xAA8F",
+          "target": 5324,
+          "targetHex": "0x14CC",
+          "src": "RW38",
+          "insn": "ST RW38,0x14cc, TABLE[ZR]",
+          "roleHypothesis": "derived_period_scale",
+          "roleEvidence": "medium"
+        },
+        {
+          "site": 43740,
+          "siteHex": "0xAADC",
+          "target": 5205,
+          "targetHex": "0x1455",
+          "src": "ZRlo",
+          "insn": "STB ZRlo,0x1455, LOOKUP[ZR]",
+          "roleHypothesis": "transient_clear",
+          "roleEvidence": "medium"
+        },
+        {
+          "site": 43745,
+          "siteHex": "0xAAE1",
+          "target": 5482,
+          "targetHex": "0x156A",
+          "src": "ZR",
+          "insn": "ST ZR,0x156a, TABLE[ZR]",
+          "roleHypothesis": "clear_pair_a",
+          "roleEvidence": "medium"
+        },
+        {
+          "site": 43750,
+          "siteHex": "0xAAE6",
+          "target": 5484,
+          "targetHex": "0x156C",
+          "src": "ZR",
+          "insn": "ST ZR,0x156c, TABLE[ZR]",
+          "roleHypothesis": "clear_pair_b",
+          "roleEvidence": "medium"
+        },
+        {
+          "site": 43755,
+          "siteHex": "0xAAEB",
+          "target": 5638,
+          "targetHex": "0x1606",
+          "src": "RW8C",
+          "insn": "ST RW8C,0x1606, TABLE[ZR]",
+          "roleHypothesis": "limit_or_timeout",
+          "roleEvidence": "medium"
+        }
+      ],
+      "sfrTouches": [
+        {
+          "site": 43195,
+          "siteHex": "0xA8BB",
+          "insn": "ST TIMER2,RW80"
+        },
+        {
+          "site": 43219,
+          "siteHex": "0xA8D3",
+          "insn": "ST TIMER2,RW80"
+        },
+        {
+          "site": 43307,
+          "siteHex": "0xA92B",
+          "insn": "ST TIMER2,0x14ca, TABLE[ZR]"
+        },
+        {
+          "site": 43461,
+          "siteHex": "0xA9C5",
+          "insn": "LDB HSI_status,#0x74"
+        },
+        {
+          "site": 43467,
+          "siteHex": "0xA9CB",
+          "insn": "ADD HSI_time,RW7E,RW5C"
+        }
+      ],
+      "portWrites": [
+        {
+          "site": 43477,
+          "siteHex": "0xA9D5",
+          "insn": "STB RA3,PORT2"
+        },
+        {
+          "site": 43787,
+          "siteHex": "0xAB0B",
+          "insn": "STB RA3,PORT2"
+        }
+      ],
+      "summary": "Reads HSI_time FIFO-style; publishes period/timestamp words at 0x14C0/0x14C2/0x14C4/0x14CC; may ST TIMER2 capture to 0x14CA; schedules HSO via LDB HSI_status,#0x74 + ADD HSI_time; toggles PORT2."
+    },
+    "vec5_adc_hso_schedule": {
+      "vectorIndex": 5,
+      "entry": 42154,
+      "end": 42559,
+      "roleHypothesis": "adc_complete_plus_hso_schedule",
+      "evidenceStrength": "high",
+      "entryHex": "0xA4AA",
+      "ramPublications": [
+        {
+          "site": 42217,
+          "siteHex": "0xA4E9",
+          "target": 5592,
+          "targetHex": "0x15D8",
+          "src": "RW46",
+          "insn": "ST RW46,0x15d8, TABLE[ZR]",
+          "roleHypothesis": "port1_low_ debounced_counters",
+          "roleEvidence": "medium"
+        },
+        {
+          "site": 42260,
+          "siteHex": "0xA514",
+          "target": 6082,
+          "targetHex": "0x17C2",
+          "src": "RW46",
+          "insn": "ST RW46,0x17c2, TABLE[ZR]",
+          "roleHypothesis": "port2_high_debounced_counters",
+          "roleEvidence": "medium"
+        },
+        {
+          "site": 42274,
+          "siteHex": "0xA522",
+          "target": 6309,
+          "targetHex": "0x18A5",
+          "src": "ZRlo",
+          "insn": "STB ZRlo,0x18a5, LOOKUP[ZR]",
+          "roleHypothesis": "adc_isr_heartbeat_clear",
+          "roleEvidence": "medium"
+        },
+        {
+          "site": 42288,
+          "siteHex": "0xA530",
+          "target": 6268,
+          "targetHex": "0x187C",
+          "src": "R46",
+          "insn": "STB R46,0x187c, LOOKUP[ZR]",
+          "roleHypothesis": "adc_sample_byte",
+          "roleEvidence": "medium"
+        },
+        {
+          "site": 42372,
+          "siteHex": "0xA584",
+          "target": 5632,
+          "targetHex": "0x1600",
+          "src": "RW5C",
+          "insn": "ST RW5C,0x1600, TABLE[ZR]",
+          "roleHypothesis": "scheduled_hso_flags_or_pattern",
+          "roleEvidence": "medium"
+        },
+        {
+          "site": 42480,
+          "siteHex": "0xA5F0",
+          "target": 5632,
+          "targetHex": "0x1600",
+          "src": "ZR",
+          "insn": "ST ZR,0x1600, TABLE[ZR]",
+          "roleHypothesis": "scheduled_hso_flags_or_pattern",
+          "roleEvidence": "medium"
+        },
+        {
+          "site": 42488,
+          "siteHex": "0xA5F8",
+          "target": 5634,
+          "targetHex": "0x1602",
+          "src": "RW44",
+          "insn": "ST RW44,0x1602, TABLE[ZR]",
+          "roleHypothesis": "hso_command_pair_staging",
+          "roleEvidence": "medium"
+        },
+        {
+          "site": 42495,
+          "siteHex": "0xA5FF",
+          "target": 5632,
+          "targetHex": "0x1600",
+          "src": "ZR",
+          "insn": "ST ZR,0x1600, TABLE[ZR]",
+          "roleHypothesis": "scheduled_hso_flags_or_pattern",
+          "roleEvidence": "medium"
+        },
+        {
+          "site": 42512,
+          "siteHex": "0xA610",
+          "target": 5632,
+          "targetHex": "0x1600",
+          "src": "ZR",
+          "insn": "ST ZR,0x1600, TABLE[ZR]",
+          "roleHypothesis": "scheduled_hso_flags_or_pattern",
+          "roleEvidence": "medium"
+        },
+        {
+          "site": 42553,
+          "siteHex": "0xA639",
+          "target": 4126,
+          "targetHex": "0x101E",
+          "src": "R5E",
+          "insn": "STB R5E,0x101e, LOOKUP[ZR]",
+          "roleHypothesis": "run_mode_flags",
+          "roleEvidence": "medium"
+        }
+      ],
+      "sfrTouches": [
+        {
+          "site": 42162,
+          "siteHex": "0xA4B2",
+          "insn": "LDB AD_resultlo,#0x8"
+        },
+        {
+          "site": 42165,
+          "siteHex": "0xA4B5",
+          "insn": "LDB HSI_status,#0x18"
+        },
+        {
+          "site": 42172,
+          "siteHex": "0xA4BC",
+          "insn": "LD HSI_time,RW86"
+        },
+        {
+          "site": 42285,
+          "siteHex": "0xA52D",
+          "insn": "LDB AD_resultlo,R44"
+        },
+        {
+          "site": 42327,
+          "siteHex": "0xA557",
+          "insn": "STB AD_resulthi,[RW44]"
+        },
+        {
+          "site": 42386,
+          "siteHex": "0xA592",
+          "insn": "LDB HSI_status,#0x1a"
+        },
+        {
+          "site": 42389,
+          "siteHex": "0xA595",
+          "insn": "ADD HSI_time,RW44,#0x32"
+        },
+        {
+          "site": 42412,
+          "siteHex": "0xA5AC",
+          "insn": "LDB HSI_status,#0x33"
+        },
+        {
+          "site": 42415,
+          "siteHex": "0xA5AF",
+          "insn": "LD HSI_time,RW44"
+        },
+        {
+          "site": 42419,
+          "siteHex": "0xA5B3",
+          "insn": "LDB HSI_status,#0x2"
+        },
+        {
+          "site": 42422,
+          "siteHex": "0xA5B6",
+          "insn": "LD HSI_time,RW44"
+        },
+        {
+          "site": 42502,
+          "siteHex": "0xA606",
+          "insn": "LDB HSI_status,0x1602, LOOKUP[ZR]"
+        },
+        {
+          "site": 42507,
+          "siteHex": "0xA60B",
+          "insn": "ADD HSI_time,TIMER1,#0x4"
+        },
+        {
+          "site": 42517,
+          "siteHex": "0xA615",
+          "insn": "LDB HSI_status,0x1603, LOOKUP[ZR]"
+        },
+        {
+          "site": 42522,
+          "siteHex": "0xA61A",
+          "insn": "ADD HSI_time,TIMER1,#0x4"
+        },
+        {
+          "site": 42529,
+          "siteHex": "0xA621",
+          "insn": "LDB HSI_status,#0x1a"
+        },
+        {
+          "site": 42532,
+          "siteHex": "0xA624",
+          "insn": "ADD HSI_time,RW82,#0x32"
+        },
+        {
+          "site": 42540,
+          "siteHex": "0xA62C",
+          "insn": "LDB HSI_status,#0x13"
+        },
+        {
+          "site": 42543,
+          "siteHex": "0xA62F",
+          "insn": "LD HSI_time,RW82"
+        },
+        {
+          "site": 42547,
+          "siteHex": "0xA633",
+          "insn": "LDB HSI_status,#0x22"
+        },
+        {
+          "site": 42550,
+          "siteHex": "0xA636",
+          "insn": "LD HSI_time,RW82"
+        }
+      ],
+      "portWrites": [],
+      "summary": "On IOS1.0: kicks AD channel, schedules HSO (#0x18/+0x1F4); samples AD_resulthi into 0x187C and channel ring via RW70; publishes port debounce counters 0x15D8/0x17C2; stages HSO cmds to 0x1600/0x1602; updates flags at 0x101E."
+    }
+  },
+  "openQuestions": [
+    "Map 0x14C2/0x14CC to RPM/period engineering units",
+    "Which AD channel index in [RW70] ring is MAF vs TMOT vs IAT",
+    "Decode HSO_COMMAND immediates (#0x18/#0x1A/#0x13/#0x22/#0x74) to spark vs inj channels"
+  ]
+}

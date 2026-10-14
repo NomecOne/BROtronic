@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 16,
+  "id": "mmio_440_injector_protocol",
+  "rom": "BMW DME413 SW623 D466.29 C16x900A 94 RedLabel.bin",
+  "method": "local_shim_disasm_xrefs_listing_scan",
+  "verdict": {
+    "tiWidthViaMmio": true,
+    "r42r43AreLeTiBytes": true,
+    "port16Handshake": true,
+    "commandFrameBitfieldDecoded": true,
+    "rw8eMod6PhaseCounter": true,
+    "rw8eSyncAnchors_0_and_3": true,
+    "evenOddBanks": true,
+    "oemCylinderPinMap": false,
+    "ch1SoftwareGates440Accept": false,
+    "ch1HardwareGateOpen": true,
+    "asicIdentity": false
+  },
+  "commandFrame": {
+    "site": "0xB10D",
+    "indexedMode": "RC3.5",
+    "selectIndexed": "(RC7 & 0xB8) | R8E",
+    "selectPlain": "RC7 & 0xA8",
+    "forceBit6If": "RC7 & 0x47",
+    "data2": "0x154e[RW8E]",
+    "bits": {
+      "3": "RC7.3 when !RC3.5 (enrich @0x9D93/0xB0AC)",
+      "4": "RC7.4 when RC3.5 (period @0xAAAB/0xACF7)",
+      "5": "RC7.5 both (mode @0x5573)",
+      "6": "forced if RC7&0x47 (inhibit family; also @0x8A00)",
+      "7": "RC7.7 both",
+      "0-2": "R8E when RC3.5 (cyl/phase 0..5)"
+    }
+  },
+  "rw8eMap": {
+    "range": "0..5",
+    "nextExpected": "(R8E+1) mod 6 in RB5 @0x9CE0",
+    "syncAnchors": {
+      "0": "bank_A_or_phase0",
+      "3": "bank_B_or_phase3_opposite"
+    },
+    "syncSites": [
+      "0xA9D8",
+      "0xAEED",
+      "0xAF21"
+    ],
+    "evenOdd": {
+      "even": "0x155e",
+      "odd": "0x1560",
+      "site": "0xAF69"
+    },
+    "ignMod6": "(R8E+RB0) mod 6 @0xB6B4",
+    "companionMod6": "(R8E-2) mod 6 @0xB6E9",
+    "airIndex": "2*RW8E @0xADE4",
+    "oemCylNumbers": "unproven"
+  },
+  "ch1GateTest": {
+    "verdict": "rejected_as_software_accept_gate",
+    "evidence": [
+      "All STB [RW74]/0x440 waits use PORT1.6/1.7 only",
+      "#0x71 @0xA7B1/0xA7DD has no following MMIO write (RET)",
+      "#0x51 @0xAF44 immediately precedes bank preload @0xAF52 but accept is still PORT1.6 after EI"
+    ],
+    "roleOf_0x51": "phase_schedule_before_bank_preload",
+    "hardwareAsicWatchingCh1Pin": "open"
+  },
+  "tiFinalPulse": {
+    "publish": "ST RW42,0x1568 @0xB246",
+    "r42": "Ti[7:0]",
+    "r43": "Ti[15:8]",
+    "handshake": "PORT1.6 ready/busy; PORT1.7->RW8C"
+  },
+  "open": [
+    "RC7_per_bit_OEM_names",
+    "RW8E_to_OEM_cyl_1_6_and_pins",
+    "0x440_ASIC_identity",
+    "hardware_CH1_pin_vs_ASIC_accept"
+  ],
+  "related": [
+    "tools/re/out/engine_control_dataflow_summary.md",
+    "tools/re/out/irq_ram_publications.md"
+  ]
+}

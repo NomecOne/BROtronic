@@ -1,0 +1,3261 @@
+{
+  "schemaVersion": 1,
+  "id": "tuning_data_catalog_v1",
+  "rom": "BMW DME413 SW623 D466.29 C16x900A 94 RedLabel.bin",
+  "addressing": {
+    "RW68": "0xD002",
+    "RW6A": "0xD106",
+    "RW6C": "0xD28E",
+    "RW6E": "0xE67E",
+    "loader": "0x412C → 0x20B5 → 0x2EDB (FE14)"
+  },
+  "shippingNote": "Research-only human-facing RE catalog. Absolute CODE→CAL proven 69/69. Do not auto-promote shipping packs. Do not invent unproven actuator pin maps. D23D is XDF-mislabel reconcile only.",
+  "coverage": {
+    "totalEntries": 69,
+    "withCodeRefs": 69,
+    "absolute": "69/69",
+    "reconciledXdfMislabels": 1
+  },
+  "seeAlso": [
+    "tools/re/out/control_flowcharts.md",
+    "tools/re/out/engine_control_dataflow_summary.md",
+    "tools/re/out/absolute_code_reads.json",
+    "tools/re/out/ignition_fuel_dataflow.md",
+    "tools/re/out/theory_vs_rom_bosch_ti.md"
+  ],
+  "entries": [
+    {
+      "offset": "0xD030",
+      "offsetDec": 53296,
+      "name": "0xD030[16bit] Inj. Constant(Ti) lb/h@3.5B|*DO NOT EDIT ALONE*",
+      "domain": "fuel",
+      "role": "scalar",
+      "sizeBits": 16,
+      "rows": 1,
+      "cols": 1,
+      "formula": "(17.16/x) * 43478",
+      "category": "Fuel",
+      "methods": [
+        "long_index_or_maf"
+      ],
+      "purpose": "PROVEN: Injector constant Ti: LD/DIVU via RW68+0x2E; combines with load×period to form pulse words 0x153A/0x1540 before MMIO @0x440.",
+      "purposeProven": [
+        "Injector constant Ti: LD/DIVU via RW68+0x2E; combines with load×period to form pulse words 0x153A/0x1540 before MMIO @0x440."
+      ],
+      "purposeHypothesis": [],
+      "codeRefs": [
+        {
+          "addr": "0x9A82",
+          "insn": "DIVU RL1C,0x2e, TABLE[RW68]",
+          "kind": "long_index",
+          "eaHex": "0xD030",
+          "reg": "RW68",
+          "immHex": "0x2E",
+          "path": null,
+          "note": null,
+          "status": null
+        },
+        {
+          "addr": "0xAFC7",
+          "insn": "LD RW40,0x2e[RW68]",
+          "kind": "long_index",
+          "eaHex": "0xD030",
+          "reg": "RW68",
+          "immHex": "0x2E",
+          "path": null,
+          "note": null,
+          "status": null
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD032",
+      "offsetDec": 53298,
+      "name": "0xD032[16bit] RPM, Rev Limit, Soft Fuel Cut",
+      "domain": "fuel",
+      "role": "scalar",
+      "sizeBits": 16,
+      "rows": 1,
+      "cols": 1,
+      "formula": "x * 0.25",
+      "category": "Fuel",
+      "methods": [
+        "long_index_or_maf"
+      ],
+      "purpose": "PROVEN: Soft fuel-cut RPM threshold: CMP vs RW68+0x30 gates fuel cut when RPM exceeds limit.",
+      "purposeProven": [
+        "Soft fuel-cut RPM threshold: CMP vs RW68+0x30 gates fuel cut when RPM exceeds limit."
+      ],
+      "purposeHypothesis": [],
+      "codeRefs": [
+        {
+          "addr": "0xADD5",
+          "insn": "CMP RW40,0x30, TABLE[RW68]",
+          "kind": "long_index",
+          "eaHex": "0xD032",
+          "reg": "RW68",
+          "immHex": "0x30",
+          "path": null,
+          "note": null,
+          "status": null
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD06A",
+      "offsetDec": 53354,
+      "name": "0xD06A[8bit] Fuel, Target AFR of Motronic system",
+      "domain": "fuel",
+      "role": "scalar",
+      "sizeBits": 8,
+      "rows": 1,
+      "cols": 1,
+      "formula": "1/(x/128)*14.7",
+      "category": "Fuel",
+      "methods": [
+        "long_index_or_maf"
+      ],
+      "purpose": "HYPOTHESIS: Closed-loop / enrichment target stoichiometric scalar (BRO XDF); Bosch TI: λ=1 setpoint for mixture control.",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Closed-loop / enrichment target stoichiometric scalar (BRO XDF); Bosch TI: λ=1 setpoint for mixture control."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x5D67",
+          "insn": "LDB R1F,0x68, LOOKUP[RW68]",
+          "kind": "long_index",
+          "eaHex": "0xD06A",
+          "reg": "RW68",
+          "immHex": "0x68",
+          "path": null,
+          "note": null,
+          "status": null
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD093",
+      "offsetDec": 53395,
+      "name": "0xD093[8bit] Ign, Timing delta while in Speed Limiter fuel cut",
+      "domain": "ignition",
+      "role": "adjustment",
+      "sizeBits": 8,
+      "rows": 1,
+      "cols": 1,
+      "formula": "(x - 60) * 0.75",
+      "category": "Ignition",
+      "methods": [
+        "long_index_or_maf"
+      ],
+      "purpose": "HYPOTHESIS: Ignition retard/advance delta while speed-limiter fuel cut is active (BRO XDF).",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Ignition retard/advance delta while speed-limiter fuel cut is active (BRO XDF)."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x68DF",
+          "insn": "LDB R1F,0x91, LOOKUP[RW68]",
+          "kind": "long_index",
+          "eaHex": "0xD093",
+          "reg": "RW68",
+          "immHex": "0x91",
+          "path": null,
+          "note": null,
+          "status": null
+        },
+        {
+          "addr": "0x9322",
+          "insn": "LDB R1D,0x91, LOOKUP[RW68]",
+          "kind": "long_index",
+          "eaHex": "0xD093",
+          "reg": "RW68",
+          "immHex": "0x91",
+          "path": null,
+          "note": null,
+          "status": null
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD0FA",
+      "offsetDec": 53498,
+      "name": "0xD0FA[8bit] Fuel, Trim, Individual Cylinder",
+      "domain": "fuel",
+      "role": "adjustment",
+      "sizeBits": 8,
+      "rows": 8,
+      "cols": 1,
+      "formula": "X",
+      "category": "Fuel",
+      "methods": [
+        "long_index_or_maf"
+      ],
+      "purpose": "PROVEN: Per-cylinder fuel trim bytes: chained LOOKUP from RW68+0xF8; adjusts injector pulse before bank schedule.",
+      "purposeProven": [
+        "Per-cylinder fuel trim bytes: chained LOOKUP from RW68+0xF8; adjusts injector pulse before bank schedule."
+      ],
+      "purposeHypothesis": [],
+      "codeRefs": [
+        {
+          "addr": "0x5B6B",
+          "insn": "LDB R21,0xf8, LOOKUP[RW1E] ; RW1E=RW68, then INC×6",
+          "kind": "chained_base_index",
+          "eaHex": "0xD0FA",
+          "reg": "RW68",
+          "immHex": "0xF8",
+          "path": "0x5B65 LD RW1E,RW68 → 0x5B6B..0x5B79",
+          "note": null,
+          "status": null
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD23D",
+      "offsetDec": 53821,
+      "name": "0xD23D[8bit] Air, MAF, RPM min threshold for MAF signal check",
+      "domain": "sensor",
+      "role": "scalar",
+      "sizeBits": 8,
+      "rows": 1,
+      "cols": 1,
+      "formula": "x * 40",
+      "category": "Ignition",
+      "methods": [
+        "xdf_mislabel_word_reconcile"
+      ],
+      "purpose": "PROVEN: XDF mislabel: CODE reads LE16 @0xD23C (RW6A+0x136) as MAF/RPM plausibility threshold — not a standalone 8-bit @0xD23D. HYPOTHESIS: BRO XDF labels this as RPM min for MAF signal check; retarget XDF to 0xD23C[16bit] before shipping.",
+      "purposeProven": [
+        "XDF mislabel: CODE reads LE16 @0xD23C (RW6A+0x136) as MAF/RPM plausibility threshold — not a standalone 8-bit @0xD23D."
+      ],
+      "purposeHypothesis": [
+        "BRO XDF labels this as RPM min for MAF signal check; retarget XDF to 0xD23C[16bit] before shipping."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x52E3",
+          "insn": "CMP RW1C,0x136, TABLE[RW6A]",
+          "kind": "xdf_mislabel_word_high_byte",
+          "eaHex": "0xD23C",
+          "reg": "RW6A",
+          "immHex": "0x136",
+          "path": null,
+          "note": "XDF 8-bit @0xD23D is the high byte of the LE16 word at 0xD23C read by CODE. Not a true standalone 8-bit item.",
+          "status": "absolute_reconciled_xdf_mislabel"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute_reconciled_xdf_mislabel",
+      "confidence": "high_reconciled_do_not_ship",
+      "shippingNote": "Do not auto-promote. Wait for XDF retarget to 0xD23C[16bit].",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD23E",
+      "offsetDec": 53822,
+      "name": "0xD23E[16bit] Air, MAF, High Fault Limit kg/h",
+      "domain": "sensor",
+      "role": "scalar",
+      "sizeBits": 16,
+      "rows": 1,
+      "cols": 1,
+      "formula": "x * 0.25",
+      "category": "Sensors",
+      "methods": [
+        "long_index_or_maf"
+      ],
+      "purpose": "PROVEN: MAF plausibility / limit scalar under RW6A sensor block; CMP/MULU long-index gates MAF high/low or ratio faults.",
+      "purposeProven": [
+        "MAF plausibility / limit scalar under RW6A sensor block; CMP/MULU long-index gates MAF high/low or ratio faults."
+      ],
+      "purposeHypothesis": [],
+      "codeRefs": [
+        {
+          "addr": "0x9AA2",
+          "insn": "CMP RW24,0x138, TABLE[RW6A]",
+          "kind": "long_index",
+          "eaHex": "0xD23E",
+          "reg": "RW6A",
+          "immHex": "0x138",
+          "path": null,
+          "note": null,
+          "status": null
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD240",
+      "offsetDec": 53824,
+      "name": "0xD240[16bit] Air, MAF, Low Fault Limit kg/h",
+      "domain": "sensor",
+      "role": "scalar",
+      "sizeBits": 16,
+      "rows": 1,
+      "cols": 1,
+      "formula": "x * 0.25",
+      "category": "Sensors",
+      "methods": [
+        "long_index_or_maf"
+      ],
+      "purpose": "PROVEN: MAF plausibility / limit scalar under RW6A sensor block; CMP/MULU long-index gates MAF high/low or ratio faults.",
+      "purposeProven": [
+        "MAF plausibility / limit scalar under RW6A sensor block; CMP/MULU long-index gates MAF high/low or ratio faults."
+      ],
+      "purposeHypothesis": [],
+      "codeRefs": [
+        {
+          "addr": "0x9AC4",
+          "insn": "CMP RW24,0x13a, TABLE[RW6A]",
+          "kind": "long_index",
+          "eaHex": "0xD240",
+          "reg": "RW6A",
+          "immHex": "0x13A",
+          "path": null,
+          "note": null,
+          "status": null
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD244",
+      "offsetDec": 53828,
+      "name": "0xD244[16bit] Air, MAF, MAF/RPM Ratio Limit",
+      "domain": "sensor",
+      "role": "scalar",
+      "sizeBits": 16,
+      "rows": 1,
+      "cols": 1,
+      "formula": "x * 0.00001",
+      "category": "Sensors",
+      "methods": [
+        "long_index_or_maf"
+      ],
+      "purpose": "PROVEN: MAF plausibility / limit scalar under RW6A sensor block; CMP/MULU long-index gates MAF high/low or ratio faults.",
+      "purposeProven": [
+        "MAF plausibility / limit scalar under RW6A sensor block; CMP/MULU long-index gates MAF high/low or ratio faults."
+      ],
+      "purposeHypothesis": [],
+      "codeRefs": [
+        {
+          "addr": "0x9AAE",
+          "insn": "MULU RL20,0x13e, TABLE[RW6A]",
+          "kind": "long_index",
+          "eaHex": "0xD244",
+          "reg": "RW6A",
+          "immHex": "0x13E",
+          "path": null,
+          "note": null,
+          "status": null
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD256",
+      "offsetDec": 53846,
+      "name": "0xD256[8bit] Coolant Temp Sensor max signal@min volts RAW",
+      "domain": "sensor",
+      "role": "scalar",
+      "sizeBits": 8,
+      "rows": 1,
+      "cols": 1,
+      "formula": "X",
+      "category": "Ignition",
+      "methods": [
+        "long_index_or_maf"
+      ],
+      "purpose": "HYPOTHESIS: Temperature sensor bound or temp-dependent correction (BRO XDF Sensors).",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Temperature sensor bound or temp-dependent correction (BRO XDF Sensors)."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x5358",
+          "insn": "CMPB R49,0x150, LOOKUP[RW6A]",
+          "kind": "long_index",
+          "eaHex": "0xD256",
+          "reg": "RW6A",
+          "immHex": "0x150",
+          "path": null,
+          "note": null,
+          "status": null
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD257",
+      "offsetDec": 53847,
+      "name": "0xD257[8bit] Coolant Temp Sensor min signal@max volts RAW",
+      "domain": "sensor",
+      "role": "scalar",
+      "sizeBits": 8,
+      "rows": 1,
+      "cols": 1,
+      "formula": "X",
+      "category": "Ignition",
+      "methods": [
+        "long_index_or_maf"
+      ],
+      "purpose": "HYPOTHESIS: Temperature sensor bound or temp-dependent correction (BRO XDF Sensors).",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Temperature sensor bound or temp-dependent correction (BRO XDF Sensors)."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x535F",
+          "insn": "CMPB R49,0x151, LOOKUP[RW6A]",
+          "kind": "long_index",
+          "eaHex": "0xD257",
+          "reg": "RW6A",
+          "immHex": "0x151",
+          "path": null,
+          "note": null,
+          "status": null
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD25A",
+      "offsetDec": 53850,
+      "name": "0xD25A[8bit] Air, IAT max signal",
+      "domain": "sensor",
+      "role": "scalar",
+      "sizeBits": 8,
+      "rows": 1,
+      "cols": 1,
+      "formula": "X",
+      "category": "Ignition",
+      "methods": [
+        "long_index_or_maf"
+      ],
+      "purpose": "HYPOTHESIS: Temperature sensor bound or temp-dependent correction (BRO XDF Sensors).",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Temperature sensor bound or temp-dependent correction (BRO XDF Sensors)."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x52F5",
+          "insn": "CMPB R49,0x154, LOOKUP[RW6A]",
+          "kind": "long_index",
+          "eaHex": "0xD25A",
+          "reg": "RW6A",
+          "immHex": "0x154",
+          "path": null,
+          "note": null,
+          "status": null
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD25B",
+      "offsetDec": 53851,
+      "name": "0xD25B[8bit] Air, IAT min signal",
+      "domain": "sensor",
+      "role": "scalar",
+      "sizeBits": 8,
+      "rows": 1,
+      "cols": 1,
+      "formula": "X",
+      "category": "Ignition",
+      "methods": [
+        "long_index_or_maf"
+      ],
+      "purpose": "HYPOTHESIS: Temperature sensor bound or temp-dependent correction (BRO XDF Sensors).",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Temperature sensor bound or temp-dependent correction (BRO XDF Sensors)."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x52FC",
+          "insn": "CMPB R49,0x155, LOOKUP[RW6A]",
+          "kind": "long_index",
+          "eaHex": "0xD25B",
+          "reg": "RW6A",
+          "immHex": "0x155",
+          "path": null,
+          "note": null,
+          "status": null
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD27B",
+      "offsetDec": 53883,
+      "name": "0xD27B[8bit] Speed, RPM Threshold to activate speed signal check",
+      "domain": "sensor",
+      "role": "scalar",
+      "sizeBits": 8,
+      "rows": 1,
+      "cols": 1,
+      "formula": "x * 40",
+      "category": "Ignition",
+      "methods": [
+        "long_index_or_maf"
+      ],
+      "purpose": "HYPOTHESIS: Vehicle-speed signal plausibility or limiter threshold (BRO XDF).",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Vehicle-speed signal plausibility or limiter threshold (BRO XDF)."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x92B0",
+          "insn": "CMPB RD0,0x175, LOOKUP[RW6A]",
+          "kind": "long_index",
+          "eaHex": "0xD27B",
+          "reg": "RW6A",
+          "immHex": "0x175",
+          "path": null,
+          "note": null,
+          "status": null
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD27D",
+      "offsetDec": 53885,
+      "name": "0xD27D[8bit] Speed, Counter? Threshold for speed signal check DTC 42",
+      "domain": "sensor",
+      "role": "scalar",
+      "sizeBits": 8,
+      "rows": 1,
+      "cols": 1,
+      "formula": "x",
+      "category": "Ignition",
+      "methods": [
+        "long_index_or_maf"
+      ],
+      "purpose": "HYPOTHESIS: Vehicle-speed signal plausibility or limiter threshold (BRO XDF).",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Vehicle-speed signal plausibility or limiter threshold (BRO XDF)."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x92BD",
+          "insn": "CMPB R1C,0x177, LOOKUP[RW6A]",
+          "kind": "long_index",
+          "eaHex": "0xD27D",
+          "reg": "RW6A",
+          "immHex": "0x177",
+          "path": null,
+          "note": null,
+          "status": null
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD27E",
+      "offsetDec": 53886,
+      "name": "0xD27E[8bit] RPM, Rev Limit, IF no speed signal",
+      "domain": "sensor",
+      "role": "scalar",
+      "sizeBits": 8,
+      "rows": 1,
+      "cols": 1,
+      "formula": "x * 40",
+      "category": "Ignition",
+      "methods": [
+        "long_index_or_maf"
+      ],
+      "purpose": "PROVEN: RPM threshold for soft fuel cut / rev-limit behavior. HYPOTHESIS: Part of contiguous MAF/sensor/speed/spark-limit scalar block under RW6A (BRO XDF).",
+      "purposeProven": [
+        "RPM threshold for soft fuel cut / rev-limit behavior."
+      ],
+      "purposeHypothesis": [
+        "Part of contiguous MAF/sensor/speed/spark-limit scalar block under RW6A (BRO XDF)."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x934D",
+          "insn": "CMPB RD0,0x27c, LOOKUP[RW68]",
+          "kind": "long_index",
+          "eaHex": "0xD27E",
+          "reg": "RW68",
+          "immHex": "0x27C",
+          "path": null,
+          "note": null,
+          "status": null
+        },
+        {
+          "addr": "0x9369",
+          "insn": "CMPB RD0,0x27c, LOOKUP[RW68]",
+          "kind": "long_index",
+          "eaHex": "0xD27E",
+          "reg": "RW68",
+          "immHex": "0x27C",
+          "path": null,
+          "note": null,
+          "status": null
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD281",
+      "offsetDec": 53889,
+      "name": "0xD281[8bit] Ign., Spark Fault",
+      "domain": "sensor",
+      "role": "scalar",
+      "sizeBits": 8,
+      "rows": 1,
+      "cols": 1,
+      "formula": "X",
+      "category": "Ignition",
+      "methods": [
+        "long_index_or_maf"
+      ],
+      "purpose": "HYPOTHESIS: Knock / spark-fault diagnostic scalar or sensitivity table (BRO XDF Knock).",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Knock / spark-fault diagnostic scalar or sensitivity table (BRO XDF Knock)."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0xAB3B",
+          "insn": "CMPB R38,0x17b, LOOKUP[RW6A]",
+          "kind": "long_index",
+          "eaHex": "0xD281",
+          "reg": "RW6A",
+          "immHex": "0x17B",
+          "path": null,
+          "note": null,
+          "status": null
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD288",
+      "offsetDec": 53896,
+      "name": "0xD288 Knock Sensor DTC related",
+      "domain": "sensor",
+      "role": "scalar",
+      "sizeBits": 8,
+      "rows": 1,
+      "cols": 1,
+      "formula": "X",
+      "category": "XDF",
+      "methods": [
+        "long_index_or_maf"
+      ],
+      "purpose": "HYPOTHESIS: Knock / spark-fault diagnostic scalar or sensitivity table (BRO XDF Knock).",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Knock / spark-fault diagnostic scalar or sensitivity table (BRO XDF Knock)."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x6AAF",
+          "insn": "CMPB RD0,0x182, LOOKUP[RW6A]",
+          "kind": "long_index",
+          "eaHex": "0xD288",
+          "reg": "RW6A",
+          "immHex": "0x182",
+          "path": null,
+          "note": null,
+          "status": null
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD290",
+      "offsetDec": 53904,
+      "name": "0xD290[Func|5V|256]MAF Cal. kg/h",
+      "domain": "sensor",
+      "role": "table",
+      "sizeBits": 16,
+      "rows": 256,
+      "cols": 1,
+      "formula": "X",
+      "category": "Sensors",
+      "methods": [
+        "long_index_or_maf"
+      ],
+      "purpose": "PROVEN: ADC ISR (vec5) word table: scales AD_resulthi → air-mass proxy (RW64 accumulate). Feeds fuel/ign load axes.",
+      "purposeProven": [
+        "ADC ISR (vec5) word table: scales AD_resulthi → air-mass proxy (RW64 accumulate). Feeds fuel/ign load axes."
+      ],
+      "purposeHypothesis": [],
+      "codeRefs": [
+        {
+          "addr": "0xA53B",
+          "insn": "ADD RW64,0x2[RW46] ; RW46=RW6C+2*AD_resulthi",
+          "kind": "maf_adc_word_table",
+          "eaHex": "0xD290",
+          "reg": "RW6C",
+          "immHex": "0x2",
+          "path": "0xA4AA ISR → 0xA52A..0xA53B",
+          "note": null,
+          "status": null
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD5A6",
+      "offsetDec": 54694,
+      "name": "0xD5A6[D0|R6|A]Fuel, Cranking, Axis, RPM",
+      "domain": "fuel",
+      "role": "axis",
+      "sizeBits": 16,
+      "rows": 6,
+      "cols": 1,
+      "formula": "X",
+      "category": "Fuel",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: Cranking fuel RPM axis or cranking enrichment (BRO XDF); Bosch TI: start enrichment vs RPM.",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Cranking fuel RPM axis or cranking enrichment (BRO XDF); Bosch TI: start enrichment vs RPM."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x834E",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE682]=0xD5A4 / XDF 0xD5A6",
+          "kind": "descriptor_header",
+          "eaHex": "0xD5A6",
+          "descIndexHex": "0x4",
+          "slotHex": "0xE682",
+          "ptrHex": "0xD5A4",
+          "headerDelta": -2,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD5E6",
+      "offsetDec": 54758,
+      "name": "0xD5E6[D0xD6|8x8] VANOS, PT, Dwell Retarded ?",
+      "domain": "ignition",
+      "role": "table",
+      "sizeBits": 8,
+      "rows": 8,
+      "cols": 8,
+      "formula": "X",
+      "category": "XDF",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: Coil dwell (charge time) map/axis — VANOS PT/WOT variants (BRO XDF); feeds dwell before spark HSO.0.",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Coil dwell (charge time) map/axis — VANOS PT/WOT variants (BRO XDF); feeds dwell before spark HSO.0."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x8374",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE686]=0xD5D2 / XDF 0xD5E6",
+          "kind": "descriptor_header",
+          "eaHex": "0xD5E6",
+          "descIndexHex": "0x8",
+          "slotHex": "0xE686",
+          "ptrHex": "0xD5D2",
+          "headerDelta": -20,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD63A",
+      "offsetDec": 54842,
+      "name": "0xD63A[D0xD6|8x8] VANOS, PT, Dwell Advanced ?",
+      "domain": "ignition",
+      "role": "table",
+      "sizeBits": 8,
+      "rows": 8,
+      "cols": 8,
+      "formula": "X",
+      "category": "XDF",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: Coil dwell (charge time) map/axis — VANOS PT/WOT variants (BRO XDF); feeds dwell before spark HSO.0.",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Coil dwell (charge time) map/axis — VANOS PT/WOT variants (BRO XDF); feeds dwell before spark HSO.0."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x837E",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE688]=0xD626 / XDF 0xD63A",
+          "kind": "descriptor_header",
+          "eaHex": "0xD63A",
+          "descIndexHex": "0xA",
+          "slotHex": "0xE688",
+          "ptrHex": "0xD626",
+          "headerDelta": -20,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        },
+        {
+          "addr": "0x8387",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE688]=0xD626 / XDF 0xD63A",
+          "kind": "descriptor_header",
+          "eaHex": "0xD63A",
+          "descIndexHex": "0xA",
+          "slotHex": "0xE688",
+          "ptrHex": "0xD626",
+          "headerDelta": -20,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD67C",
+      "offsetDec": 54908,
+      "name": "0xD67C[D0|R16|A] VANOS, WOT, Dwell Retarded, Axis, RPM",
+      "domain": "ignition",
+      "role": "axis",
+      "sizeBits": 8,
+      "rows": 16,
+      "cols": 1,
+      "formula": "X",
+      "category": "XDF",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: Coil dwell (charge time) map/axis — VANOS PT/WOT variants (BRO XDF); feeds dwell before spark HSO.0.",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Coil dwell (charge time) map/axis — VANOS PT/WOT variants (BRO XDF); feeds dwell before spark HSO.0."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x835A",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE68A]=0xD67A / XDF 0xD67C",
+          "kind": "descriptor_header",
+          "eaHex": "0xD67C",
+          "descIndexHex": "0xC",
+          "slotHex": "0xE68A",
+          "ptrHex": "0xD67A",
+          "headerDelta": -2,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD69E",
+      "offsetDec": 54942,
+      "name": "0xD69E[D0|R16|A] VANOS, WOT, Dwell Advanced, Axis, RPM",
+      "domain": "ignition",
+      "role": "axis",
+      "sizeBits": 8,
+      "rows": 16,
+      "cols": 1,
+      "formula": "X",
+      "category": "XDF",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: Coil dwell (charge time) map/axis — VANOS PT/WOT variants (BRO XDF); feeds dwell before spark HSO.0.",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Coil dwell (charge time) map/axis — VANOS PT/WOT variants (BRO XDF); feeds dwell before spark HSO.0."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x8364",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE68C]=0xD69C / XDF 0xD69E",
+          "kind": "descriptor_header",
+          "eaHex": "0xD69E",
+          "descIndexHex": "0xE",
+          "slotHex": "0xE68C",
+          "ptrHex": "0xD69C",
+          "headerDelta": -2,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        },
+        {
+          "addr": "0x836D",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE68C]=0xD69C / XDF 0xD69E",
+          "kind": "descriptor_header",
+          "eaHex": "0xD69E",
+          "descIndexHex": "0xE",
+          "slotHex": "0xE68C",
+          "ptrHex": "0xD69C",
+          "headerDelta": -2,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD6AE",
+      "offsetDec": 54958,
+      "name": "0xD6AE[D0|16x1] VANOS, WOT, Dwell Advanced",
+      "domain": "ignition",
+      "role": "table",
+      "sizeBits": 16,
+      "rows": 16,
+      "cols": 1,
+      "formula": "X",
+      "category": "XDF",
+      "methods": [
+        "descriptor_header",
+        "descriptor_map_member"
+      ],
+      "purpose": "HYPOTHESIS: Coil dwell (charge time) map/axis — VANOS PT/WOT variants (BRO XDF); feeds dwell before spark HSO.0.",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Coil dwell (charge time) map/axis — VANOS PT/WOT variants (BRO XDF); feeds dwell before spark HSO.0."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x8364",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE68C]=0xD69C / XDF 0xD6AE",
+          "kind": "descriptor_header",
+          "eaHex": "0xD6AE",
+          "descIndexHex": "0xE",
+          "slotHex": "0xE68C",
+          "ptrHex": "0xD69C",
+          "headerDelta": -18,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        },
+        {
+          "addr": "0x836D",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE68C]=0xD69C / XDF 0xD6AE",
+          "kind": "descriptor_header",
+          "eaHex": "0xD6AE",
+          "descIndexHex": "0xE",
+          "slotHex": "0xE68C",
+          "ptrHex": "0xD69C",
+          "headerDelta": -18,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        },
+        {
+          "addr": "0x8364",
+          "insn": "descriptor select → 0x20C7/0x20CD → [0xE68C]=0xD69C / XDF 0xD6AE",
+          "kind": "descriptor_map_body",
+          "eaHex": "0xD6AE",
+          "descIndexHex": "0xE",
+          "slotHex": "0xE68C",
+          "ptrHex": "0xD69C",
+          "interp": null
+        },
+        {
+          "addr": "0x836D",
+          "insn": "descriptor select → 0x20C7/0x20CD → [0xE68C]=0xD69C / XDF 0xD6AE",
+          "kind": "descriptor_map_body",
+          "eaHex": "0xD6AE",
+          "descIndexHex": "0xE",
+          "slotHex": "0xE68C",
+          "ptrHex": "0xD69C",
+          "interp": null
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD6C6",
+      "offsetDec": 54982,
+      "name": "0xD6C6[D7|6x1] VANOS, TMOT/ECT Engine temperature fak ??",
+      "domain": "ignition",
+      "role": "table",
+      "sizeBits": 8,
+      "rows": 6,
+      "cols": 1,
+      "formula": "X",
+      "category": "XDF",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: Temperature sensor bound or temp-dependent correction (BRO XDF Sensors).",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Temperature sensor bound or temp-dependent correction (BRO XDF Sensors)."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x83A5",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE68E]=0xD6BE / XDF 0xD6C6",
+          "kind": "descriptor_header",
+          "eaHex": "0xD6C6",
+          "descIndexHex": "0x10",
+          "slotHex": "0xE68E",
+          "ptrHex": "0xD6BE",
+          "headerDelta": -8,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD6E8",
+      "offsetDec": 55016,
+      "name": "0xD6E8[D0|R8|A] VANOS, Load MIN For Advance, Axis, RPM",
+      "domain": "ignition",
+      "role": "axis",
+      "sizeBits": 8,
+      "rows": 8,
+      "cols": 1,
+      "formula": "X",
+      "category": "XDF",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: RPM axis for VANOS-gated table (BRO XDF).",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "RPM axis for VANOS-gated table (BRO XDF)."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x58D2",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE696]=0xD6E6 / XDF 0xD6E8",
+          "kind": "descriptor_header",
+          "eaHex": "0xD6E8",
+          "descIndexHex": "0x18",
+          "slotHex": "0xE696",
+          "ptrHex": "0xD6E6",
+          "headerDelta": -2,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD6FA",
+      "offsetDec": 55034,
+      "name": "0xD6FA[D0|R8|A] VANOS, Load MAX For Retard, Axis, RPM",
+      "domain": "ignition",
+      "role": "axis",
+      "sizeBits": 8,
+      "rows": 8,
+      "cols": 1,
+      "formula": "X",
+      "category": "XDF",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: RPM axis for VANOS-gated table (BRO XDF).",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "RPM axis for VANOS-gated table (BRO XDF)."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x590E",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE698]=0xD6F8 / XDF 0xD6FA",
+          "kind": "descriptor_header",
+          "eaHex": "0xD6FA",
+          "descIndexHex": "0x1A",
+          "slotHex": "0xE698",
+          "ptrHex": "0xD6F8",
+          "headerDelta": -2,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD722",
+      "offsetDec": 55074,
+      "name": "0xD722[D0|8x1] VANOS, DK MIN For Override Retard ?",
+      "domain": "ignition",
+      "role": "table",
+      "sizeBits": 8,
+      "rows": 8,
+      "cols": 1,
+      "formula": "X",
+      "category": "XDF",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: RPM axis for VANOS-gated table (BRO XDF).",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "RPM axis for VANOS-gated table (BRO XDF)."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x5924",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE69C]=0xD718 / XDF 0xD722",
+          "kind": "descriptor_header",
+          "eaHex": "0xD722",
+          "descIndexHex": "0x1E",
+          "slotHex": "0xE69C",
+          "ptrHex": "0xD718",
+          "headerDelta": -10,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD734",
+      "offsetDec": 55092,
+      "name": "0xD734[D0|8x1] VANOS, DK MAX For NO Override Retard ??",
+      "domain": "ignition",
+      "role": "table",
+      "sizeBits": 8,
+      "rows": 8,
+      "cols": 1,
+      "formula": "X",
+      "category": "XDF",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: RPM axis for VANOS-gated table (BRO XDF).",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "RPM axis for VANOS-gated table (BRO XDF)."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x58F4",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE69E]=0xD72A / XDF 0xD734",
+          "kind": "descriptor_header",
+          "eaHex": "0xD734",
+          "descIndexHex": "0x20",
+          "slotHex": "0xE69E",
+          "ptrHex": "0xD72A",
+          "headerDelta": -10,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD75E",
+      "offsetDec": 55134,
+      "name": "0xD75E[D8|R5|A]Fuel, Voltage, Axis, Voltage",
+      "domain": "fuel",
+      "role": "axis",
+      "sizeBits": 16,
+      "rows": 5,
+      "cols": 1,
+      "formula": "X",
+      "category": "Fuel",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: Battery-voltage axis for injector dead-time / voltage correction (BRO XDF).",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Battery-voltage axis for injector dead-time / voltage correction (BRO XDF)."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x5B1E",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE6A6]=0xD75C / XDF 0xD75E",
+          "kind": "descriptor_header",
+          "eaHex": "0xD75E",
+          "descIndexHex": "0x28",
+          "slotHex": "0xE6A6",
+          "ptrHex": "0xD75C",
+          "headerDelta": -2,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD815",
+      "offsetDec": 55317,
+      "name": "0xD815[D7|6x1] (suspect for warm up enrich?)",
+      "domain": "fuel",
+      "role": "adjustment",
+      "sizeBits": 8,
+      "rows": 6,
+      "cols": 1,
+      "formula": "X",
+      "category": "XDF",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: Fuel calibration item (BRO XDF name); confirm loop role via selectSites/long-index.",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Fuel calibration item (BRO XDF name); confirm loop role via selectSites/long-index."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x5E4D",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE6B4]=0xD80D / XDF 0xD815",
+          "kind": "descriptor_header",
+          "eaHex": "0xD815",
+          "descIndexHex": "0x36",
+          "slotHex": "0xE6B4",
+          "ptrHex": "0xD80D",
+          "headerDelta": -8,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD8B1",
+      "offsetDec": 55473,
+      "name": "0xD8B1 D7xD4 Knock sensor sensitivity by Temp?",
+      "domain": "knock",
+      "role": "table",
+      "sizeBits": 8,
+      "rows": 6,
+      "cols": 6,
+      "formula": "X",
+      "category": "XDF",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: Temperature sensor bound or temp-dependent correction (BRO XDF Sensors).",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Temperature sensor bound or temp-dependent correction (BRO XDF Sensors)."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x5E93",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE6C0]=0xD8A1 / XDF 0xD8B1",
+          "kind": "descriptor_header",
+          "eaHex": "0xD8B1",
+          "descIndexHex": "0x42",
+          "slotHex": "0xE6C0",
+          "ptrHex": "0xD8A1",
+          "headerDelta": -16,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD8EF",
+      "offsetDec": 55535,
+      "name": "0xD8EF[D7|6x1]Fuel, Cold Engine Enrich (Manual | A/T in P|N)",
+      "domain": "fuel",
+      "role": "adjustment",
+      "sizeBits": 8,
+      "rows": 6,
+      "cols": 1,
+      "formula": "X",
+      "category": "Fuel",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: Cold/warm-up fuel enrichment vs temp (BRO XDF); Bosch TI: after-start / warm-up enrichment.",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Cold/warm-up fuel enrichment vs temp (BRO XDF); Bosch TI: after-start / warm-up enrichment."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x5EB2",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE6C4]=0xD8E7 / XDF 0xD8EF",
+          "kind": "descriptor_header",
+          "eaHex": "0xD8EF",
+          "descIndexHex": "0x46",
+          "slotHex": "0xE6C4",
+          "ptrHex": "0xD8E7",
+          "headerDelta": -8,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD8FD",
+      "offsetDec": 55549,
+      "name": "0xD8FD[D7|6x1] Fuel, Cold Engine Enrich (A/T in D|R)",
+      "domain": "fuel",
+      "role": "adjustment",
+      "sizeBits": 8,
+      "rows": 6,
+      "cols": 1,
+      "formula": "X",
+      "category": "Fuel",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: Cold/warm-up fuel enrichment vs temp (BRO XDF); Bosch TI: after-start / warm-up enrichment.",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Cold/warm-up fuel enrichment vs temp (BRO XDF); Bosch TI: after-start / warm-up enrichment."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x5ED2",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE6C6]=0xD8F5 / XDF 0xD8FD",
+          "kind": "descriptor_header",
+          "eaHex": "0xD8FD",
+          "descIndexHex": "0x48",
+          "slotHex": "0xE6C6",
+          "ptrHex": "0xD8F5",
+          "headerDelta": -8,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD91F",
+      "offsetDec": 55583,
+      "name": "0xD91F[D7|6x1] Fuel, Idle, Cold Lambda Correction",
+      "domain": "fuel",
+      "role": "adjustment",
+      "sizeBits": 8,
+      "rows": 1,
+      "cols": 6,
+      "formula": "X",
+      "category": "Fuel",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: Cold-engine lambda correction at idle (BRO XDF).",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Cold-engine lambda correction at idle (BRO XDF)."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x5F01",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE6CC]=0xD917 / XDF 0xD91F",
+          "kind": "descriptor_header",
+          "eaHex": "0xD91F",
+          "descIndexHex": "0x4E",
+          "slotHex": "0xE6CC",
+          "ptrHex": "0xD917",
+          "headerDelta": -8,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD970",
+      "offsetDec": 55664,
+      "name": "0xD970[D0xD5|6x3] Fuel, Idle, Base",
+      "domain": "fuel",
+      "role": "table",
+      "sizeBits": 16,
+      "rows": 6,
+      "cols": 3,
+      "formula": "X",
+      "category": "Fuel",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: Fuel idle base map (BRO XDF); Bosch TI: idle mixture / Ti at idle.",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Fuel idle base map (BRO XDF); Bosch TI: idle mixture / Ti at idle."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x5F4A",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE6DA]=0xD963 / XDF 0xD970",
+          "kind": "descriptor_header",
+          "eaHex": "0xD970",
+          "descIndexHex": "0x5C",
+          "slotHex": "0xE6DA",
+          "ptrHex": "0xD963",
+          "headerDelta": -13,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD984",
+      "offsetDec": 55684,
+      "name": "0xD984 RPM axis for Fuel, WOT, Vanos retarded",
+      "domain": "fuel",
+      "role": "axis",
+      "sizeBits": 8,
+      "rows": 16,
+      "cols": 1,
+      "formula": "X",
+      "category": "Fuel",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: Fuel map RPM axis (WOT/PT × VANOS ret/adv) — BRO XDF; descriptor → map interp.",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Fuel map RPM axis (WOT/PT × VANOS ret/adv) — BRO XDF; descriptor → map interp."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x5F69",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE6DC]=0xD982 / XDF 0xD984",
+          "kind": "descriptor_header",
+          "eaHex": "0xD984",
+          "descIndexHex": "0x5E",
+          "slotHex": "0xE6DC",
+          "ptrHex": "0xD982",
+          "headerDelta": -2,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD9A6",
+      "offsetDec": 55718,
+      "name": "0xD9A6 RPM axis for Fuel, WOT, Vanos advanced",
+      "domain": "fuel",
+      "role": "axis",
+      "sizeBits": 8,
+      "rows": 16,
+      "cols": 1,
+      "formula": "X",
+      "category": "Fuel",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: Fuel map RPM axis (WOT/PT × VANOS ret/adv) — BRO XDF; descriptor → map interp.",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Fuel map RPM axis (WOT/PT × VANOS ret/adv) — BRO XDF; descriptor → map interp."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x5F73",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE6DE]=0xD9A4 / XDF 0xD9A6",
+          "kind": "descriptor_header",
+          "eaHex": "0xD9A6",
+          "descIndexHex": "0x60",
+          "slotHex": "0xE6DE",
+          "ptrHex": "0xD9A4",
+          "headerDelta": -2,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        },
+        {
+          "addr": "0x5F7C",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE6DE]=0xD9A4 / XDF 0xD9A6",
+          "kind": "descriptor_header",
+          "eaHex": "0xD9A6",
+          "descIndexHex": "0x60",
+          "slotHex": "0xE6DE",
+          "ptrHex": "0xD9A4",
+          "headerDelta": -2,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD9C8",
+      "offsetDec": 55752,
+      "name": "0xD9C8 RPM axis for Fuel, PT, Vanos retarded",
+      "domain": "fuel",
+      "role": "axis",
+      "sizeBits": 8,
+      "rows": 16,
+      "cols": 1,
+      "formula": "X",
+      "category": "Fuel",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: Fuel map RPM axis (WOT/PT × VANOS ret/adv) — BRO XDF; descriptor → map interp.",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Fuel map RPM axis (WOT/PT × VANOS ret/adv) — BRO XDF; descriptor → map interp."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x5F83",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE6E0]=0xD9C6 / XDF 0xD9C8",
+          "kind": "descriptor_header",
+          "eaHex": "0xD9C8",
+          "descIndexHex": "0x62",
+          "slotHex": "0xE6E0",
+          "ptrHex": "0xD9C6",
+          "headerDelta": -2,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xD9DA",
+      "offsetDec": 55770,
+      "name": "0xD9DA Load axis for Fuel, PT, Vanos retarded",
+      "domain": "fuel",
+      "role": "axis",
+      "sizeBits": 8,
+      "rows": 1,
+      "cols": 12,
+      "formula": "X",
+      "category": "Fuel",
+      "methods": [
+        "descriptor_header",
+        "descriptor_map_member"
+      ],
+      "purpose": "HYPOTHESIS: Fuel/ign load axis (BRO XDF); typically injection-time scaled load.",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Fuel/ign load axis (BRO XDF); typically injection-time scaled load."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x5F83",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE6E0]=0xD9C6 / XDF 0xD9DA",
+          "kind": "descriptor_header",
+          "eaHex": "0xD9DA",
+          "descIndexHex": "0x62",
+          "slotHex": "0xE6E0",
+          "ptrHex": "0xD9C6",
+          "headerDelta": -20,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        },
+        {
+          "addr": "0x5F83",
+          "insn": "descriptor select → 0x20C7/0x20CD → [0xE6E0]=0xD9C6 / XDF 0xD9DA",
+          "kind": "descriptor_map_sibling_load",
+          "eaHex": "0xD9DA",
+          "descIndexHex": "0x62",
+          "slotHex": "0xE6E0",
+          "ptrHex": "0xD9C6",
+          "interp": null
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xDAA8",
+      "offsetDec": 55976,
+      "name": "0xDAA8 RPM axis for Fuel, PT, Vanos advanced",
+      "domain": "fuel",
+      "role": "axis",
+      "sizeBits": 8,
+      "rows": 16,
+      "cols": 1,
+      "formula": "X",
+      "category": "Fuel",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: Fuel map RPM axis (WOT/PT × VANOS ret/adv) — BRO XDF; descriptor → map interp.",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Fuel map RPM axis (WOT/PT × VANOS ret/adv) — BRO XDF; descriptor → map interp."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x5F8D",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE6E2]=0xDAA6 / XDF 0xDAA8",
+          "kind": "descriptor_header",
+          "eaHex": "0xDAA8",
+          "descIndexHex": "0x64",
+          "slotHex": "0xE6E2",
+          "ptrHex": "0xDAA6",
+          "headerDelta": -2,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        },
+        {
+          "addr": "0x5F96",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE6E2]=0xDAA6 / XDF 0xDAA8",
+          "kind": "descriptor_header",
+          "eaHex": "0xDAA8",
+          "descIndexHex": "0x64",
+          "slotHex": "0xE6E2",
+          "ptrHex": "0xDAA6",
+          "headerDelta": -2,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xDABA",
+      "offsetDec": 55994,
+      "name": "0xDABA Load axis for Fuel, PT, Vanos advanced",
+      "domain": "fuel",
+      "role": "axis",
+      "sizeBits": 8,
+      "rows": 1,
+      "cols": 12,
+      "formula": "X",
+      "category": "Fuel",
+      "methods": [
+        "descriptor_header",
+        "descriptor_map_member"
+      ],
+      "purpose": "HYPOTHESIS: Fuel/ign load axis (BRO XDF); typically injection-time scaled load.",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Fuel/ign load axis (BRO XDF); typically injection-time scaled load."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x5F8D",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE6E2]=0xDAA6 / XDF 0xDABA",
+          "kind": "descriptor_header",
+          "eaHex": "0xDABA",
+          "descIndexHex": "0x64",
+          "slotHex": "0xE6E2",
+          "ptrHex": "0xDAA6",
+          "headerDelta": -20,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        },
+        {
+          "addr": "0x5F96",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE6E2]=0xDAA6 / XDF 0xDABA",
+          "kind": "descriptor_header",
+          "eaHex": "0xDABA",
+          "descIndexHex": "0x64",
+          "slotHex": "0xE6E2",
+          "ptrHex": "0xDAA6",
+          "headerDelta": -20,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        },
+        {
+          "addr": "0x5F8D",
+          "insn": "descriptor select → 0x20C7/0x20CD → [0xE6E2]=0xDAA6 / XDF 0xDABA",
+          "kind": "descriptor_map_sibling_load",
+          "eaHex": "0xDABA",
+          "descIndexHex": "0x64",
+          "slotHex": "0xE6E2",
+          "ptrHex": "0xDAA6",
+          "interp": null
+        },
+        {
+          "addr": "0x5F96",
+          "insn": "descriptor select → 0x20C7/0x20CD → [0xE6E2]=0xDAA6 / XDF 0xDABA",
+          "kind": "descriptor_map_sibling_load",
+          "eaHex": "0xDABA",
+          "descIndexHex": "0x64",
+          "slotHex": "0xE6E2",
+          "ptrHex": "0xDAA6",
+          "interp": null
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xDBC3",
+      "offsetDec": 56259,
+      "name": "0xDBC3[D0xCC|6x7] Alpha-N to load translation, AKA MAF fault limp mode",
+      "domain": "fuel",
+      "role": "table",
+      "sizeBits": 8,
+      "rows": 6,
+      "cols": 7,
+      "formula": "X",
+      "category": "Sensors",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: MAF sensor plausibility / fault gate (BRO XDF + RW6A limit block).",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "MAF sensor plausibility / fault gate (BRO XDF + RW6A limit block)."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x9A4A",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE6EE]=0xDBB2 / XDF 0xDBC3",
+          "kind": "descriptor_header",
+          "eaHex": "0xDBC3",
+          "descIndexHex": "0x70",
+          "slotHex": "0xE6EE",
+          "ptrHex": "0xDBB2",
+          "headerDelta": -17,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xDC21",
+      "offsetDec": 56353,
+      "name": "0xDC21[D0xD5|4x4] Fuel, Accel Enrich, Lambda Correction",
+      "domain": "fuel",
+      "role": "adjustment",
+      "sizeBits": 8,
+      "rows": 4,
+      "cols": 4,
+      "formula": "X",
+      "category": "Fuel",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: Transient fuel (accel enrich / fade / overrun-related) stack (BRO XDF); Bosch TI: acceleration enrichment.",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Transient fuel (accel enrich / fade / overrun-related) stack (BRO XDF); Bosch TI: acceleration enrichment."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x5BE8",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE6F4]=0xDC15 / XDF 0xDC21",
+          "kind": "descriptor_header",
+          "eaHex": "0xDC21",
+          "descIndexHex": "0x76",
+          "slotHex": "0xE6F4",
+          "ptrHex": "0xDC15",
+          "headerDelta": -12,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xDC37",
+      "offsetDec": 56375,
+      "name": "0xDC37[D7|4x1] Fuel, Accel Enrich, TMOT/ECT Lambda Correction",
+      "domain": "fuel",
+      "role": "adjustment",
+      "sizeBits": 8,
+      "rows": 4,
+      "cols": 1,
+      "formula": "X",
+      "category": "Fuel",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: Temperature sensor bound or temp-dependent correction (BRO XDF Sensors).",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Temperature sensor bound or temp-dependent correction (BRO XDF Sensors)."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x5BF2",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE6F6]=0xDC31 / XDF 0xDC37",
+          "kind": "descriptor_header",
+          "eaHex": "0xDC37",
+          "descIndexHex": "0x78",
+          "slotHex": "0xE6F6",
+          "ptrHex": "0xDC31",
+          "headerDelta": -6,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xDC47",
+      "offsetDec": 56391,
+      "name": "0xDC47[D0xD7|4x4] Fuel, Accel Enrich, Fade Out Rate",
+      "domain": "fuel",
+      "role": "adjustment",
+      "sizeBits": 8,
+      "rows": 4,
+      "cols": 4,
+      "formula": "X",
+      "category": "Fuel",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: Transient fuel (accel enrich / fade / overrun-related) stack (BRO XDF); Bosch TI: acceleration enrichment.",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Transient fuel (accel enrich / fade / overrun-related) stack (BRO XDF); Bosch TI: acceleration enrichment."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x5C0B",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE6F8]=0xDC3B / XDF 0xDC47",
+          "kind": "descriptor_header",
+          "eaHex": "0xDC47",
+          "descIndexHex": "0x7A",
+          "slotHex": "0xE6F8",
+          "ptrHex": "0xDC3B",
+          "headerDelta": -12,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xDC63",
+      "offsetDec": 56419,
+      "name": "0xDC63[D0xD7|4x4] Fuel, Accel Enrich, Delta LOAD Attenuation",
+      "domain": "fuel",
+      "role": "adjustment",
+      "sizeBits": 8,
+      "rows": 4,
+      "cols": 4,
+      "formula": "X",
+      "category": "Fuel",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: Transient fuel (accel enrich / fade / overrun-related) stack (BRO XDF); Bosch TI: acceleration enrichment.",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Transient fuel (accel enrich / fade / overrun-related) stack (BRO XDF); Bosch TI: acceleration enrichment."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x5C17",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE6FA]=0xDC57 / XDF 0xDC63",
+          "kind": "descriptor_header",
+          "eaHex": "0xDC63",
+          "descIndexHex": "0x7C",
+          "slotHex": "0xE6FA",
+          "ptrHex": "0xDC57",
+          "headerDelta": -12,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xDC79",
+      "offsetDec": 56441,
+      "name": "0xDC79[D7|4x1] Fuel, Some kind table for overrun fuel cut?",
+      "domain": "fuel",
+      "role": "table",
+      "sizeBits": 8,
+      "rows": 4,
+      "cols": 1,
+      "formula": "X",
+      "category": "Fuel",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: Transient fuel (accel enrich / fade / overrun-related) stack (BRO XDF); Bosch TI: acceleration enrichment.",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Transient fuel (accel enrich / fade / overrun-related) stack (BRO XDF); Bosch TI: acceleration enrichment."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x65C9",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE6FC]=0xDC73 / XDF 0xDC79",
+          "kind": "descriptor_header",
+          "eaHex": "0xDC79",
+          "descIndexHex": "0x7E",
+          "slotHex": "0xE6FC",
+          "ptrHex": "0xDC73",
+          "headerDelta": -6,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xDCCF",
+      "offsetDec": 56527,
+      "name": "0xDCCF[|4x1] Ign., Idle, Cold Engine Timing Correction (Manual | A/T in P or N)",
+      "domain": "ignition",
+      "role": "adjustment",
+      "sizeBits": 8,
+      "rows": 1,
+      "cols": 4,
+      "formula": "X",
+      "category": "Ignition",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: Idle spark timing table Manual/A/T or cold-idle correction (BRO XDF).",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Idle spark timing table Manual/A/T or cold-idle correction (BRO XDF)."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x685B",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE70E]=0xDCC9 / XDF 0xDCCF",
+          "kind": "descriptor_header",
+          "eaHex": "0xDCCF",
+          "descIndexHex": "0x90",
+          "slotHex": "0xE70E",
+          "ptrHex": "0xDCC9",
+          "headerDelta": -6,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xDCD9",
+      "offsetDec": 56537,
+      "name": "0xDCD9[|4x1] Ign., Idle, Cold Engine Timing Correction (A/T in D or R)",
+      "domain": "ignition",
+      "role": "adjustment",
+      "sizeBits": 16,
+      "rows": 1,
+      "cols": 4,
+      "formula": "X",
+      "category": "Ignition",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: Idle spark timing table Manual/A/T or cold-idle correction (BRO XDF).",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Idle spark timing table Manual/A/T or cold-idle correction (BRO XDF)."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x6864",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE710]=0xDCD3 / XDF 0xDCD9",
+          "kind": "descriptor_header",
+          "eaHex": "0xDCD9",
+          "descIndexHex": "0x92",
+          "slotHex": "0xE710",
+          "ptrHex": "0xDCD3",
+          "headerDelta": -6,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xDCF3",
+      "offsetDec": 56563,
+      "name": "0XDCF3[|8x1] Ign., Idle, Timing (Manual | A/T in P|N)",
+      "domain": "ignition",
+      "role": "table",
+      "sizeBits": 8,
+      "rows": 1,
+      "cols": 8,
+      "formula": "X",
+      "category": "Ignition",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: Idle spark timing table Manual/A/T or cold-idle correction (BRO XDF).",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Idle spark timing table Manual/A/T or cold-idle correction (BRO XDF)."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x66C5",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE714]=0xDCE9 / XDF 0xDCF3",
+          "kind": "descriptor_header",
+          "eaHex": "0xDCF3",
+          "descIndexHex": "0x96",
+          "slotHex": "0xE714",
+          "ptrHex": "0xDCE9",
+          "headerDelta": -10,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xDD05",
+      "offsetDec": 56581,
+      "name": "0xDD05[|8x1] Ign., Idle, Timing (A/T in D or R)",
+      "domain": "ignition",
+      "role": "table",
+      "sizeBits": 8,
+      "rows": 1,
+      "cols": 8,
+      "formula": "X",
+      "category": "Ignition",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: Idle spark timing table Manual/A/T or cold-idle correction (BRO XDF).",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Idle spark timing table Manual/A/T or cold-idle correction (BRO XDF)."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x66CC",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE716]=0xDCFB / XDF 0xDD05",
+          "kind": "descriptor_header",
+          "eaHex": "0xDD05",
+          "descIndexHex": "0x98",
+          "slotHex": "0xE716",
+          "ptrHex": "0xDCFB",
+          "headerDelta": -10,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xDD0F",
+      "offsetDec": 56591,
+      "name": "0xDD0F RPM axis for Ignition, WOT, Vanos retarded",
+      "domain": "ignition",
+      "role": "axis",
+      "sizeBits": 8,
+      "rows": 16,
+      "cols": 1,
+      "formula": "X",
+      "category": "Ignition",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "PROVEN: Ign WOT VANOS-retarded RPM axis: descriptor index 0x9A → interp 0x20CD → advance path toward RAM 0x1502 → HSO.0 #0x70. HYPOTHESIS: Ignition map RPM axis (WOT/PT × VANOS ret/adv) — BRO XDF; selectSites → shared interp 0x20C7/0x20CD.",
+      "purposeProven": [
+        "Ign WOT VANOS-retarded RPM axis: descriptor index 0x9A → interp 0x20CD → advance path toward RAM 0x1502 → HSO.0 #0x70."
+      ],
+      "purposeHypothesis": [
+        "Ignition map RPM axis (WOT/PT × VANOS ret/adv) — BRO XDF; selectSites → shared interp 0x20C7/0x20CD."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x66EC",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE718]=0xDD0D / XDF 0xDD0F",
+          "kind": "descriptor_header",
+          "eaHex": "0xDD0F",
+          "descIndexHex": "0x9A",
+          "slotHex": "0xE718",
+          "ptrHex": "0xDD0D",
+          "headerDelta": -2,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xDD21",
+      "offsetDec": 56609,
+      "name": "0xDD21 Load axis for Ignition, WOT, Vanos retarded",
+      "domain": "ignition",
+      "role": "axis",
+      "sizeBits": 8,
+      "rows": 1,
+      "cols": 6,
+      "formula": "X",
+      "category": "Ignition",
+      "methods": [
+        "descriptor_header",
+        "descriptor_map_member"
+      ],
+      "purpose": "HYPOTHESIS: Ignition map load axis (BRO XDF); load from MAF-derived Ti proxy.",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Ignition map load axis (BRO XDF); load from MAF-derived Ti proxy."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x66EC",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE718]=0xDD0D / XDF 0xDD21",
+          "kind": "descriptor_header",
+          "eaHex": "0xDD21",
+          "descIndexHex": "0x9A",
+          "slotHex": "0xE718",
+          "ptrHex": "0xDD0D",
+          "headerDelta": -20,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        },
+        {
+          "addr": "0x66EC",
+          "insn": "descriptor select → 0x20C7/0x20CD → [0xE718]=0xDD0D / XDF 0xDD21",
+          "kind": "descriptor_map_sibling_load",
+          "eaHex": "0xDD21",
+          "descIndexHex": "0x9A",
+          "slotHex": "0xE718",
+          "ptrHex": "0xDD0D",
+          "interp": null
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xDD89",
+      "offsetDec": 56713,
+      "name": "0xDD89 RPM axis for Ignition, WOT, Vanos advanced",
+      "domain": "ignition",
+      "role": "axis",
+      "sizeBits": 8,
+      "rows": 16,
+      "cols": 1,
+      "formula": "X",
+      "category": "Ignition",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: Ignition map RPM axis (WOT/PT × VANOS ret/adv) — BRO XDF; selectSites → shared interp 0x20C7/0x20CD.",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Ignition map RPM axis (WOT/PT × VANOS ret/adv) — BRO XDF; selectSites → shared interp 0x20C7/0x20CD."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x66F6",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE71A]=0xDD87 / XDF 0xDD89",
+          "kind": "descriptor_header",
+          "eaHex": "0xDD89",
+          "descIndexHex": "0x9C",
+          "slotHex": "0xE71A",
+          "ptrHex": "0xDD87",
+          "headerDelta": -2,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        },
+        {
+          "addr": "0x66FF",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE71A]=0xDD87 / XDF 0xDD89",
+          "kind": "descriptor_header",
+          "eaHex": "0xDD89",
+          "descIndexHex": "0x9C",
+          "slotHex": "0xE71A",
+          "ptrHex": "0xDD87",
+          "headerDelta": -2,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xDD9B",
+      "offsetDec": 56731,
+      "name": "0xDD9B Load axis for Ignition, WOT, Vanos advanced",
+      "domain": "ignition",
+      "role": "axis",
+      "sizeBits": 8,
+      "rows": 1,
+      "cols": 6,
+      "formula": "X",
+      "category": "Ignition",
+      "methods": [
+        "descriptor_header",
+        "descriptor_map_member"
+      ],
+      "purpose": "HYPOTHESIS: Ignition map load axis (BRO XDF); load from MAF-derived Ti proxy.",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Ignition map load axis (BRO XDF); load from MAF-derived Ti proxy."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x66F6",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE71A]=0xDD87 / XDF 0xDD9B",
+          "kind": "descriptor_header",
+          "eaHex": "0xDD9B",
+          "descIndexHex": "0x9C",
+          "slotHex": "0xE71A",
+          "ptrHex": "0xDD87",
+          "headerDelta": -20,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        },
+        {
+          "addr": "0x66FF",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE71A]=0xDD87 / XDF 0xDD9B",
+          "kind": "descriptor_header",
+          "eaHex": "0xDD9B",
+          "descIndexHex": "0x9C",
+          "slotHex": "0xE71A",
+          "ptrHex": "0xDD87",
+          "headerDelta": -20,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        },
+        {
+          "addr": "0x66F6",
+          "insn": "descriptor select → 0x20C7/0x20CD → [0xE71A]=0xDD87 / XDF 0xDD9B",
+          "kind": "descriptor_map_sibling_load",
+          "eaHex": "0xDD9B",
+          "descIndexHex": "0x9C",
+          "slotHex": "0xE71A",
+          "ptrHex": "0xDD87",
+          "interp": null
+        },
+        {
+          "addr": "0x66FF",
+          "insn": "descriptor select → 0x20C7/0x20CD → [0xE71A]=0xDD87 / XDF 0xDD9B",
+          "kind": "descriptor_map_sibling_load",
+          "eaHex": "0xDD9B",
+          "descIndexHex": "0x9C",
+          "slotHex": "0xE71A",
+          "ptrHex": "0xDD87",
+          "interp": null
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xDE6D",
+      "offsetDec": 56941,
+      "name": "0xDE6D RPM axis for Ignition, PT, Vanos retarded",
+      "domain": "ignition",
+      "role": "axis",
+      "sizeBits": 8,
+      "rows": 16,
+      "cols": 1,
+      "formula": "X",
+      "category": "Ignition",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: Ignition map RPM axis (WOT/PT × VANOS ret/adv) — BRO XDF; selectSites → shared interp 0x20C7/0x20CD.",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Ignition map RPM axis (WOT/PT × VANOS ret/adv) — BRO XDF; selectSites → shared interp 0x20C7/0x20CD."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x6706",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE726]=0xDE6B / XDF 0xDE6D",
+          "kind": "descriptor_header",
+          "eaHex": "0xDE6D",
+          "descIndexHex": "0xA8",
+          "slotHex": "0xE726",
+          "ptrHex": "0xDE6B",
+          "headerDelta": -2,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xDE7F",
+      "offsetDec": 56959,
+      "name": "0xDE7F Load axis for Ignition, PT, Vanos retarded",
+      "domain": "ignition",
+      "role": "axis",
+      "sizeBits": 8,
+      "rows": 1,
+      "cols": 12,
+      "formula": "X",
+      "category": "Ignition",
+      "methods": [
+        "descriptor_header",
+        "descriptor_map_member"
+      ],
+      "purpose": "HYPOTHESIS: Ignition map load axis (BRO XDF); load from MAF-derived Ti proxy.",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Ignition map load axis (BRO XDF); load from MAF-derived Ti proxy."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x6706",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE726]=0xDE6B / XDF 0xDE7F",
+          "kind": "descriptor_header",
+          "eaHex": "0xDE7F",
+          "descIndexHex": "0xA8",
+          "slotHex": "0xE726",
+          "ptrHex": "0xDE6B",
+          "headerDelta": -20,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        },
+        {
+          "addr": "0x6706",
+          "insn": "descriptor select → 0x20C7/0x20CD → [0xE726]=0xDE6B / XDF 0xDE7F",
+          "kind": "descriptor_map_sibling_load",
+          "eaHex": "0xDE7F",
+          "descIndexHex": "0xA8",
+          "slotHex": "0xE726",
+          "ptrHex": "0xDE6B",
+          "interp": null
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xDF4D",
+      "offsetDec": 57165,
+      "name": "0xDF4D RPM axis for Ignition, PT, Vanos advanced",
+      "domain": "ignition",
+      "role": "axis",
+      "sizeBits": 8,
+      "rows": 16,
+      "cols": 1,
+      "formula": "X",
+      "category": "Ignition",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: Ignition map RPM axis (WOT/PT × VANOS ret/adv) — BRO XDF; selectSites → shared interp 0x20C7/0x20CD.",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Ignition map RPM axis (WOT/PT × VANOS ret/adv) — BRO XDF; selectSites → shared interp 0x20C7/0x20CD."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x6710",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE728]=0xDF4B / XDF 0xDF4D",
+          "kind": "descriptor_header",
+          "eaHex": "0xDF4D",
+          "descIndexHex": "0xAA",
+          "slotHex": "0xE728",
+          "ptrHex": "0xDF4B",
+          "headerDelta": -2,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        },
+        {
+          "addr": "0x6719",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE728]=0xDF4B / XDF 0xDF4D",
+          "kind": "descriptor_header",
+          "eaHex": "0xDF4D",
+          "descIndexHex": "0xAA",
+          "slotHex": "0xE728",
+          "ptrHex": "0xDF4B",
+          "headerDelta": -2,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xDF5F",
+      "offsetDec": 57183,
+      "name": "0xDF5F Load axis for Ignition, PT, Vanos advanced",
+      "domain": "ignition",
+      "role": "axis",
+      "sizeBits": 8,
+      "rows": 1,
+      "cols": 12,
+      "formula": "X",
+      "category": "Ignition",
+      "methods": [
+        "descriptor_header",
+        "descriptor_map_member"
+      ],
+      "purpose": "HYPOTHESIS: Ignition map load axis (BRO XDF); load from MAF-derived Ti proxy.",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Ignition map load axis (BRO XDF); load from MAF-derived Ti proxy."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x6710",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE728]=0xDF4B / XDF 0xDF5F",
+          "kind": "descriptor_header",
+          "eaHex": "0xDF5F",
+          "descIndexHex": "0xAA",
+          "slotHex": "0xE728",
+          "ptrHex": "0xDF4B",
+          "headerDelta": -20,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        },
+        {
+          "addr": "0x6719",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE728]=0xDF4B / XDF 0xDF5F",
+          "kind": "descriptor_header",
+          "eaHex": "0xDF5F",
+          "descIndexHex": "0xAA",
+          "slotHex": "0xE728",
+          "ptrHex": "0xDF4B",
+          "headerDelta": -20,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        },
+        {
+          "addr": "0x6710",
+          "insn": "descriptor select → 0x20C7/0x20CD → [0xE728]=0xDF4B / XDF 0xDF5F",
+          "kind": "descriptor_map_sibling_load",
+          "eaHex": "0xDF5F",
+          "descIndexHex": "0xAA",
+          "slotHex": "0xE728",
+          "ptrHex": "0xDF4B",
+          "interp": null
+        },
+        {
+          "addr": "0x6719",
+          "insn": "descriptor select → 0x20C7/0x20CD → [0xE728]=0xDF4B / XDF 0xDF5F",
+          "kind": "descriptor_map_sibling_load",
+          "eaHex": "0xDF5F",
+          "descIndexHex": "0xAA",
+          "slotHex": "0xE728",
+          "ptrHex": "0xDF4B",
+          "interp": null
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xE044",
+      "offsetDec": 57412,
+      "name": "0xE044 D7xD3 3x4 knock related?likely not.. between vanos and Trans data",
+      "domain": "knock",
+      "role": "table",
+      "sizeBits": 8,
+      "rows": 3,
+      "cols": 4,
+      "formula": "X",
+      "category": "XDF",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: Knock / spark-fault diagnostic scalar or sensitivity table (BRO XDF Knock).",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Knock / spark-fault diagnostic scalar or sensitivity table (BRO XDF Knock)."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x6C47",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE72C]=0xE039 / XDF 0xE044",
+          "kind": "descriptor_header",
+          "eaHex": "0xE044",
+          "descIndexHex": "0xAE",
+          "slotHex": "0xE72C",
+          "ptrHex": "0xE039",
+          "headerDelta": -11,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xE065",
+      "offsetDec": 57445,
+      "name": "0xE065 PT load map data to A/T OR WRONG AND POSSIBLY KNOCK RELATED",
+      "domain": "ignition",
+      "role": "table",
+      "sizeBits": 8,
+      "rows": 12,
+      "cols": 5,
+      "formula": "X",
+      "category": "XDF",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: Knock / spark-fault diagnostic scalar or sensitivity table (BRO XDF Knock).",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Knock / spark-fault diagnostic scalar or sensitivity table (BRO XDF Knock)."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x6C5D",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE72E]=0xE050 / XDF 0xE065",
+          "kind": "descriptor_header",
+          "eaHex": "0xE065",
+          "descIndexHex": "0xB0",
+          "slotHex": "0xE72E",
+          "ptrHex": "0xE050",
+          "headerDelta": -21,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xE0B3",
+      "offsetDec": 57523,
+      "name": "0xE0B3 WOT load map data to A/T OR WRONG AND POSSIBLY KNOCK RELATED",
+      "domain": "ignition",
+      "role": "table",
+      "sizeBits": 16,
+      "rows": 16,
+      "cols": 1,
+      "formula": "X",
+      "category": "XDF",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: Knock / spark-fault diagnostic scalar or sensitivity table (BRO XDF Knock).",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Knock / spark-fault diagnostic scalar or sensitivity table (BRO XDF Knock)."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x6C54",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE730]=0xE0A1 / XDF 0xE0B3",
+          "kind": "descriptor_header",
+          "eaHex": "0xE0B3",
+          "descIndexHex": "0xB2",
+          "slotHex": "0xE730",
+          "ptrHex": "0xE0A1",
+          "headerDelta": -18,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xE0DA",
+      "offsetDec": 57562,
+      "name": "0xE0DA[D0xD8|17x7] Ign., Coil Voltage Correction (dwell)",
+      "domain": "ignition",
+      "role": "adjustment",
+      "sizeBits": 16,
+      "rows": 12,
+      "cols": 7,
+      "formula": "X",
+      "category": "Ignition",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: Coil dwell (charge time) map/axis — VANOS PT/WOT variants (BRO XDF); feeds dwell before spark HSO.0.",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "Coil dwell (charge time) map/axis — VANOS PT/WOT variants (BRO XDF); feeds dwell before spark HSO.0."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x692A",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE732]=0xE0C3 / XDF 0xE0DA",
+          "kind": "descriptor_header",
+          "eaHex": "0xE0DA",
+          "descIndexHex": "0xB4",
+          "slotHex": "0xE732",
+          "ptrHex": "0xE0C3",
+          "headerDelta": -23,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xE364",
+      "offsetDec": 58212,
+      "name": "0xE364[|6x1] Air, Lambda OFF 1 RPM*",
+      "domain": "fuel",
+      "role": "table",
+      "sizeBits": 8,
+      "rows": 6,
+      "cols": 1,
+      "formula": "X",
+      "category": "Sensors",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: RPM tables for open-loop (λ control off) regions (BRO XDF).",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "RPM tables for open-loop (λ control off) regions (BRO XDF)."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x6106",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE74C]=0xE35C / XDF 0xE364",
+          "kind": "descriptor_header",
+          "eaHex": "0xE364",
+          "descIndexHex": "0xCE",
+          "slotHex": "0xE74C",
+          "ptrHex": "0xE35C",
+          "headerDelta": -8,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xE372",
+      "offsetDec": 58226,
+      "name": "0xE372[|6x1] Air, Lambda OFF 2 RPM*",
+      "domain": "fuel",
+      "role": "table",
+      "sizeBits": 8,
+      "rows": 6,
+      "cols": 1,
+      "formula": "X",
+      "category": "Sensors",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: RPM tables for open-loop (λ control off) regions (BRO XDF).",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "RPM tables for open-loop (λ control off) regions (BRO XDF)."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x5B02",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE74E]=0xE36A / XDF 0xE372",
+          "kind": "descriptor_header",
+          "eaHex": "0xE372",
+          "descIndexHex": "0xD0",
+          "slotHex": "0xE74E",
+          "ptrHex": "0xE36A",
+          "headerDelta": -8,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xE37E",
+      "offsetDec": 58238,
+      "name": "0xE37E[|4x1] Air, Lambda OFF 3 RPM*",
+      "domain": "fuel",
+      "role": "table",
+      "sizeBits": 8,
+      "rows": 4,
+      "cols": 1,
+      "formula": "X",
+      "category": "Sensors",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: RPM tables for open-loop (λ control off) regions (BRO XDF).",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "RPM tables for open-loop (λ control off) regions (BRO XDF)."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x6112",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE750]=0xE378 / XDF 0xE37E",
+          "kind": "descriptor_header",
+          "eaHex": "0xE37E",
+          "descIndexHex": "0xD2",
+          "slotHex": "0xE750",
+          "ptrHex": "0xE378",
+          "headerDelta": -6,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    },
+    {
+      "offset": "0xE388",
+      "offsetDec": 58248,
+      "name": "0xE388[|4x1] Air, Lambda OFF 4 RPM*",
+      "domain": "fuel",
+      "role": "table",
+      "sizeBits": 8,
+      "rows": 4,
+      "cols": 1,
+      "formula": "X",
+      "category": "Sensors",
+      "methods": [
+        "descriptor_header"
+      ],
+      "purpose": "HYPOTHESIS: RPM tables for open-loop (λ control off) regions (BRO XDF).",
+      "purposeProven": [],
+      "purposeHypothesis": [
+        "RPM tables for open-loop (λ control off) regions (BRO XDF)."
+      ],
+      "codeRefs": [
+        {
+          "addr": "0x565F",
+          "insn": "descriptor select → 0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A] → [0xE752]=0xE382 / XDF 0xE388",
+          "kind": "descriptor_header",
+          "eaHex": "0xE388",
+          "descIndexHex": "0xD4",
+          "slotHex": "0xE752",
+          "ptrHex": "0xE382",
+          "headerDelta": -6,
+          "interp": "0x20C7/0x20CD → ADD RW1A,RW6E; LD RW4C,[RW1A]"
+        }
+      ],
+      "hasCodeRef": true,
+      "verificationStatus": "absolute",
+      "confidence": "high_absolute_descriptor",
+      "shippingNote": "Research-only; do not auto-promote shipping packs.",
+      "exclusiveGeometry": true,
+      "sources": {
+        "absoluteCodeReads": "tools/re/out/absolute_code_reads.json",
+        "ignitionFuelDataflow": "tools/re/out/ignition_fuel_dataflow.json",
+        "xdf": "tools/re/data/seed.xdf"
+      }
+    }
+  ]
+}

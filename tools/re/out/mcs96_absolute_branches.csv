@@ -1,0 +1,2 @@
+status,note
+rejected,Use mcs96_cfg_edges.csv — LJMP/LCALL are PC-relative not absolute
