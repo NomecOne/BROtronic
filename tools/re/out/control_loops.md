@@ -60,17 +60,15 @@ CODE: `0x2000`–`0xB930` inclusive; DATA from `0xB931`.
   - vec6 `0x200C` stub `0x4190` → `0x20AF` — **serial_sbuf** (medium): Stub → 0x20AF → FUN_2eaa: SBUF/SP_STAT path with POPF+RET. Candidate SCI/diagnostic IRQ.
   - vec7 `0x200E` stub `0x4194` → `0xA49E` — **counter_overflow_helper** (medium): INCB RDB with saturate; POPF+RET. Small helper ISR / soft counter.
 
-### `hso_schedule_outputs` (output_path) — evidence **medium**
+### `hso_schedule_outputs` (output_path) — evidence **high** (ign); **medium** (fuel)
 
-- Status: `cross_checked_sfr_naming_channel_open`
-- Note: SFR audit **cross_checked**: writes named `HSI_status`/`HSI_time` are HSO_COMMAND/HSO_TIME. Channel→actuator still open.
-- Proven schedule sites (shim deepen):
-  - vec2 `@0xA9C5` `LDB HSI_status,#0x74` + `ADD HSI_time,RW7E,R9A` then `STB RA3,PORT2`
-  - vec5 `@0xA4B5/#0x18`, `@0xA592/#0x1a`, `@0xA5AC/#0x33`, `@0xA5B3/#0x2` (+ `@0xA62C/#0x13`, `@0xA633/#0x22`)
-  - FUN_ab11 `@0xAF44` `LDB HSI_status,#0x51` + `ADD HSI_time,RW38,RW7E` (after Ti/air consume)
-- Open:
-  - Which channel bits fire coil vs injectors vs VANOS
-  - Prove Ti RAM `0x153A`/`0x1540` and ign RAM `0x1502`/`0x1512` feed a specific HSO_COMMAND
+- Status: `ign_ch0_proven_inj_ch1_open`
+- Note: SFR audit cross_checked. **Ignition → HSO.0 `#0x70` proven.** Injector CH1 hypothesized.
+- Proven:
+  - Ign: `0x1502`/`0x1512` → `0x1480` queue → `@0xB696 #0x70` (CH0); drain `@0x3E3A`
+  - vec2 `@0xA9C5 #0x74` (CH4) + PORT2; vec5 `#0x18/#0x1A` ADC timers; `#0x33/#0x13/#0x22/#0x02` aux
+  - FUN_ab11 `@0xAF44 #0x51` (CH1 clear, tooth+`0x1A` — not Ti width); `@0xA7B1 #0x71` CH1 set candidate
+- Open: Ti `0x153A`/`0x1540` → injector `HSO_TIME`; CH2/3/4 connector roles
 - Counts: `{'HSI_statusRefs': 37, 'HSI_timeRefs': 49, 'PORT1Refs': 53, 'PORT2Refs': 26}`
 
 ### `map_interp_helper` (shared_runtime) — evidence **medium**

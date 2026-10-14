@@ -42,8 +42,26 @@ ROM: `BMW DME413 SW623 D466.29 C16x900A 94 RedLabel.bin` / `MCS96:LE:16:default`
 
 `0x0`, `0x10`, `0x13`, `0x18`, `0x1a`, `0x2`, `0x20`, `0x21`, `0x22`, `0x27`, `0x30`, `0x33`, `0x4`, `0x51`, `0x7`, `0x70`, `0x71`, `0x74`
 
-## Channel decode
+## Channel decode (v13)
 
-HSO_COMMAND bitfields select channel / set-clear / timer1|2 / interrupt. Observed immediates include 0x00,0x02,0x04,0x07,0x10,0x13,0x18,0x1A,0x20,0x21,0x22,0x27,0x30,0x33,0x51,0x70,0x71,0x74 — not yet mapped to coil vs injector vs VANOS vs fuel-pump.
+Intel `HSO_COMMAND` bitfield: `7:T2RST 6:T2CAM 5:SET 4:INT 3–0:CHANNEL`  
+Channels: `0–5` = HSO.0–.5; `6` = HSO.0+.1; `7` = software timer; `E` = start A/D; `F` = reset Timer2.
+
+| Imm | Bitfield | Role | Evidence |
+|-----|----------|------|----------|
+| `#0x70` | T2CAM+SET+INT+**CH0** | **Coil/spark** | `0x1502`→`0x1480` queue→`0xB696`; drain `0x3E3A` |
+| `#0x30` | SET+INT+CH0 | Ign TIMER1 arm | `0xB69F` same ign path |
+| `#0x20` | SET+CH0 | Ign drain fallback | `0x3E43` |
+| `#0x10` | INT+CH0 | CH0 clear+IRQ | `0x3F38`/`0x3F61` |
+| `#0x71` | T2CAM+SET+INT+**CH1** | Injector-bank **candidate** | `0xA7B1`/`0xA7DD` (tooth-relative; Ti link open) |
+| `#0x51` | T2CAM+INT+CH1 | CH1 clear/sync | `0xAF44` tooth+`0x1A` (not Ti width) |
+| `#0x74` | T2CAM+SET+INT+**CH4** | Crank-sync / cam-side | vec2 `0xA9C5` + `STB RA3,PORT2` |
+| `#0x18` | INT+CH8 | ADC period timer | vec5 `0xA4B5` (+`0x1F4`) |
+| `#0x1A` | INT+CH10 | Timed companion | vec5 `0xA592`/`0xA621` |
+| `#0x33`/`#0x13` | CH3 set+int / int | Aux pair | vec5 |
+| `#0x22`/`#0x02` | CH2 set / clear | Aux pair | vec5 / init |
+
+**Proven actuator:** ignition advance RAM → **HSO.0**.  
+**Open:** Ti pulse RAM → injector on-time (CH1 hypothesized). CH2/3/4 connector identity.
 
 Intel: writes to IOS0 (windowed) can also drive HSO pins directly; this ROM heavily uses HSI_status/HSI_time pairs instead.

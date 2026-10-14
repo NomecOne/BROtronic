@@ -25,13 +25,12 @@
       "note": "Baseline CODE through 0xB930 inclusive (Richard). All 8 IRQ stub landings are inside CODE."
     },
     "openFollowUps": [
-      "IRQ 0xAxxx landings are inside CODE≤0xB930 — review mid-CODE executable vs data-island (irq_stubs_review.json)",
-      "Mid-CODE data islands (XDF claims / pads) still coarsely labeled",
+      "IRQ 0xAxxx landings mid-CODE review (irq_stubs_review.json)",
+      "Mid-CODE data islands still coarsely labeled",
       "Do not promote CODE-derived maps to shipping until map-level cross_checked/verified",
       "Do not claim full CODE+DATA control; verification gates unchanged",
-      "HSO channel decode: #0x18/#0x1A/#0x33/#0x51/#0x74/… + PORT bits → coil vs injector vs VANOS",
-      "Close Ti → HSO: prove schedule after 0x153A/0x1540/RW8A programs injector on-time",
-      "Close ign → HSO: prove schedule after 0x1502/0x1512 programs spark",
+      "Close Ti → injector HSO (CH1 #0x71/#0x51; Ti-width → HSO_TIME still open)",
+      "CH2/CH3/CH4 connector roles (VANOS vs aux)",
       "Optional: deeper [RW4C] body walks for dwell E0DA / Alpha-N DBC3",
       "Optional: retarget seed.xdf 0xD23D → 0xD23C[16bit] before shipping promote",
       "Idle vs run mode RAM flags (0x101E, post-EI FUN_4815)",
@@ -65,15 +64,15 @@
     "ignitionFuelCoverage": {
       "items": 69,
       "ghidraProvenCodeRead": 69,
-      "ghidraProvenPct": 100.0,
+      "ghidraProvenPct": 100,
       "indexBaseCrossCheckedCalContent": 0,
-      "indexBaseCrossCheckedCalContentPct": 0.0,
+      "indexBaseCrossCheckedCalContentPct": 0,
       "exclusiveGeometry": 69,
-      "exclusiveGeometryPct": 100.0,
+      "exclusiveGeometryPct": 100,
       "structuralSplitPtr": 1,
       "registerBasesRomProven": 4,
       "headline": "100.0% absolute (69/69); exclusive geometry 100.0% (69/69); unproven absolute 0; resolved XDF mislabels 1; FE14 CAL bases; D200/D978 retracted.",
-      "note": "v12: absolute 69/69 retained. Control-loop deepen via local shim: Ti→0x153A/0x1540, ign→0x1502/0x1512, MAF RW64 window, IRQ↔RW68 gate, HSO sites listed; channel decode still open. Do not auto-promote shipping."
+      "note": "v13: ign→HSO.0 #0x70 proven via 0x1502/0x1512→0x1480 queue. HSO bitfield decode for priority immediates. Ti→injector HSO still open. Absolute 69/69 retained. Do not auto-promote shipping."
     },
     "priorityTraces": {
       "irqRamPublications": "done_v1_plus_v12_crosslinks",
@@ -117,6 +116,12 @@
           "ti_to_hso_close",
           "ign_to_hso_close"
         ]
+      },
+      "actuatorClose": {
+        "status": "done_v13_partial",
+        "ignToHso0": true,
+        "tiToInjectorHso": false,
+        "hsoDecode": "partial_ch0_proven_ch1_hypothesis"
       }
     }
   }

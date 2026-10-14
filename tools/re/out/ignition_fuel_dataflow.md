@@ -193,17 +193,18 @@ Signature `050605070a05070b0909090f12130860` — exactly 8 hits (exclusive); ign
 - MAF absolute `0xA53B ADD RW64,0x2[RW46] (RW46=RW6C+2·ADC)`
 - Ign WOT `0x66EC LD RW1A,#0x9A → 0x6987 → 0x20CD → DD0D/DD0F`
 
-## Runtime dataflow glue (v12 shim deepen — proven)
+## Runtime dataflow glue (v12–v13)
 
-Absolute CAL coverage unchanged. New: RAM/HSO links between CAL reads and actuators.
+Absolute CAL coverage unchanged.
 
-| Path | Proven flow |
-|------|-------------|
-| MAF window | vec5 accumulate `RW64` ← `0xD290` words; vec2 `CLR RW64` @ tooth; FUN_ab11 `ΔRW64→0x17da[cyl]` |
-| Ti pulse | `0x9A76…9A92`: load×0x32×`0x14CC`÷Ti → **`0x153A`**; `0xAFC7`: Ti×RW8A÷`0x14CC` → **`0x1540`**; consume `0xAE18` |
-| Ign advance | `0x20CD` body walk → ST **`0x1502`/`0x150A`/`0x150C`**; consumers `0xB5B3`, `0xA067…0xA0F0` → **`0x1510`/`0x1512`** |
-| IRQ↔CAL | vec2 `CMP RW92,0x14,TABLE[RW68]` (`0xD016`); HSO `#0x74` + PORT2 |
-| Output HSO | vec5 `#0x18/#0x1A/#0x33/#0x2/#0x13/#0x22`; FUN_ab11 `#0x51` — **channel decode open** |
+| Path | Status | Flow |
+|------|--------|------|
+| MAF window | proven | vec5 `RW64` ← `0xD290`; vec2 clear; FUN_ab11 Δ→`0x17da` |
+| Ti pulse RAM | proven | → **`0x153A`/`0x1540`**; consume `0xAE18`→RW8A |
+| **Ti → injector HSO** | **open** | No `HSO_TIME` from Ti; `0x1540`→RD6 diag only; CH1 `#0x71` hypothesized |
+| Ign advance RAM | proven | → **`0x1502`/`0x1512`** |
+| **Ign → HSO.0** | **proven** | `0xB5B3`→queue `0x1480`→`#0x70` @`0xB696` (drain `0x3E3A`) |
+| HSO decode | partial | CH0=coil proven; CH1=inj candidate; CH4=crank-sync; `#0x18/#0x1A`=ADC timers |
 
 ## Related artifacts
 
