@@ -29,12 +29,12 @@
       "Mid-CODE data islands still coarsely labeled",
       "Do not promote CODE-derived maps to shipping until map-level cross_checked/verified",
       "Do not claim full CODE+DATA control; verification gates unchanged",
-      "Close Ti → injector HSO (CH1 #0x71/#0x51; Ti-width → HSO_TIME still open)",
+      "Decode 0x440 injector-driver MMIO protocol (R42/R43)",
+      "CH1 phase-sync vs Ti-width coupling (CH1 rejected as Ti HSO_TIME)",
       "CH2/CH3/CH4 connector roles (VANOS vs aux)",
       "Optional: deeper [RW4C] body walks for dwell E0DA / Alpha-N DBC3",
       "Optional: retarget seed.xdf 0xD23D → 0xD23C[16bit] before shipping promote",
-      "Idle vs run mode RAM flags (0x101E, post-EI FUN_4815)",
-      "Which AD ring [RW70] slot is MAF vs TMOT/IAT"
+      "Idle vs run mode RAM flags; AD ring [RW70] slot ID"
     ]
   },
   "artifacts": [
@@ -72,7 +72,7 @@
       "structuralSplitPtr": 1,
       "registerBasesRomProven": 4,
       "headline": "100.0% absolute (69/69); exclusive geometry 100.0% (69/69); unproven absolute 0; resolved XDF mislabels 1; FE14 CAL bases; D200/D978 retracted.",
-      "note": "v13: ign→HSO.0 #0x70 proven via 0x1502/0x1512→0x1480 queue. HSO bitfield decode for priority immediates. Ti→injector HSO still open. Absolute 69/69 retained. Do not auto-promote shipping."
+      "note": "v14: ign→HSO.0 #0x70 proven; Ti→injector via 0x1568→MMIO 0x440 proven; CH1 #0x71/#0x51 rejected as Ti HSO_TIME. Absolute 69/69 retained. Do not auto-promote shipping."
     },
     "priorityTraces": {
       "irqRamPublications": "done_v1_plus_v12_crosslinks",
@@ -118,10 +118,11 @@
         ]
       },
       "actuatorClose": {
-        "status": "done_v13_partial",
+        "status": "done_v14",
         "ignToHso0": true,
         "tiToInjectorHso": false,
-        "hsoDecode": "partial_ch0_proven_ch1_hypothesis"
+        "tiToInjectorMmio0x440": true,
+        "ch1TiHsoRejected": true
       }
     }
   }

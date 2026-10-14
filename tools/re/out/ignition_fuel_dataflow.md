@@ -201,10 +201,10 @@ Absolute CAL coverage unchanged.
 |------|--------|------|
 | MAF window | proven | vec5 `RW64` ← `0xD290`; vec2 clear; FUN_ab11 Δ→`0x17da` |
 | Ti pulse RAM | proven | → **`0x153A`/`0x1540`**; consume `0xAE18`→RW8A |
-| **Ti → injector HSO** | **open** | No `HSO_TIME` from Ti; `0x1540`→RD6 diag only; CH1 `#0x71` hypothesized |
+| **Ti → injector** | **proven (MMIO)** | enrich → **`0x1568`** → **`STB [0x440]`** @`0xB266`; CH1 `#0x71/#0x51` **rejected** for Ti width |
 | Ign advance RAM | proven | → **`0x1502`/`0x1512`** |
-| **Ign → HSO.0** | **proven** | `0xB5B3`→queue `0x1480`→`#0x70` @`0xB696` (drain `0x3E3A`) |
-| HSO decode | partial | CH0=coil proven; CH1=inj candidate; CH4=crank-sync; `#0x18/#0x1A`=ADC timers |
+| **Ign → HSO.0** | **proven** | `0xB5B3`→queue `0x1480`→`#0x70` @`0xB696` |
+| HSO decode | partial | CH0=coil; CH1=angle-sync (not Ti); CH4=crank-sync; `#0x18/#0x1A`=ADC timers |
 
 ## Related artifacts
 

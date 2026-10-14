@@ -53,15 +53,18 @@ Channels: `0–5` = HSO.0–.5; `6` = HSO.0+.1; `7` = software timer; `E` = star
 | `#0x30` | SET+INT+CH0 | Ign TIMER1 arm | `0xB69F` same ign path |
 | `#0x20` | SET+CH0 | Ign drain fallback | `0x3E43` |
 | `#0x10` | INT+CH0 | CH0 clear+IRQ | `0x3F38`/`0x3F61` |
-| `#0x71` | T2CAM+SET+INT+**CH1** | Injector-bank **candidate** | `0xA7B1`/`0xA7DD` (tooth-relative; Ti link open) |
-| `#0x51` | T2CAM+INT+CH1 | CH1 clear/sync | `0xAF44` tooth+`0x1A` (not Ti width) |
+| `#0x71` | T2CAM+SET+INT+**CH1** | CH1 angle-sync SET | `0xA7B1`: time=`RW5E` tooth-rel — **not Ti** |
+| `#0x51` | T2CAM+INT+CH1 | CH1 clear/sync | `0xAF44` tooth+`0x1A` — **not Ti** |
 | `#0x74` | T2CAM+SET+INT+**CH4** | Crank-sync / cam-side | vec2 `0xA9C5` + `STB RA3,PORT2` |
 | `#0x18` | INT+CH8 | ADC period timer | vec5 `0xA4B5` (+`0x1F4`) |
 | `#0x1A` | INT+CH10 | Timed companion | vec5 `0xA592`/`0xA621` |
 | `#0x33`/`#0x13` | CH3 set+int / int | Aux pair | vec5 |
 | `#0x22`/`#0x02` | CH2 set / clear | Aux pair | vec5 / init |
 
-**Proven actuator:** ignition advance RAM → **HSO.0**.  
-**Open:** Ti pulse RAM → injector on-time (CH1 hypothesized). CH2/3/4 connector identity.
+**Proven actuators:**
+- Ignition advance → **HSO.0 `#0x70`**
+- Ti pulse → **`0x1568` → MMIO write `@0x440`** (not HSO_TIME; CH1 `#0x71/#0x51` rejected for Ti width)
+
+**Open:** 0x440 driver protocol; CH1 phase-only role; CH2/3/4 connector identity.
 
 Intel: writes to IOS0 (windowed) can also drive HSO pins directly; this ROM heavily uses HSI_status/HSI_time pairs instead.

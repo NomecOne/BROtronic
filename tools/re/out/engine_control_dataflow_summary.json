@@ -104,9 +104,9 @@
     "1. Crank/cam HSI ISR (vec2) + ADC ISR (vec5) publish RPM/air samples to RAM.",
     "2. Foreground loads FE14 CAL bases (RW68/6A/6C/6E) once via 0x2EDB.",
     "3. MAF word table 0xD290 scales ADC → air mass; RW6A limits gate plausibility.",
-    "4. Ti 0xD030 (+ cylinder trim 0xD0FA) → pulse RAM 0x153A/0x1540 (injector HSO still open).",
-    "5. Ign maps → 0x1502/0x1512 → 0x1480 queue → HSO.0 #0x70 (proven coil/spark).",
-    "6. CH1 #0x71/#0x51 injector candidates; CH4 #0x74 crank-sync; Ti\to inj HSO open."
+    "4. Ti → 0x153A/0x1540 → enrich → 0x1568 → MMIO STB [0x440] (injector on-time).",
+    "5. Ign maps → 0x1502/0x1512 → 0x1480 queue → HSO.0 #0x70 (coil/spark).",
+    "6. CH1 #0x71/#0x51 are tooth-angle sync only — rejected as Ti HSO_TIME path."
   ],
   "controlLoopDeepen": {
     "schemaVersion": 12,
@@ -284,10 +284,11 @@
     "shippingNote": "Do not auto-promote. Reconciled coverage only — wait for XDF retarget to 0xD23C[16bit] (or confirmed byte proof) before shipping promotion."
   },
   "open": [
-    "Close Ti → injector HSO (CH1 #0x71/#0x51 candidates; need Ti-width → HSO_TIME)",
+    "Decode 0x440 injector-driver protocol (R42/R43 pairs; bank/cylinder select)",
+    "CH1 angle-sync vs Ti-width relationship (phase only?)",
     "CH2/CH3/CH4 connector roles (VANOS vs aux)",
     "End-to-end dwell E0DA / Alpha-N DBC3 body walks via [RW4C]",
-    "Idle vs run mode RAM flags (0x101E, post-EI FUN_4815)",
+    "Idle vs run mode RAM flags; AD ring slot ID",
     "Optional seed.xdf retarget 0xD23D → 0xD23C[16bit] before shipping"
   ],
   "relatedArtifacts": [
@@ -300,7 +301,7 @@
     "tools/re/out/sfr_hso_hsi_audit.md"
   ],
   "actuatorClose": {
-    "schemaVersion": 13,
+    "schemaVersion": 14,
     "method": "local_shim_disasm_xrefs",
     "hsoBitfield": "T2RST|T2CAM|SET|INT|CH[3:0] (Intel 80C196KB)",
     "proven": [
@@ -314,19 +315,37 @@
         ],
         "command": "0x70",
         "channel": 0,
-        "role": "coil_spark",
-        "note": "Also 0x1512 clamp; drain 0x3E3A #0x70 / 0x3E43 #0x20"
+        "role": "coil_spark"
       },
       {
-        "id": "ign_timer1_arm",
-        "sites": [
-          "0xB69F"
+        "id": "ti_to_injector_mmio",
+        "path": [
+          "0x153A",
+          "0xAE18",
+          "0xAFC7",
+          "0x1540",
+          "0xB246",
+          "0x1568",
+          "0xB266"
         ],
-        "command": "0x30",
-        "channel": 0,
-        "role": "coil_spark_deferred"
+        "target": "0x440",
+        "role": "injector_pulse_mmio",
+        "note": "STB R42,[RW74] when RW74==0x440; PORT1.6 handshake; not HSO_TIME"
       }
     ],
+    "ch1TiTest": {
+      "verdict": "rejected_as_ti_hso_time",
+      "0x71": {
+        "site": "0xA7B1",
+        "timeSource": "RW5E tooth-relative",
+        "tiLink": false
+      },
+      "0x51": {
+        "site": "0xAF44",
+        "timeSource": "tooth+0x1A",
+        "tiLink": false
+      }
+    },
     "decode": [
       {
         "imm": "0x70",
@@ -334,24 +353,14 @@
         "confidence": "proven"
       },
       {
-        "imm": "0x30",
-        "role": "coil_spark_deferred",
-        "confidence": "proven"
-      },
-      {
-        "imm": "0x20",
-        "role": "coil_spark_drain",
-        "confidence": "proven"
-      },
-      {
         "imm": "0x71",
-        "role": "injector_bank_candidate",
-        "confidence": "medium"
+        "role": "ch1_angle_sync_set",
+        "confidence": "proven_not_ti_width"
       },
       {
         "imm": "0x51",
         "role": "ch1_clear_sync",
-        "confidence": "medium"
+        "confidence": "proven_not_ti_width"
       },
       {
         "imm": "0x74",
@@ -367,34 +376,11 @@
         "imm": "0x1A",
         "role": "timed_companion",
         "confidence": "behavior_proven"
-      },
-      {
-        "imm": "0x33",
-        "role": "aux_ch3_set",
-        "confidence": "low_medium"
-      },
-      {
-        "imm": "0x13",
-        "role": "aux_ch3_int",
-        "confidence": "low_medium"
-      },
-      {
-        "imm": "0x22",
-        "role": "aux_ch2_set",
-        "confidence": "low_medium"
-      },
-      {
-        "imm": "0x02",
-        "role": "aux_ch2_clear",
-        "confidence": "low_medium"
       }
     ],
-    "tiToHso": {
-      "status": "open",
-      "note": "0x153A/0x1540/RW8A have no HSO_TIME schedule site; 0x1540 only scales to RD6 @0x93A2; CH1 hypothesized"
-    },
     "open": [
-      "ti_to_injector_hso",
+      "mmio_0x440_protocol",
+      "ch1_phase_vs_ti_coupling",
       "ch2_ch3_ch4_connector_roles",
       "dwell_E0DA_body",
       "idle_run_flags"

@@ -86,21 +86,31 @@ ROM: `BMW DME413 SW623 D466.29 C16x900A 94 RedLabel.bin`
 | `0x187C` ADC sample | Published vec5 `@0xA530` (channel identity open) |
 | HSO `#0x74` (CH4) + PORT2 | Crank-synced aux/cam-side (medium) |
 | HSO `#0x18/#0x1A` | ADC/timed ISR period companions |
-| HSO `#0x71` (CH1) | Injector-bank **candidate** (`0xA7B1`); Ti-width link **open** |
+| HSO `#0x71` (CH1) | Angle-sync SET (`RW5E` tooth-relative) — **not** Ti width |
+| HSO `#0x51` (CH1) | Clear/sync tooth+`0x1A` — **not** Ti width |
 | `CMP …,0x14,TABLE[RW68]` @`0xA911` | Period vs CAL `0xD016` |
 
-## Ignition actuator (proven outside IRQ, drains via HSO CAM path)
+## Ignition actuator (proven)
 
 | Stage | Site | Note |
 |-------|------|------|
 | Advance RAM | `0x1502` / clamp `0x1512` | From map interp |
-| Queue fill | `0xB65E` ST → `0x1480`/`0x14a0` | Angle→time vs `RW7E` |
+| Queue fill | `0xB65E` → `0x1480`/`0x14a0` | Angle→time vs `RW7E` |
 | HSO schedule | `0xB696` `#0x70` CH0 | Also `#0x30` TIMER1 arm |
-| Queue drain | `0x3E3A` `#0x70` / `0x3E43` `#0x20` | Reads `0x1480`/`0x14a0` |
+| Queue drain | `0x3E3A` `#0x70` / `0x3E43` `#0x20` | |
+
+## Fuel / Ti actuator (proven — MMIO, not HSO)
+
+| Stage | Site | Note |
+|-------|------|------|
+| Pulse RAM | `0x153A` → RW8A @`0xAE18`; `0x1540` @`0xAFC7` | Ti×load÷period |
+| Final pulse | `ST RW42,0x1568` @`0xB246` | After enrich / clamps |
+| Driver write | `STB R42,[RW74]` @`0xB266` when `RW74==0x440` | Dual-write + `PORT1.6` wait; `STB R43` follows |
+| CH1 HSO | `#0x71`/`#0x51` | **Rejected** as Ti `HSO_TIME` path |
 
 ## Open questions
 
 - Map 0x14C2/0x14CC to RPM/period engineering units
 - Which AD channel index in [RW70] ring is MAF vs TMOT vs IAT
-- **Ti `0x153A`/`0x1540` → injector HSO_TIME** (CH1 hypothesized; not found as pulse-width schedule)
-- CH2/CH3/CH4 connector roles (VANOS vs other)
+- **0x440** injector-driver byte protocol (R42/R43 meaning)
+- CH1 phase vs Ti-width coupling; CH2/CH3/CH4 connector roles

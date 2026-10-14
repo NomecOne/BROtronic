@@ -61,8 +61,8 @@ Addressing: FE14 CAL bases (`RW68=0xD002`, `RW6A=0xD106`, `RW6C=0xD28E`, `RW6E=0
 2. Foreground loads FE14 CAL bases (RW68/6A/6C/6E) once via 0x2EDB.
 3. MAF word table 0xD290 scales ADC → air mass; RW6A limits gate plausibility.
 4. Ti 0xD030 (+ cylinder trim 0xD0FA) combines with load for injection timing.
-5. Ign WOT/PT maps via RW6E descriptors (e.g. 0xDD0F) → advance RAM → **HSO.0 `#0x70`**.
-6. Ti pulse RAM proven; **injector HSO (likely CH1) still open**. PORT2 + HSO.4 used for crank sync.
+5. Ign WOT/PT maps → advance RAM → **HSO.0 `#0x70`**.
+6. Ti pulse → **`0x1568` → MMIO `0x440`** (injector on-time). CH1 `#0x71/#0x51` are angle-sync only (not Ti width).
 
 ## Actuator close (shim v13)
 
@@ -88,15 +88,24 @@ Addressing: FE14 CAL bases (`RW68=0xD002`, `RW6A=0xD106`, `RW6C=0xD28E`, `RW6E=0
 
 | Link | Path |
 |------|------|
-| **Ign → HSO.0** | `0x1502` @`0xB5B3` → angle/time → ST `0x1480`/`0x14a0` queue → `LDB HSI_status,#0x70; LD HSI_time,RW3E` @`0xB696` (or `#0x30` @`0xB69F`). Drain also `@0x3E3A #0x70` / `@0x3E43 #0x20` from same queues. |
-| **Ign clamp → same path** | `0x1512` @`0xB48E`/`0xB495`/`0xB4A8` clamps advance before queue fill — same HSO.0 pipeline. |
-| Ti → RAM (not HSO) | `0x153A`→RW8A @`0xAE18`; `0x1540` from Ti×RW8A÷period @`0xAFC7`. `0x1540`→RD6 diag scale only @`0x93A2`. |
+| **Ign → HSO.0** | `0x1502` @`0xB5B3` → queue `0x1480`/`0x14a0` → `#0x70` @`0xB696` (or `#0x30`). Drain `@0x3E3A`/`0x3E43`. |
+| **Ign clamp** | `0x1512` @`0xB48E`… clamps advance before queue fill. |
+| **Ti → injector (MMIO, not HSO)** | `0x153A`→RW8A @`0xAE18` → `0x1540` @`0xAFC7` → enrich → **`ST 0x1568`** @`0xB246` → **`STB R42,[RW74]`** with `RW74==0x440` @`0xB266` (handshake `PORT1.6`). |
+
+### CH1 `#0x71`/`#0x51` verdict (Ti pulse test)
+
+| Imm | HSO_TIME source | Ti link? | Role |
+|-----|-----------------|----------|------|
+| `#0x71` | `RW5E` = tooth±angle (`ADD RW5E,RW7E,#0x28` / `MULU…RW92`) @`0xA7B1` | **No** | CH1 set, crank-angle sync |
+| `#0x51` | tooth+`#0x1A` (`ADD HSI_time,RW38,RW7E`) @`0xAF44` | **No** | CH1 clear/sync |
+
+**Rejected:** Ti pulse width does **not** program CH1 `HSO_TIME`. Injector on-time is the **0x440 external-driver write**.
 
 ### Still open
 
-- **Ti → injector HSO:** no listing site schedules `HSO_TIME` from `0x153A`/`0x1540`/`RW8A`. Best candidate remains CH1 `#0x71`/`#0x51` (tooth-relative, not Ti-width).
-- Pin↔connector map for CH2/CH3/CH4 (VANOS vs other)
-- AD ring slot identity; idle/run flags
+- Exact 0x440 device semantics (byte R42/R43 protocol; bank vs sequential)
+- Whether CH1 still gates injection *phase* (angle) separately from Ti width
+- CH2/CH3/CH4 connector roles; AD ring ID; idle/run flags
 
 ## Control-loop deepen (v12 sites, retained)
 
@@ -117,10 +126,9 @@ Addressing: FE14 CAL bases (`RW68=0xD002`, `RW6A=0xD106`, `RW6C=0xD28E`, `RW6E=0
 
 ## Open (next RE value) — gaps for “control the engine”
 
-- **Close Ti → injector HSO** (CH1 `#0x71`/`#0x51` candidates; need Ti-width → `HSO_TIME`)
-- CH2/CH3/CH4 connector roles (VANOS vs aux)
-- Dwell `0xE0DA` / Alpha-N `0xDBC3` `[RW4C]` body walks
-- Idle vs run RAM flags; AD ring slot ID
+- Decode **0x440** injector-driver protocol (R42/R43 pairs; cylinder/bank select)
+- CH1 angle-sync vs Ti-width relationship (phase only?)
+- CH2/CH3/CH4 connector roles; dwell `E0DA` / Alpha-N `DBC3`; idle/run flags; AD ring ID
 - Optional seed.xdf retarget `0xD23D → 0xD23C[16bit]`
 
 ## Related
