@@ -104,9 +104,9 @@
     "1. Crank/cam HSI ISR (vec2) + ADC ISR (vec5) publish RPM/air samples to RAM.",
     "2. Foreground loads FE14 CAL bases (RW68/6A/6C/6E) once via 0x2EDB.",
     "3. MAF word table 0xD290 scales ADC → air mass; RW6A limits gate plausibility.",
-    "4. Ti → 0x153A/0x1540 → enrich → 0x1568 → MMIO STB [0x440] (injector on-time).",
+    "4. Ti → 0x153A/0x1540 → enrich → 0x1568 → MMIO STB R42/R43 [0x440] (LE width + PORT1.6).",
     "5. Ign maps → 0x1502/0x1512 → 0x1480 queue → HSO.0 #0x70 (coil/spark).",
-    "6. CH1 #0x71/#0x51 are tooth-angle sync only — rejected as Ti HSO_TIME path."
+    "6. CH1 #0x71/#0x51 tooth-angle sync only; RW8E indexes bank/cyl frames on same 0x440 FIFO."
   ],
   "controlLoopDeepen": {
     "schemaVersion": 12,
@@ -284,14 +284,16 @@
     "shippingNote": "Do not auto-promote. Reconciled coverage only — wait for XDF retarget to 0xD23C[16bit] (or confirmed byte proof) before shipping promotion."
   },
   "open": [
-    "Decode 0x440 injector-driver protocol (R42/R43 pairs; bank/cylinder select)",
-    "CH1 angle-sync vs Ti-width relationship (phase only?)",
+    "Map RW8E indices / command opcodes to physical banks & pins; identify 0x440 ASIC",
+    "CH1 edge vs 0x440 ASIC accept coupling (phase proven separate from width)",
     "CH2/CH3/CH4 connector roles (VANOS vs aux)",
     "End-to-end dwell E0DA / Alpha-N DBC3 body walks via [RW4C]",
     "Idle vs run mode RAM flags; AD ring slot ID",
     "Optional seed.xdf retarget 0xD23D → 0xD23C[16bit] before shipping"
   ],
   "relatedArtifacts": [
+    "tools/re/out/mmio_440_injector_protocol.md",
+    "tools/re/out/mmio_440_injector_protocol.json",
     "tools/re/out/absolute_code_reads.json",
     "tools/re/out/ignition_fuel_dataflow.md",
     "tools/re/out/control_loops.md",
@@ -301,7 +303,7 @@
     "tools/re/out/sfr_hso_hsi_audit.md"
   ],
   "actuatorClose": {
-    "schemaVersion": 14,
+    "schemaVersion": 15,
     "method": "local_shim_disasm_xrefs",
     "hsoBitfield": "T2RST|T2CAM|SET|INT|CH[3:0] (Intel 80C196KB)",
     "proven": [
@@ -330,11 +332,19 @@
         ],
         "target": "0x440",
         "role": "injector_pulse_mmio",
-        "note": "STB R42,[RW74] when RW74==0x440; PORT1.6 handshake; not HSO_TIME"
+        "note": "STB R42 x2 then R43 x2; LE Ti word; PORT1.6 handshake; not HSO_TIME"
       }
     ],
+    "mmio440": {
+      "r42": "Ti[7:0]",
+      "r43": "Ti[15:8]",
+      "handshake": "PORT1.6 ready/busy; PORT1.7->RW8C",
+      "cylinder": "RW8E index; R8E.0 selects 0x155e/0x1560; command OR R8E + 0x154e[RW8E]",
+      "detailArtifact": "tools/re/out/mmio_440_injector_protocol.md"
+    },
     "ch1TiTest": {
       "verdict": "rejected_as_ti_hso_time",
+      "role": "phase_angle_sync_only",
       "0x71": {
         "site": "0xA7B1",
         "timeSource": "RW5E tooth-relative",
@@ -379,8 +389,9 @@
       }
     ],
     "open": [
-      "mmio_0x440_protocol",
-      "ch1_phase_vs_ti_coupling",
+      "rw8e_physical_pin_map",
+      "mmio_0x440_asic_id",
+      "ch1_vs_440_accept",
       "ch2_ch3_ch4_connector_roles",
       "dwell_E0DA_body",
       "idle_run_flags"

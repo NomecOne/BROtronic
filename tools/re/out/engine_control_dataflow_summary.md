@@ -62,9 +62,9 @@ Addressing: FE14 CAL bases (`RW68=0xD002`, `RW6A=0xD106`, `RW6C=0xD28E`, `RW6E=0
 3. MAF word table 0xD290 scales ADC → air mass; RW6A limits gate plausibility.
 4. Ti 0xD030 (+ cylinder trim 0xD0FA) combines with load for injection timing.
 5. Ign WOT/PT maps → advance RAM → **HSO.0 `#0x70`**.
-6. Ti pulse → **`0x1568` → MMIO `0x440`** (injector on-time). CH1 `#0x71/#0x51` are angle-sync only (not Ti width).
+6. Ti pulse → **`0x1568` → MMIO `0x440`** (LE `R42`/`R43` + PORT1.6 handshake). CH1 `#0x71/#0x51` are angle-sync only (not Ti width).
 
-## Actuator close (shim v13)
+## Actuator close (shim v15)
 
 > Intel 80C196KB `HSO_COMMAND`: `T2RST|T2CAM|SET|INT|CH[3:0]`. Writes named `HSI_status` are HSO_COMMAND (SFR audit cross_checked).
 
@@ -90,7 +90,18 @@ Addressing: FE14 CAL bases (`RW68=0xD002`, `RW6A=0xD106`, `RW6C=0xD28E`, `RW6E=0
 |------|------|
 | **Ign → HSO.0** | `0x1502` @`0xB5B3` → queue `0x1480`/`0x14a0` → `#0x70` @`0xB696` (or `#0x30`). Drain `@0x3E3A`/`0x3E43`. |
 | **Ign clamp** | `0x1512` @`0xB48E`… clamps advance before queue fill. |
-| **Ti → injector (MMIO, not HSO)** | `0x153A`→RW8A @`0xAE18` → `0x1540` @`0xAFC7` → enrich → **`ST 0x1568`** @`0xB246` → **`STB R42,[RW74]`** with `RW74==0x440` @`0xB266` (handshake `PORT1.6`). |
+| **Ti → injector (MMIO, not HSO)** | `0x153A`→RW8A @`0xAE18` → `0x1540` @`0xAFC7` → enrich → **`ST 0x1568`** @`0xB246` → **`STB R42`×2 / `STB R43`×2** @`0xB266`/`0xB281` when `RW74==0x440` (`PORT1.6`↑ then ↓; `PORT1.7`→`RW8C`). |
+
+### MMIO `@0x440` protocol (v15 — see `mmio_440_injector_protocol.md`)
+
+| Element | Proven meaning |
+|---------|----------------|
+| `R42` / `R43` | LE split of Ti word (`RW42` / `0x1568`) — width bytes, not bank opcodes |
+| `PORT1.6` | Ready/busy: wait SET before lo, CLEAR before hi; timeout → `RC3.0` |
+| `PORT1.7` | Status bit shifted into `RW8C` |
+| Dual-STB | Each byte written twice |
+| `RW8E` / `R8E.0` | Cylinder/phase index; even/odd selects `0x155e` vs `0x1560`; command frames `OR R8E` + `0x154e[RW8E]` |
+| `0x441` / `0x480` | Status/readback companions |
 
 ### CH1 `#0x71`/`#0x51` verdict (Ti pulse test)
 
@@ -99,12 +110,12 @@ Addressing: FE14 CAL bases (`RW68=0xD002`, `RW6A=0xD106`, `RW6C=0xD28E`, `RW6E=0
 | `#0x71` | `RW5E` = tooth±angle (`ADD RW5E,RW7E,#0x28` / `MULU…RW92`) @`0xA7B1` | **No** | CH1 set, crank-angle sync |
 | `#0x51` | tooth+`#0x1A` (`ADD HSI_time,RW38,RW7E`) @`0xAF44` | **No** | CH1 clear/sync |
 
-**Rejected:** Ti pulse width does **not** program CH1 `HSO_TIME`. Injector on-time is the **0x440 external-driver write**.
+**Rejected:** Ti pulse width does **not** program CH1 `HSO_TIME`. Injector on-time is the **0x440** LE word stream. CH1 remains **phase-only** vs width on `@0x440`.
 
 ### Still open
 
-- Exact 0x440 device semantics (byte R42/R43 protocol; bank vs sequential)
-- Whether CH1 still gates injection *phase* (angle) separately from Ti width
+- Command opcode bits beyond `OR R8E`; physical `RW8E`→pin/bank map; `@0x440` ASIC ID
+- Whether CH1 edges gate ASIC accept of `@0x440` transfers
 - CH2/CH3/CH4 connector roles; AD ring ID; idle/run flags
 
 ## Control-loop deepen (v12 sites, retained)
@@ -126,13 +137,14 @@ Addressing: FE14 CAL bases (`RW68=0xD002`, `RW6A=0xD106`, `RW6C=0xD28E`, `RW6E=0
 
 ## Open (next RE value) — gaps for “control the engine”
 
-- Decode **0x440** injector-driver protocol (R42/R43 pairs; cylinder/bank select)
-- CH1 angle-sync vs Ti-width relationship (phase only?)
+- Map `RW8E` indices / command opcodes to physical banks & pins; identify `@0x440` ASIC
+- CH1 edge vs `@0x440` accept coupling (phase proven separate from width)
 - CH2/CH3/CH4 connector roles; dwell `E0DA` / Alpha-N `DBC3`; idle/run flags; AD ring ID
 - Optional seed.xdf retarget `0xD23D → 0xD23C[16bit]`
 
 ## Related
 
+- `tools/re/out/mmio_440_injector_protocol.md`
 - `tools/re/out/absolute_code_reads.json`
 - `tools/re/out/ignition_fuel_dataflow.md`
 - `tools/re/out/control_loops.md`

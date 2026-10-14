@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 15,
+  "id": "mmio_440_injector_protocol",
+  "rom": "BMW DME413 SW623 D466.29 C16x900A 94 RedLabel.bin",
+  "method": "local_shim_disasm_xrefs",
+  "verdict": {
+    "tiWidthViaMmio": true,
+    "r42r43AreLeTiBytes": true,
+    "port16Handshake": true,
+    "port17StatusShift": true,
+    "cylinderIndexRw8e": true,
+    "physicalPinMap": false,
+    "asicIdentity": false,
+    "ch1IsTiWidth": false,
+    "ch1Role": "phase_angle_sync_only"
+  },
+  "addressMap": {
+    "0x440": "injector_driver_fifo",
+    "0x441": "status_readback",
+    "0x480": "companion_rw74_plus_0x40",
+    "RW74": "latched_0x440_at_0x51F6"
+  },
+  "tiFinalPulse": {
+    "publish": "ST RW42,0x1568 @0xB246",
+    "gate": "CMP RW74,#0x440 @0xB253",
+    "sequence": [
+      "wait PORT1.6 set (timeout #-0x1c -> RC3.0)",
+      "DI",
+      "STB R42,[RW74] x2 @0xB266",
+      "SHL RW8C; sample PORT1.7",
+      "wait PORT1.6 clear",
+      "STB R43,[RW74] x2 @0xB281",
+      "EI"
+    ],
+    "r42": "Ti[7:0]",
+    "r43": "Ti[15:8]",
+    "note": "LE width bytes; not bank-select opcodes"
+  },
+  "bankCylinder": {
+    "RW8E": {
+      "role": "cylinder_phase_index",
+      "wrap": "CLR when >5 unless ==8 or RC3.5",
+      "site": "0xAB5E"
+    },
+    "R8E_0": {
+      "role": "even_odd_bank",
+      "even": "0x155e",
+      "odd": "0x1560",
+      "site": "0xAF69"
+    },
+    "commandFrame": {
+      "site": "0xB10D",
+      "select": "ORB R38,R8E + RC7 masks",
+      "data2": "0x154e[RW8E]"
+    },
+    "perCylDual": {
+      "site": "0xAB8F",
+      "byte1": "0x1457/0x145d[RW8E]",
+      "byte2": "0x1556[RW8E]"
+    }
+  },
+  "vsCh1": {
+    "ch1_0x71": {
+      "site": "0xA7B1",
+      "tiWidth": false,
+      "role": "angle_sync_set"
+    },
+    "ch1_0x51": {
+      "site": "0xAF44",
+      "tiWidth": false,
+      "role": "angle_sync_clear"
+    },
+    "note": "Width on 0x440; phase on HSO CH1. ASIC accept gating by CH1 still open."
+  },
+  "open": [
+    "command_opcode_bits_beyond_OR_R8E",
+    "RW8E_to_physical_bank_pin_map",
+    "0x440_ASIC_identity",
+    "CH1_edge_vs_0x440_accept_coupling"
+  ],
+  "related": [
+    "tools/re/out/engine_control_dataflow_summary.md",
+    "tools/re/out/irq_ram_publications.md"
+  ]
+}
